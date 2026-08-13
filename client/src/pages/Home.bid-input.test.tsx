@@ -16,7 +16,6 @@ describe("total bid price control", () => {
     const input = screen.getByRole("textbox", { name: "السعر الإجمالي للاعب بالمليون" }) as HTMLInputElement;
     await user.type(input, "20");
     await user.click(screen.getAllByRole("button", { name: "ابدأ بـ 20M لاعب رقم ١" })[0]);
-    await user.clear(input);
     const activePass = screen.getAllByRole("button", { name: /انسحاب/ }).find((button) => !(button as HTMLButtonElement).disabled);
     await user.click(activePass!);
     await user.click(screen.getByRole("button", { name: /حسم المزاد/ }));

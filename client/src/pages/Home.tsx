@@ -64,6 +64,7 @@ export default function Home() {
 
   const canTeamWithdraw = (teamIndex: number) => {
     if (award || passed[teamIndex] || leader === teamIndex) return false;
+    if (leader !== null) return true;
     if (enteredBidAmount === null) return true;
     return canOutbid(currentBid, proposedBid, round.startPrice) && canPlaceBid(teams[teamIndex], proposedBid, remainingRounds);
   };

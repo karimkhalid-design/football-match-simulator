@@ -78,3 +78,6 @@
 
 - [x] Disable withdrawal when the typed total price is invalid or below the round/current required price, preventing an accidental player lock.
 - [x] Add rendered-flow regression coverage for invalid-price withdrawal and valid withdrawal behavior.
+
+- [x] Keep the settlement button enabled after a valid bid and opponent withdrawal, while preserving invalid-bid protection.
+- [x] Add rendered-flow regression coverage for bid, opponent withdrawal, and successful settlement.
