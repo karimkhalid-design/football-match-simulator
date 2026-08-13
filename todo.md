@@ -244,3 +244,10 @@
 - [x] Add native share, copy-link, download-image, and share-image actions with graceful fallbacks
 - [x] Integrate the share popup into Auction, Aftakar, VAR, and Men Byhbad finish screens
 - [x] Add tests and mobile visual verification for the cross-game sharing flow
+
+- [x] إضافة صفحة تصنيف بعد شاشة التحميل بثلاثة كروت: ألعاب جماعية، ألعاب فردية، العب أونلاين
+- [x] ربط كارت ألعاب جماعية بصفحة الألعاب الموجودة حالياً
+- [x] إنشاء صفحة ألعاب فردية فارغة بتصميم جاهز للإضافات القادمة
+- [x] جعل كارت العب أونلاين معطلاً ويعرض «قريباً»
+- [x] رفع اللوجوهات الثلاثة واستخدامها في الكروت مع تصميم RTL متجاوب
+- [x] إضافة اختبارات للمسارات والتحقق البصري على الهاتف ثم حفظ checkpoint
