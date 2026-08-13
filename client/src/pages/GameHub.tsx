@@ -46,7 +46,7 @@ export default function GameHub({ onSelectAuction, onSelectAftakar, onSelectVar 
         <button className="game-card game-card-var" onClick={onSelectVar} type="button">
           <div className="game-card-topline"><span className="game-number">03</span><span className="game-status available var-status"><i /> متاحة الآن</span></div>
           <div className="game-card-art"><img src={VAR_LOGO_URL} alt="شعار VAR و لا لأ؟" /></div>
-          <div className="game-card-content"><p>شوف · ناقش · احكم</p><h2>VAR و لا لأ؟</h2><span>لعبة صحاب على موبايل واحد: شوف اللقطة وخد قرارك.</span></div>
+          <div className="game-card-content"><p>اقرأ · ناقش · احكم</p><h2>VAR و لا لأ؟</h2><span>لعبة صحاب على موبايل واحد: اقرأ حالة حقيقية وخد قرارك.</span></div>
           <div className="game-card-cta var-cta">ابدأ المراجعة <ArrowLeft /></div>
         </button>
       </section>

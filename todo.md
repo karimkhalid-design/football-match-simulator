@@ -153,3 +153,10 @@
 - [x] Add UI tests proving fallback controls appear for non-embed rounds and unavailable media is handled visibly.
 
 - [x] Reset media failure state on every next-round transition and test that the following round can render its own media/reference state.
+
+- [x] Convert the first VAR version to text-only real incidents with no video or media fallback UI.
+- [x] Add verified real player names, team names, match context, original decisions, final VAR decisions, and explanations to the incident library.
+- [x] Preserve hidden decisions and randomized no-repeat sessions, and add regression tests for real-name coverage and text-only presentation.
+
+- [x] Add a verification reference to every real VAR incident, using official or trusted match/report sources, without exposing it during the hidden-decision phase.
+- [x] Add data validation proving every real incident has a non-empty verification reference.

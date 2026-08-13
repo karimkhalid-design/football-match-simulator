@@ -18,18 +18,18 @@ describe("VAR و لا لأ؟", () => {
     expect(screen.getByRole("button", { name: "ابدأ اللعبة" })).toBeTruthy();
   });
 
-  it("loads a real controversial clip and hides the verified decision until reveal", () => {
+  it("loads a real case with named players and hides the verified decision until reveal", () => {
     const realRounds = varRounds.filter((round) => round.isReal);
     render(<VarGame onBackToHub={() => undefined} roundPool={[realRounds[0]]} />);
     fireEvent.click(screen.getByRole("button", { name: "ابدأ اللعبة" }));
-    expect(realRounds.every((round) => round.mediaUrl && round.sourceUrl)).toBe(true);
-    expect(varRounds.every((round) => round.sourceUrl)).toBe(true);
+    expect(realRounds.every((round) => round.isReal && round.match && round.teams && (round.players?.length ?? 0) >= 2)).toBe(true);
+    expect(varRounds.every((round) => round.isReal && round.originalDecision && round.explanation && round.verificationRef.trim().length > 0 && round.verificationSource.title.trim().length > 0 && round.verificationSource.url.startsWith("https://"))).toBe(true);
     expect(new Set(shuffleVarRounds(varRounds, 0.11).map((round) => round.id)).size).toBe(varRounds.length);
     expect(new Set(shuffleVarRounds(varRounds, 0.77).map((round) => round.id)).size).toBe(varRounds.length);
     expect(screen.queryByText(/القرار الصحيح/)).toBe(null);
     expect(screen.queryByText(/قرار الحكم الأصلي/)).toBe(null);
     expect(screen.queryByRole("link", { name: /Sky Sports/ })).toBe(null);
-    fireEvent.click(screen.getByRole("button", { name: /شاهد اللقطة/ }));
+    fireEvent.click(screen.getByRole("button", { name: /اقرأ الحالة وابدأ النقاش/ }));
     fireEvent.click(screen.getByRole("button", { name: /افتح الـVAR/ }));
     fireEvent.click(screen.getByRole("button", { name: "انتقل للقرار" }));
     fireEvent.click(screen.getAllByRole("button").find((button) => button.className.includes("var-choice")) as HTMLElement);
@@ -37,35 +37,14 @@ describe("VAR و لا لأ؟", () => {
     expect(screen.getAllByText(/قرار الحكم الأصلي/).length).toBeGreaterThan(0);
   });
 
-  it("shows a watch fallback for a training round without a direct embed", () => {
-    const trainingRound = varRounds.find((round) => round.id === 1)!;
-    render(<VarGame onBackToHub={() => undefined} roundPool={[trainingRound]} />);
-    fireEvent.click(screen.getByRole("button", { name: "ابدأ اللعبة" }));
-    expect(screen.getByText("مرجع فيديو للحالة")).toBeTruthy();
-    expect(screen.getByRole("link", { name: /افتح فيديو الحالة/ })).toBeTruthy();
-  });
-
-  it("shows an unavailable-source state when a real embed fails", () => {
+  it("keeps the first version text-only and exposes real names before the hidden reveal", () => {
     const realRound = varRounds.find((round) => round.isReal)!;
     render(<VarGame onBackToHub={() => undefined} roundPool={[realRound]} />);
     fireEvent.click(screen.getByRole("button", { name: "ابدأ اللعبة" }));
-    fireEvent.click(screen.getByRole("button", { name: "الفيديو مش شغال؟" }));
-    expect(screen.getByText("الفيديو غير متاح حالياً")).toBeTruthy();
-    expect(screen.getByRole("link", { name: /افتح مصدر اللقطة/ })).toBeTruthy();
-  });
-
-  it("resets media failure when moving to the next round", () => {
-    const realRound = varRounds.find((round) => round.isReal)!;
-    const trainingRound = varRounds.find((round) => round.id === 1)!;
-    render(<VarGame onBackToHub={() => undefined} roundPool={[realRound, trainingRound]} />);
-    fireEvent.click(screen.getByRole("button", { name: "ابدأ اللعبة" }));
-    fireEvent.click(screen.getByRole("button", { name: "الفيديو مش شغال؟" }));
-    fireEvent.click(screen.getByRole("button", { name: /شاهد اللقطة/ }));
-    fireEvent.click(screen.getByRole("button", { name: /افتح الـVAR/ }));
-    fireEvent.click(screen.getByRole("button", { name: "انتقل للقرار" }));
-    fireEvent.click(screen.getAllByRole("button").find((button) => button.className.includes("var-choice")) as HTMLElement);
-    fireEvent.click(screen.getByRole("button", { name: /الجولة التالية/ }));
-    expect(screen.getByText("مرجع فيديو للحالة")).toBeTruthy();
+    expect(document.querySelector("iframe")).toBe(null);
+    expect(screen.getByText(realRound.teams!)).toBeTruthy();
+    expect(screen.getByText(realRound.players![0])).toBeTruthy();
+    expect(screen.queryByText(/القرار الصحيح/)).toBe(null);
   });
 
   it("shuffles every new session without repeating incident ids", () => {
@@ -80,7 +59,7 @@ describe("VAR و لا لأ؟", () => {
     Object.defineProperty(window, "innerWidth", { configurable: true, value: 375 });
     render(<VarGame onBackToHub={() => undefined} />);
     fireEvent.click(screen.getByRole("button", { name: "ابدأ اللعبة" }));
-    fireEvent.click(screen.getByRole("button", { name: /شاهد اللقطة/ }));
+    fireEvent.click(screen.getByRole("button", { name: /اقرأ الحالة وابدأ النقاش/ }));
     expect(document.querySelector(".var-countdown")).toBeTruthy();
     expect(document.querySelector(".var-prediction-grid")).toBeTruthy();
     expect(screen.getByRole("button", { name: /افتح الـVAR/ })).toBeTruthy();
@@ -96,7 +75,7 @@ describe("VAR و لا لأ؟", () => {
   it("starts with one-phone setup and allows 2 to 10 players", () => {
     render(<VarGame onBackToHub={() => undefined} />);
     expect(screen.getByRole("heading", { name: /VAR/ })).toBeTruthy();
-    expect(screen.getByText("شوف اللقطة… خد قرارك")).toBeTruthy();
+    expect(screen.getByText("اقرأ الحالة… خد قرارك")).toBeTruthy();
     expect(screen.getByRole("button", { name: "10" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "2" }));
     expect(screen.getAllByRole("textbox")).toHaveLength(2);
@@ -105,7 +84,7 @@ describe("VAR و لا لأ؟", () => {
   it("starts a round, shows the discussion timer, and records spoken-player predictions", () => {
     render(<VarGame onBackToHub={() => undefined} />);
     fireEvent.click(screen.getByRole("button", { name: "ابدأ اللعبة" }));
-    fireEvent.click(screen.getByRole("button", { name: /شاهد اللقطة/ }));
+    fireEvent.click(screen.getByRole("button", { name: /اقرأ الحالة وابدأ النقاش/ }));
     expect(screen.getByText("اتناقشوا… إيه قراركم؟")).toBeTruthy();
     expect(screen.getByText("60")).toBeTruthy();
     const option = document.querySelector(".var-prediction-grid button") as HTMLElement;
@@ -118,7 +97,7 @@ describe("VAR و لا لأ؟", () => {
     vi.useFakeTimers();
     render(<VarGame onBackToHub={() => undefined} />);
     fireEvent.click(screen.getByRole("button", { name: "ابدأ اللعبة" }));
-    fireEvent.click(screen.getByRole("button", { name: /شاهد اللقطة/ }));
+    fireEvent.click(screen.getByRole("button", { name: /اقرأ الحالة وابدأ النقاش/ }));
     expect(screen.getByText("60")).toBeTruthy();
     act(() => { vi.advanceTimersByTime(60000); });
     expect(screen.getByText("VAR CHECKING...")).toBeTruthy();
@@ -128,7 +107,7 @@ describe("VAR و لا لأ؟", () => {
   it("opens the VAR and reveals four decision buttons", () => {
     render(<VarGame onBackToHub={() => undefined} />);
     fireEvent.click(screen.getByRole("button", { name: "ابدأ اللعبة" }));
-    fireEvent.click(screen.getByRole("button", { name: /شاهد اللقطة/ }));
+    fireEvent.click(screen.getByRole("button", { name: /اقرأ الحالة وابدأ النقاش/ }));
     fireEvent.click(screen.getByRole("button", { name: /افتح الـVAR/ }));
     expect(screen.getByText("VAR CHECKING...")).toBeTruthy();
     expect(screen.getByRole("button", { name: "انتقل للقرار" })).toBeTruthy();
@@ -140,7 +119,7 @@ describe("VAR و لا لأ؟", () => {
     render(<VarGame onBackToHub={() => undefined} />);
     fireEvent.click(screen.getByRole("button", { name: "ابدأ اللعبة" }));
     for (let index = 0; index < 10; index += 1) {
-      fireEvent.click(screen.getByRole("button", { name: /شاهد اللقطة/ }));
+      fireEvent.click(screen.getByRole("button", { name: /اقرأ الحالة وابدأ النقاش/ }));
       fireEvent.click(screen.getByRole("button", { name: /افتح الـVAR/ }));
       fireEvent.click(screen.getByRole("button", { name: "انتقل للقرار" }));
       fireEvent.click(screen.getAllByRole("button").find((button) => button.className.includes("var-choice")) as HTMLElement);
@@ -155,7 +134,7 @@ describe("VAR و لا لأ؟", () => {
   it("scores a round, moves to the next round, rotates the judge, and can reset", () => {
     render(<VarGame onBackToHub={() => undefined} />);
     fireEvent.click(screen.getByRole("button", { name: "ابدأ اللعبة" }));
-    fireEvent.click(screen.getByRole("button", { name: /شاهد اللقطة/ }));
+    fireEvent.click(screen.getByRole("button", { name: /اقرأ الحالة وابدأ النقاش/ }));
     fireEvent.click(screen.getByRole("button", { name: /افتح الـVAR/ }));
     fireEvent.click(screen.getByRole("button", { name: "انتقل للقرار" }));
     fireEvent.click(screen.getAllByRole("button").find((button) => button.className.includes("var-choice")) as HTMLElement);
