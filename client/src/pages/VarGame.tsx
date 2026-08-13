@@ -14,7 +14,7 @@ export default function VarGame({ onBackToHub, roundPool }: VarGameProps) {
   useEffect(() => {
     const previousTitle = document.title;
     document.title = "VAR و لا لأ؟";
-    return () => { document.title = previousTitle || "كوره كده"; };
+    return () => { document.title = previousTitle || "كورة كده"; };
   }, []);
   const [phase, setPhase] = useState<Phase>("setup");
   const [playerCount, setPlayerCount] = useState(4);

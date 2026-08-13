@@ -11,8 +11,8 @@ describe("AppSplash", () => {
     vi.useFakeTimers();
     const onDone = vi.fn();
     render(<AppSplash onDone={onDone} />);
-    expect(screen.getByRole("main", { name: /جارٍ تحميل كوره كده/ })).toBeTruthy();
-    expect(screen.getByAltText("شعار كوره كده")).toBeTruthy();
+    expect(screen.getByRole("main", { name: /جارٍ تحميل كورة كده/ })).toBeTruthy();
+    expect(screen.getByAltText("شعار كورة كده")).toBeTruthy();
     expect(screen.getByText("صناعة كريم")).toBeTruthy();
     expect(screen.getByRole("button", { name: "تخطي" })).toBeTruthy();
     expect(onDone).not.toHaveBeenCalled();

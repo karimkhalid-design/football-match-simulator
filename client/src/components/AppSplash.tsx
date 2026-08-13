@@ -11,12 +11,12 @@ export default function AppSplash({ onDone }: Props) {
   }, [onDone]);
 
   return (
-    <main className="app-splash" dir="rtl" aria-label="جارٍ تحميل كوره كده">
+    <main className="app-splash" dir="rtl" aria-label="جارٍ تحميل كورة كده">
       <div className="app-splash-glow" />
       <div className="app-splash-content">
-        <img src={HUB_LOGO_URL} alt="شعار كوره كده" className="app-splash-logo" />
+        <img src={HUB_LOGO_URL} alt="شعار كورة كده" className="app-splash-logo" />
         <p className="app-splash-kicker">FOOTBALL GAME ROOM</p>
-        <h1>كوره كده</h1>
+        <h1>كورة كده</h1>
         <p className="app-splash-tagline">اللعب يبدأ من هنا.</p>
         <span className="app-splash-loader" aria-hidden="true"><i /><i /><i /></span>
         <button type="button" className="app-splash-skip" onClick={onDone}>

@@ -7,7 +7,8 @@ const serviceWorkerPath = new URL("../public/sw.js", import.meta.url);
 describe("Kora Keda iPhone PWA prototype", () => {
   it("has install metadata for a standalone portrait app", () => {
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-    expect(manifest.name).toBe("كوره كده");
+    expect(manifest.name).toBe("كورة كده");
+    expect(manifest.short_name).toBe("كورة كده");
     expect(manifest.display).toBe("standalone");
     expect(manifest.orientation).toBe("portrait");
     expect(manifest.start_url).toBe("/");
@@ -26,6 +27,9 @@ describe("Kora Keda iPhone PWA prototype", () => {
     const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
     expect(html).toContain('id="safari-skip-fallback"');
     expect(html).toContain('rel="icon"');
+    expect(html).toContain('content="كورة كده"');
+    expect(html).toContain("<title>كورة كده — ألعاب كرة القدم</title>");
+    expect(html).not.toContain("كوره كده");
     expect(html).toContain('rel="apple-touch-icon"');
     expect(html).toContain("kora-keda-app-icon_9f5a2e2f.png");
     expect(html).toContain('window.location.hash = "#hub"');

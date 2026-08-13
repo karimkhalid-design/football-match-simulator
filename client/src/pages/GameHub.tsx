@@ -16,7 +16,7 @@ export default function GameHub({ onSelectAuction, onSelectAftakar, onSelectVar,
       <div className="hub-orb hub-orb-one" />
       <div className="hub-orb hub-orb-two" />
       <header className="hub-header">
-        <div className="hub-wordmark"><span>FOOTBALL GAME ROOM</span><b>كوره كده · ألعاب كتير.</b></div>
+        <div className="hub-wordmark"><span>FOOTBALL GAME ROOM</span><b>كورة كده · ألعاب كتير.</b></div>
         <span className="hub-season">SEASON ONE · 2026</span>
       </header>
 
@@ -27,7 +27,7 @@ export default function GameHub({ onSelectAuction, onSelectAftakar, onSelectVar,
           <p className="hub-description">ادخل عالم ألعاب كرة القدم من بوابة واحدة. كوّن فريقك، خاطر في المزاد، ناقش اللقطات، واستعد للجولة القادمة.</p>
           <div className="hub-stats"><span><b>04</b> ألعاب</span><i /><span><b>122</b> لاعباً</span><i /><span><b>04</b> متاحة الآن</span></div>
         </div>
-        <div className="hub-mark"><img src={HUB_LOGO_URL} alt="شعار كوره كده واعمل الصح" /></div>
+        <div className="hub-mark"><img src={HUB_LOGO_URL} alt="شعار كورة كده واعمل الصح" /></div>
       </section>
 
       <section className="game-cards" aria-label="الألعاب المتاحة">
@@ -58,7 +58,7 @@ export default function GameHub({ onSelectAuction, onSelectAftakar, onSelectVar,
         </button>
       </section>
 
-      <footer className="hub-footer"><span>كوره كده · صناعة كريم</span><span className="hub-footer-line" /><span><Swords /> ألعاب كرة القدم بطريقتنا</span></footer>
+      <footer className="hub-footer"><span>كورة كده · صناعة كريم</span><span className="hub-footer-line" /><span><Swords /> ألعاب كرة القدم بطريقتنا</span></footer>
     </main>
   );
 }

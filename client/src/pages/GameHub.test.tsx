@@ -9,10 +9,11 @@ describe("game hub", () => {
   it("shows both active game cards with their separate logos", () => {
     render(<GameHub onSelectAuction={() => undefined} />);
     expect(screen.getByRole("button", { name: /اعمل الصح/ })).toBeTruthy();
-    expect(screen.getByAltText("شعار كوره كده واعمل الصح").getAttribute("src")).toContain("kora-e3mal-elsah-logo");
+    expect(screen.getByAltText("شعار كورة كده واعمل الصح").getAttribute("src")).toContain("kora-e3mal-elsah-logo");
     expect(screen.getByAltText("شعار اعمل الصح").getAttribute("src")).toContain("e3mal-elsah-logo");
     expect(screen.queryByAltText("شعار كورة واعمل الصح")).toBe(null);
-    expect(screen.getByText("كوره كده · ألعاب كتير.")).toBeTruthy();
+    expect(screen.queryByText(/كوره كده/)).toBe(null);
+    expect(screen.getByText("كورة كده · ألعاب كتير.")).toBeTruthy();
     expect(screen.getByText("أفتكر")).toBeTruthy();
     expect(screen.getByText("ابدأ التحدي")).toBeTruthy();
     expect(screen.getByAltText("شعار أفتكر").getAttribute("src")).toContain("aftakar-logo");

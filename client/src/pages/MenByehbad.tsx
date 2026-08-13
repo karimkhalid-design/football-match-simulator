@@ -30,7 +30,7 @@ export default function MenByehbad({ onBackToHub, initialNames }: Props) {
   useEffect(() => {
     const previousTitle = document.title;
     document.title = "مين بيهبد؟";
-    return () => { document.title = previousTitle || "كوره كده"; };
+    return () => { document.title = previousTitle || "كورة كده"; };
   }, []);
 
   const round = questions[roundIndex];
