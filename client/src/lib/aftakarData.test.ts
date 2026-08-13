@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { AFTAKAR_BANK_SIZE, aftakarQuestionBank, buildAftakarSession, freshAftakarSeed } from "./aftakarData";
+import { playerCatalogue } from "./auctionData";
 
 describe("Aftakar question bank", () => {
   it("contains a large varied bank with indirect clues and four unique choices", () => {
@@ -11,7 +12,7 @@ describe("Aftakar question bank", () => {
     expect(new Set(aftakarQuestionBank.map((question) => question.category)).size).toBeGreaterThanOrEqual(4);
 
     const giveawayWords = [
-      "أرجنتين", "برتغال", "مصري", "فرنسي", "نرويجي", "برازيلي", "إيطالي", "ألماني", "سوفيتي", "إسباني", "كرواتي", "بولندي", "إيفواري", "كاميروني", "إنجليزي",
+      "الجنسية", "جنسيته", "اللاعب الأرجنتيني", "اللاعب البرتغالي", "اللاعب المصري", "اللاعب الفرنسي", "اللاعب البرازيلي", "اللاعب الإيطالي", "اللاعب الألماني", "اللاعب الإسباني",
       "187 مباراة", "181 مباراة", "163 مشاركة", "تقييمه في الكتالوج", "clue",
     ];
     expect(aftakarQuestionBank.every((question) => question.clues.every((clue) => !giveawayWords.some((word) => clue.includes(word))))).toBe(true);
@@ -21,6 +22,14 @@ describe("Aftakar question bank", () => {
       expect(aftakarQuestionBank.filter((question) => question.category === category).length).toBeGreaterThan(50);
     }
     expect(aftakarQuestionBank.filter((question) => question.category === "career").length).toBeGreaterThan(50);
+    const factualQuestions = aftakarQuestionBank.filter((question) => ["record", "award", "competition"].includes(question.category) && question.clues.some((clue) => /هدفاً|الكرة الذهبية|الحذاء الذهبي|موسم 20|عام 20|يلعب مع/.test(clue)));
+    expect(factualQuestions.length).toBeGreaterThanOrEqual(10);
+    expect(factualQuestions.every((question) => question.options.length === 4 && question.options.includes(question.playerName))).toBe(true);
+    expect(factualQuestions.every((question) => {
+      const target = playerCatalogue.find((player) => player.name === question.playerName);
+      const options = question.options.map((option) => playerCatalogue.find((player) => player.name === option));
+      return target && options.every((option) => option && option.position === target.position);
+    })).toBe(true);
   });
 
   it("builds deterministic, no-repeat sessions while varying order and option placement by seed", () => {
@@ -29,6 +38,7 @@ describe("Aftakar question bank", () => {
     expect(first).toEqual(second);
     expect(new Set(first.map((question) => question.playerName)).size).toBe(first.length);
     expect(new Set(first.map((question) => question.category)).size).toBeGreaterThanOrEqual(3);
+    expect(first.some((question) => ["record", "award", "competition"].includes(question.category))).toBe(true);
 
     const different = buildAftakarSession(2027, 11);
     expect(different.map((question) => question.playerName)).not.toEqual(first.map((question) => question.playerName));
@@ -41,6 +51,7 @@ describe("Aftakar question bank", () => {
         expect(session.filter((question) => question.category === "trivia").length).toBeGreaterThanOrEqual(Math.min(3, size));
         expect(new Set(session.map((question) => question.playerName)).size).toBe(size);
         expect(session.every((question) => question.options.includes(question.playerName))).toBe(true);
+        if (size >= 4) expect(session.some((question) => ["record", "award", "competition"].includes(question.category))).toBe(true);
       }
     }
   });

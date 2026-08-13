@@ -54,6 +54,21 @@ const curatedQuestions: CuratedQuestion[] = [
   { playerName: "Lionel Messi", clues: ["يتحول من صانع أول للهجمة إلى منهيها من دون أن يعلن عن هذا التحول", "أثره يقاس بصناعة الفرصة بقدر قياسه باللمسة الأخيرة", "ابحث عن اللاعب الذي يغير شكل الدفاع بمجرد استلامه بين الخطوط"], options: ["Lionel Messi", "Manuel Neuer", "Xavi", "Luka Modrić"] },
 ];
 
+const factualQuestions: AftakarQuestion[] = [
+  { playerName: "Cristiano Ronaldo", clues: ["من اللاعب الذي سجل 17 هدفاً في دوري أبطال أوروبا موسم 2013/14؟", "كان يلعب وقتها مع ريال مدريد، وحقق لقب هداف البطولة في مواسم أخرى أيضاً", "الاختيارات من أجنحة هجومية حققوا أرقاماً كبيرة في أوروبا"], options: ["Cristiano Ronaldo", "Thierry Henry", "Kylian Mbappé", "Neymar"], category: "record" },
+  { playerName: "Erling Haaland", clues: ["من سجل 36 هدفاً في الدوري الإنجليزي الممتاز موسم 2022/23؟", "كان هذا أول موسم كامل له في الدوري مع مانشستر سيتي", "قارن بينه وبين ليفاندوفسكي وكين وأجويرو في اختيارات السؤال"], options: ["Erling Haaland", "Robert Lewandowski", "Harry Kane", "Sergio Agüero"], category: "record" },
+  { playerName: "Mohamed Salah", clues: ["من فاز بالحذاء الذهبي للدوري الإنجليزي موسم 2017/18 بعد تسجيل 32 هدفاً؟", "كان أول موسم كامل له مع ليفربول في الدوري الإنجليزي", "الاختيارات أجنحة ومهاجمون من نفس جيل الدوري"], options: ["Mohamed Salah", "Lionel Messi", "Luis Figo", "Arjen Robben"], category: "award" },
+  { playerName: "Thierry Henry", clues: ["من سجل 30 هدفاً في الدوري الإنجليزي موسم 2003/04؟", "كان هداف الدوري وقتها مع آرسنال، في موسم لم يخسر فيه الفريق مباراة", "الاختيارات تضم مهاجمين فازوا بالحذاء الذهبي أيضاً"], options: ["Thierry Henry", "Cristiano Ronaldo", "Neymar", "Kylian Mbappé"], category: "competition" },
+  { playerName: "Luis Suárez", clues: ["من سجل 40 هدفاً في الدوري الإسباني موسم 2015/16؟", "كان يلعب مع برشلونة وتفوق في سباق الهدافين على زميله ميسي", "اختياراتك من مهاجمين كبار في الدوري الإسباني وأوروبا"], options: ["Luis Suárez", "Robert Lewandowski", "Ronaldo Nazário", "Karim Benzema"], category: "record" },
+  { playerName: "Robert Lewandowski", clues: ["من سجل 41 هدفاً في الدوري الألماني موسم 2020/21؟", "كسر وقتها الرقم السابق المسجل باسم غيرد مولر", "الاختيارات مهاجمون معروفون بأرقامهم التهديفية"], options: ["Robert Lewandowski", "Erling Haaland", "Harry Kane", "Sergio Agüero"], category: "record" },
+  { playerName: "Zinedine Zidane", clues: ["من فاز بالكرة الذهبية عام 1998 وهو يلعب مع يوفنتوس؟", "جاءت الجائزة في عام فاز فيه أيضاً بكأس العالم مع منتخب بلاده", "الاختيارات صانعو لعب ومهاجمون فازوا بالجائزة في فترات قريبة"], options: ["Zinedine Zidane", "Kaká", "Ronaldinho", "Kevin De Bruyne"], category: "award" },
+  { playerName: "Kaká", clues: ["من فاز بالكرة الذهبية عام 2007 وهو لاعب في ميلان؟", "سبق الجائزة تتويج فريقه بدوري أبطال أوروبا في العام نفسه", "الاختيارات تضم صانعي لعب فازوا أو نافسوا على الجائزة في فترات قريبة"], options: ["Kaká", "Zinedine Zidane", "Ronaldinho", "Kevin De Bruyne"], category: "award" },
+  { playerName: "Luka Modrić", clues: ["من فاز بالكرة الذهبية عام 2018 وهو يلعب مع ريال مدريد؟", "وصل في العام نفسه إلى نهائي كأس العالم مع منتخب بلاده", "الاختيارات لاعبو وسط من جيل الجوائز نفسه"], options: ["Luka Modrić", "Toni Kroos", "Xavi", "Andrés Iniesta"], category: "award" },
+  { playerName: "Lionel Messi", clues: ["من فاز بالكرة الذهبية عام 2019 وهو لاعب في برشلونة؟", "كان ينافسه في القائمة لاعبون من ليفربول ويوفنتوس", "السؤال عن الجائزة في ذلك العام وليس عن عدد مرات الفوز الكلي"], options: ["Lionel Messi", "Mohamed Salah", "Luis Figo", "Arjen Robben"], category: "award" },
+  { playerName: "Karim Benzema", clues: ["من فاز بالكرة الذهبية عام 2022 وهو لاعب في ريال مدريد؟", "جاءت الجائزة بعد موسم تهديفي حاسم في دوري أبطال أوروبا", "الاختيارات مهاجمون من أندية أوروبية كبيرة"], options: ["Karim Benzema", "Robert Lewandowski", "Erling Haaland", "Harry Kane"], category: "award" },
+  { playerName: "Cristiano Ronaldo", clues: ["من كان هداف دوري أبطال أوروبا موسم 2017/18 برصيد 15 هدفاً؟", "سجل الأهداف مع ريال مدريد قبل انتقاله إلى يوفنتوس", "اختيارات السؤال من أبرز هدافي البطولة في تلك الحقبة"], options: ["Cristiano Ronaldo", "Thierry Henry", "Kylian Mbappé", "Neymar"], category: "competition" },
+];
+
 const curatedNames = new Set(curatedQuestions.map((question) => question.playerName));
 
 const distractorPool = (player: CataloguePlayer) => {
@@ -93,7 +108,7 @@ const generatedQuestion = (player: CataloguePlayer, variant: number): AftakarQue
 
 const curated = curatedQuestions.map((question) => ({ ...question, options: question.options ?? [], category: "trivia" as const }));
 const generated = playerCatalogue.filter((player) => !curatedNames.has(player.name)).flatMap((player) => [0, 1, 2, 3, 4, 5, 6, 7].map((variant) => generatedQuestion(player, variant)));
-export const aftakarQuestionBank: AftakarQuestion[] = [...curated, ...generated];
+export const aftakarQuestionBank: AftakarQuestion[] = [...curated, ...factualQuestions, ...generated];
 
 const hashSeed = (value: number) => {
   let hash = Math.abs(Math.floor(value)) + 17;
@@ -114,6 +129,7 @@ export function buildAftakarSession(seed = 2026, count = 5): AftakarQuestion[] {
     return result;
   };
   const triviaQuestions = shuffle(aftakarQuestionBank.filter((question) => question.category === "trivia"));
+  const factualQuestionsForSession = shuffle(aftakarQuestionBank.filter((question) => ["record", "award", "competition"].includes(question.category)));
   const otherQuestions = shuffle(aftakarQuestionBank.filter((question) => question.category !== "trivia"));
   const picked: AftakarQuestion[] = [];
   const seenPlayers = new Set<string>();
@@ -126,7 +142,8 @@ export function buildAftakarSession(seed = 2026, count = 5): AftakarQuestion[] {
     }
     return picked.length >= limit;
   };
-  addQuestions(triviaQuestions, Math.min(3, count));
+  if (count >= 4) addQuestions(factualQuestionsForSession, 1);
+  addQuestions(triviaQuestions, count >= 4 ? Math.min(4, count) : Math.min(3, count));
   addQuestions(otherQuestions);
   addQuestions(triviaQuestions);
   return picked.slice(0, count);
