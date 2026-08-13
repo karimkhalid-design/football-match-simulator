@@ -122,3 +122,6 @@
 
 - [x] Guarantee and test a minimum number of unique trivia-rich questions across multiple seeds and session sizes.
 - [x] Strengthen tests to verify nationality, clubs, achievements, and aliases are directly surfaced in supported metadata clues.
+
+- [x] Remove nationality wording from all Aftakar clue templates and replace it with harder club, competition, record, award, style, and position clues.
+- [x] Add regression coverage proving generated clues do not reveal nationality while retaining hard trivia coverage.

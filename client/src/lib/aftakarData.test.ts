@@ -8,7 +8,8 @@ describe("Aftakar question bank", () => {
     expect(aftakarQuestionBank.every((question) => new Set(question.options).size === 4)).toBe(true);
     expect(aftakarQuestionBank.every((question) => question.options.includes(question.playerName))).toBe(true);
     expect(aftakarQuestionBank.filter((question) => question.category === "trivia").length).toBeGreaterThanOrEqual(50);
-    expect(aftakarQuestionBank.filter((question) => question.clues.some((clue) => clue.includes("، ويلعب في مركز"))).length).toBeGreaterThanOrEqual(20);
+    const nationalityWords = ["أرجنتين", "برتغال", "مصري", "فرنسي", "نرويجي", "برازيلي", "إيطالي", "ألماني", "سوفيتي", "إسباني", "كرواتي", "بولندي", "إيفواري", "كاميروني", "إنجليزي"];
+    expect(aftakarQuestionBank.every((question) => question.clues.every((clue) => !nationalityWords.some((word) => clue.includes(word))))).toBe(true);
     expect(aftakarQuestionBank.filter((question) => question.clues.some((clue) => clue.includes("أنديته"))).length).toBeGreaterThanOrEqual(30);
     expect(aftakarQuestionBank.filter((question) => question.clues.some((clue) => clue.includes("إنجازاته"))).length).toBeGreaterThanOrEqual(30);
     expect(aftakarQuestionBank.filter((question) => question.clues.some((clue) => clue.includes("لقبه") || clue.includes("الاسم المرتبط"))).length).toBeGreaterThanOrEqual(30);
@@ -30,7 +31,7 @@ describe("Aftakar question bank", () => {
     }
 
     const supportedTrivia = aftakarQuestionBank.filter((question) => question.playerName === "Kylian Mbappé");
-    expect(supportedTrivia.some((question) => question.clues.some((clue) => clue.includes("فرنسي")))).toBe(true);
+    expect(supportedTrivia.some((question) => question.clues.some((clue) => clue.includes("يلعب في مركز")))).toBe(true);
     expect(supportedTrivia.some((question) => question.clues.some((clue) => clue.includes("أنديته")))).toBe(true);
     expect(supportedTrivia.some((question) => question.clues.some((clue) => clue.includes("إنجازاته")))).toBe(true);
     expect(supportedTrivia.some((question) => question.clues.some((clue) => clue.includes("لقبه")))).toBe(true);
