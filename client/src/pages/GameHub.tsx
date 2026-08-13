@@ -1,7 +1,8 @@
 import React from "react";
 import { ArrowLeft, LockKeyhole, Sparkles, Swords } from "lucide-react";
 
-const E3MAL_LOGO_URL = "/manus-storage/kora-e3mal-elsah-logo_85537310.png";
+const HUB_LOGO_URL = "/manus-storage/kora-e3mal-elsah-logo_85537310.png";
+const IN_GAME_LOGO_URL = "/manus-storage/e3mal-elsah-logo_b8d9ae3f.png";
 const AFTAKAR_LOGO_URL = "/manus-storage/aftakar-logo_c6bb6361.png";
 
 type GameHubProps = { onSelectAuction: () => void };
@@ -24,13 +25,13 @@ export default function GameHub({ onSelectAuction }: GameHubProps) {
           <p className="hub-description">ادخل عالم ألعاب كرة القدم من بوابة واحدة. كوّن فريقك، خاطر في المزاد، واستعد لألعاب جديدة قادمة.</p>
           <div className="hub-stats"><span><b>02</b> ألعاب</span><i /><span><b>122</b> لاعباً</span><i /><span><b>01</b> متاح الآن</span></div>
         </div>
-        <div className="hub-mark"><img src={E3MAL_LOGO_URL} alt="شعار كوره كده واعمل الصح" /></div>
+        <div className="hub-mark"><img src={HUB_LOGO_URL} alt="شعار كوره كده واعمل الصح" /></div>
       </section>
 
       <section className="game-cards" aria-label="الألعاب المتاحة">
         <button className="game-card game-card-auction" onClick={onSelectAuction} type="button">
           <div className="game-card-topline"><span className="game-number">01</span><span className="game-status available"><i /> متاحة الآن</span></div>
-          <div className="game-card-art"><img src={E3MAL_LOGO_URL} alt="شعار اعمل الصح" /></div>
+          <div className="game-card-art"><img src={IN_GAME_LOGO_URL} alt="شعار اعمل الصح" /></div>
           <div className="game-card-content"><p>مزاد · تشكيل · مباراة</p><h2>اعمل الصح</h2><span>زايد بذكاء، ابنِ فريقك، وخد مكانك في المباراة النهائية.</span></div>
           <div className="game-card-cta">ابدأ اللعبة <ArrowLeft /></div>
         </button>

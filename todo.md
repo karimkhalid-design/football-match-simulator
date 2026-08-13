@@ -99,3 +99,5 @@
 - [x] Replace residual Game Hub alt text and branding references with the exact final name «كوره كده» and test that «كورة» is absent.
 
 - [x] Finalize the Game Hub with the provided «اعمل الصح» logo and exact website name «كوره كده» across visible branding and logo alt text.
+
+- [x] Use the same existing in-game «اعمل الصح» logo on the active Game Hub card instead of the current hub logo.
