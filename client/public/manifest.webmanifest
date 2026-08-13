@@ -1,0 +1,28 @@
+{
+  "name": "كوره كده",
+  "short_name": "كوره كده",
+  "description": "بوابة ألعاب كرة القدم للأصحاب",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#080f0c",
+  "theme_color": "#080f0c",
+  "categories": ["games", "sports"],
+  "icons": [
+    {
+      "src": "/manus-storage/kora-e3mal-elsah-logo_85537310.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/manus-storage/kora-e3mal-elsah-logo_85537310.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
