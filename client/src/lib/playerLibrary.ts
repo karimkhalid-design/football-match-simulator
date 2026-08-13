@@ -1,5 +1,6 @@
 import { playerCatalogue, positionLabels, type CataloguePlayer, type PlayerStatus, type PositionCode } from "./auctionData";
 import { PLAYER_IMAGE_URLS } from "./playerImageMap";
+import { expandedPlayerSeeds } from "./expandedPlayerSeeds";
 
 export type LibraryPlayer = CataloguePlayer & {
   arabicName: string;
@@ -22,7 +23,18 @@ const retiredNames = new Set(["Eden Hazard", "Franck Ribéry", "Arjen Robben", "
 
 const normalize = (value: string) => value.toLocaleLowerCase("ar").normalize("NFKD").replace(/[\u064B-\u065F\u0670]/g, "").replace(/[أإآ]/g, "ا").replace(/ى/g, "ي").replace(/[^a-z0-9\u0600-\u06ff]/g, "");
 
-export const playerLibrary: LibraryPlayer[] = playerCatalogue.map((player) => {
+const slug = (value: string) => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+const tierFor = (rating: number): CataloguePlayer["tier"] => rating >= 91 ? "LEGEND" : rating >= 88 ? "ELITE" : rating >= 85 ? "STAR" : "PRO";
+const priceFor = (rating: number) => rating >= 95 ? 15 : rating >= 92 ? 13 : rating >= 90 ? 11 : rating >= 88 ? 9 : rating >= 85 ? 7 : 5;
+const existingNames = new Set(playerCatalogue.map((player) => player.name));
+const extraCataloguePlayers: CataloguePlayer[] = expandedPlayerSeeds.reduce<CataloguePlayer[]>((result, [name, position, rating, status]) => {
+  if (existingNames.has(name) || result.some((player) => player.name === name)) return result;
+  result.push({ id: slug(`${position}-${name}`), name, rating, note: "مسيرة كروية تستحق الاكتشاف", status, position, tier: tierFor(rating), startPrice: priceFor(rating) });
+  return result;
+}, []);
+const allCataloguePlayers = [...playerCatalogue, ...extraCataloguePlayers];
+
+export const playerLibrary: LibraryPlayer[] = allCataloguePlayers.map((player) => {
   const arabicName = arabicNames[player.name] ?? player.name;
   const aliases = [player.name, arabicName];
   return { ...player, status: retiredNames.has(player.name) ? "legend" : player.status, arabicName, aliases, nationality: nationalities[player.name] ?? "دولي", currentClub: retiredNames.has(player.name) ? "معتزل" : "لاعب حالي", careerLabel: player.status === "legend" || retiredNames.has(player.name) ? "أرشيف النجوم والمعتزلين" : "جيل اللاعبين الحالي", image: PLAYER_IMAGE_URLS[player.name] };
