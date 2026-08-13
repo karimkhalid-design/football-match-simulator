@@ -1,0 +1,22 @@
+# Project TODO
+
+- [x] Review the supplied HTML, CSS, and JavaScript reference files and translate the relevant interaction patterns into the new application.
+- [x] Define a scalable football data model for players, teams, careers, simulated matches, match events, statistics, and custom lineups.
+- [x] Create and apply database schema migrations for player records, career history, teams, matches, and match events.
+- [x] Add a substantial starter player catalogue containing active and retired footballers with biographical and playing statistics.
+- [x] Build an elegant Arabic-first, responsive visual system with premium typography, navigation, loading states, and accessible controls.
+- [x] Build the home match setup interface with two team selectors and quick match actions.
+- [x] Implement progressive live match simulation with goals, cards, substitutions, match clock, and score updates.
+- [x] Build the manual team builder with searchable player selection and formation-aware lineup controls.
+- [x] Build the player database with search and filters for name, nationality, position, club, and career status.
+- [x] Build player profile pages with detailed statistics and full career history.
+- [x] Build post-match summary screens with possession, shots, passes, scoreline, and event timeline.
+- [x] Persist and display full match history with links to match summaries.
+- [x] Add server and client unit tests for core simulation, filtering, and data transformations.
+- [x] Verify responsive layouts, live interactions, and error-free browser rendering before delivery.
+- [x] Add persistent team records to the database schema and expose them through the football data layer.
+- [x] Add a dedicated player-detail route with imported career entries rather than a generated summary only.
+- [x] Add a saved match-summary loader so every archive record opens its own persisted score, statistics, and event timeline.
+- [x] Serve team records from the persistent teams table through the football data procedure after synchronization.
+- [x] Support direct player dossier URLs and routing from the database, builder, and summary screens.
+- [x] Complete the in-product career archive coverage for every player profile in the starter catalogue.
