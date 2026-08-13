@@ -5,16 +5,20 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import OnlineQuiz from "./OnlineQuiz";
 
 const socketMock = { on: vi.fn(), emit: vi.fn(), disconnect: vi.fn() };
+const authMock = vi.hoisted(() => ({ user: null as any, loading: false, isAuthenticated: false, logout: vi.fn() }));
 vi.mock("socket.io-client", () => ({ io: () => socketMock }));
+vi.mock("../_core/hooks/useAuth", () => ({ useAuth: () => authMock }));
 
-afterEach(() => { document.body.innerHTML = ""; socketMock.on.mockReset(); vi.clearAllMocks(); });
+afterEach(() => { document.body.innerHTML = ""; sessionStorage.clear(); socketMock.on.mockReset(); authMock.user = null; authMock.loading = false; authMock.isAuthenticated = false; vi.clearAllMocks(); });
 
 describe("online quiz entry flow", () => {
   it("shows the real game identity and opens nickname entry", () => {
     render(<OnlineQuiz onBack={vi.fn()} />);
     expect(screen.getByRole("heading", { name: "هتعرف تجاوب؟" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /اعمل لعبة/ }));
-    expect(screen.getByRole("heading", { name: "اكتب اسمك" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "سجّل دخولك" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Google/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Apple/ })).toBeTruthy();
   });
 
   it("shows the full bonus meter and the elimination aid for its owner", () => {
@@ -27,11 +31,11 @@ describe("online quiz entry flow", () => {
     expect(screen.getAllByText("اختيار محذوف")).toHaveLength(2);
   });
 
-  it("opens room settings after a nickname is entered", () => {
+  it("opens room settings with the account name after authentication", () => {
+    authMock.user = { name: "Karim" };
+    authMock.isAuthenticated = true;
     render(<OnlineQuiz onBack={vi.fn()} />);
     fireEvent.click(screen.getByRole("button", { name: /اعمل لعبة/ }));
-    fireEvent.change(screen.getByPlaceholderText("اكتب اسمك هنا"), { target: { value: "Karim" } });
-    fireEvent.click(screen.getByRole("button", { name: /^دخول/ }));
     expect(screen.getByRole("heading", { name: "اختار التحدي" })).toBeTruthy();
     expect(screen.getByRole("button", { name: /اعمل الغرفة/ })).toBeTruthy();
   });
