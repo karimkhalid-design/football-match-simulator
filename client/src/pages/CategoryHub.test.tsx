@@ -34,9 +34,13 @@ describe("category hub", () => {
 describe("solo games page", () => {
   it("shows the future-games message and back action", () => {
     const onBack = vi.fn();
-    render(<SoloGames onBack={onBack} />);
+    const onSelectRoad = vi.fn();
+    render(<SoloGames onBack={onBack} onSelectRoad={onSelectRoad} />);
     expect(screen.getByRole("heading", { name: /اللعب لوحدك/ })).toBeTruthy();
-    expect(screen.getByText("أول لعبة فردية قريباً")).toBeTruthy();
+    expect(screen.getByText("قسم جديد · ألعاب تتطور معك")).toBeTruthy();
+    expect(screen.getByAltText("شعار الطريق ما يتوهش")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /الطريق ما يتوهش/ }));
+    expect(onSelectRoad).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole("button", { name: /التصنيفات/ }));
     expect(onBack).toHaveBeenCalledOnce();
   });
