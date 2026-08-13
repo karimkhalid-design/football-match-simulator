@@ -6,7 +6,7 @@ type Props = { onDone: () => void };
 
 export default function AppSplash({ onDone }: Props) {
   useEffect(() => {
-    const timer = window.setTimeout(onDone, 10000);
+    const timer = window.setTimeout(onDone, 30000);
     return () => window.clearTimeout(timer);
   }, [onDone]);
 
