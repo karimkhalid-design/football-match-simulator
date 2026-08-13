@@ -12,7 +12,7 @@ describe("Aftakar question bank", () => {
 
     const giveawayWords = [
       "أرجنتين", "برتغال", "مصري", "فرنسي", "نرويجي", "برازيلي", "إيطالي", "ألماني", "سوفيتي", "إسباني", "كرواتي", "بولندي", "إيفواري", "كاميروني", "إنجليزي",
-      "برشلونة", "ريال مدريد", "مانشستر", "ليفربول", "يوفنتوس", "باريس سان جيرمان", "187 مباراة", "إنجازاته", "لقبه", "الاسم المرتبط", "181 مباراة", "163 مشاركة", "تقييمه في الكتالوج",
+      "187 مباراة", "181 مباراة", "163 مشاركة", "تقييمه في الكتالوج", "clue",
     ];
     expect(aftakarQuestionBank.every((question) => question.clues.every((clue) => !giveawayWords.some((word) => clue.includes(word))))).toBe(true);
     expect(aftakarQuestionBank.every((question) => question.clues.every((clue) => !clue.includes(question.playerName)))).toBe(true);

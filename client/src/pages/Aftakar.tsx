@@ -88,7 +88,7 @@ export default function Aftakar({ onBackToHub }: { onBackToHub: () => void }) {
       <div className="aftakar-noise" /><div className="aftakar-glow aftakar-glow-one" /><div className="aftakar-glow aftakar-glow-two" />
       <header className="aftakar-header"><button className="aftakar-back" onClick={onBackToHub}><ArrowRight /> كل الألعاب</button><div className="aftakar-header-brand"><span>FOOTBALL MEMORY GAME</span><img src={AFTAKAR_LOGO_URL} alt="شعار أفتكر" /></div><div className="aftakar-score-pill"><Trophy /> {score.toLocaleString("ar-EG")}</div></header>
 
-      <section className="aftakar-intro"><div><p className="aftakar-eyebrow"><Sparkles /> افتكر اللاعب</p><h1>مين <em>ده؟</em></h1><p>اقرأ التلميحات الصعبة، اختار اللاعب الصح، واجمع أكبر عدد من النقاط.</p><small className="aftakar-bank-note">بنك الأسئلة: {AFTAKAR_BANK_SIZE} لاعباً وسؤالاً متنوعاً</small></div><div className="aftakar-progress"><span>الجولة {roundIndex + 1} من {rounds.length}</span><div><i style={{ width: `${((roundIndex + 1) / rounds.length) * 100}%` }} /></div></div></section>
+      <section className="aftakar-intro"><div><p className="aftakar-eyebrow"><Sparkles /> افتكر اللاعب</p><h1>مين <em>ده؟</em></h1><p>اقرأ التلميحات الكروية، اختار اللاعب الصح، واجمع أكبر عدد من النقاط.</p><small className="aftakar-bank-note">بنك الأسئلة: {AFTAKAR_BANK_SIZE} لاعباً وسؤالاً متنوعاً</small></div><div className="aftakar-progress"><span>الجولة {roundIndex + 1} من {rounds.length}</span><div><i style={{ width: `${((roundIndex + 1) / rounds.length) * 100}%` }} /></div></div></section>
 
       <section className="aftakar-game-layout">
         <div className="aftakar-player-card">

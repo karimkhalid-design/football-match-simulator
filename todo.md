@@ -165,3 +165,7 @@
 - [x] Expand Aftakar with a large varied bank across competitions, records, careers, tactical details, transfers, awards, eras, and match events.
 - [x] Randomize the selected questions on every entry/restart while guaranteeing no repeated question or player within a session.
 - [x] Add tests for clue subtlety, category diversity, fresh ordering across sessions, and no repeats.
+
+- [x] إعادة ضبط أسئلة «أفتكر» إلى مستوى متوسط وأسئلة كروية مباشرة وممتعة دون غموض أو سهولة زائدة
+- [x] إعادة كتابة بنك الأسئلة بقوالب حقيقية عن المسيرة والأندية والبطولات والانتقالات واللحظات المهمة
+- [x] تحديث الاختبارات والتحقق البصري ثم حفظ checkpoint

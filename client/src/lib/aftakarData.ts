@@ -68,21 +68,27 @@ const generatedQuestion = (player: CataloguePlayer, variant: number): AftakarQue
   const offset = Math.min(variant, Math.max(0, nearby.length - 3));
   const options = [player, ...nearby.slice(offset, offset + 3)].map((candidate) => candidate.name);
   const neutralNote = player.note.replace("هدوء إيطالي", "هدوء محسوب");
-  const era = player.status === "legend" ? "حقبة سبقت جيله الحالي" : "المشهد الحديث";
   const trivia = triviaMetadata[player.name];
+  const statusText = player.status === "legend" ? "من نجوم جيله السابق" : "من نجوم الجيل الحالي";
   const categories: AftakarCategory[] = ["transfer", "competition", "award", "match-event", "tactical", "career", "era", "record"];
-  const clueSets: [string, string, string][] = [
-    [`انتقل بين مشروعين مختلفين، وكان السؤال الحقيقي: أي نسخة منه ظهرت بعد الانتقال؟`, `لا تقارن أسماء الأندية؛ قارن تغير دوره من لاعب طرف إلى لاعب يحسم من العمق`, `المعلومة الفنية الأخيرة: ${neutralNote}`],
-    [`ظهر في سياقات كروية مختلفة، لكن الاختيارات الأربعة تملك سجلاً كبيراً في المنافسات`, `اللحظة المهمة ليست اسم البطولة بل طريقة تعامله مع ضغط الأدوار الإقصائية`, `المفتاح التكتيكي: ${neutralNote}`],
-    [`حصل على تقدير فردي لأن تأثيره سبق أرقامه الظاهرة، لا لأن مركزه وحده يضمنه`, `قارنه بالمشتتين في الاستمرارية والقرار لا في الشهرة`, `الصفة التي تكمّل الصورة: ${neutralNote}`],
-    [`تتذكره من لقطة غيّرت إيقاع مباراة، لكن اللقطة ليست هدفاً محفوظاً بالاسم`, `في اللحظة الحاسمة اختار الحل الأقل وضوحاً مقارنة بالمشتتين`, `ابحث عن صاحب الوصف: ${neutralNote}`],
-    [`الموقف هنا تكتيكي: اللاعب يقرأ المساحة قبل أن تصل الكرة`, `كل الاختيارات تبدو معقولة إذا عرفت المركز فقط`, `اللمسة الفارقة هي ${neutralNote}`],
-    [`السؤال عن مسار لاعب ترك أثراً عبر أكثر من مرحلة، لا عن رقم منفرد`, `الفارق بين المرشحين يظهر في نوع القرار المتكرر تحت الضغط`, `أكمل الصورة من الوصف: ${neutralNote}`],
-    [`ينتمي اللاعب إلى حقبة لها إيقاعها وقواعدها التكتيكية المختلفة`, `لا تخلط بين تشابه الأسلوب واختلاف زمن المنافسة`, `الوصف الذي يعبر الحقب: ${neutralNote}`],
-    [`لا تبحث عن رقم قياسي جاهز؛ ابحث عن أثر تكرر عبر مباريات ومواسم مختلفة`, `الاختيارات متقاربة لأن المقارنة هنا في الاستمرارية لا في لقطة واحدة`, `العلامة الأهدأ في السجل: ${neutralNote}`],
+  const triviaClues: [string, string, string][] = trivia ? [
+    [`لعب في أكثر من محطة كبيرة، ومن أبرز الأندية المرتبطة بمسيرته: ${trivia.clubs}`, `ارتبط اسمه بإنجاز واضح: ${trivia.achievement}`, `يلعب بأسلوب قريب من وصف: ${neutralNote}`],
+    [`بدأ من محطة مبكرة ثم انتقل إلى أندية أكبر، ومن بينها: ${trivia.clubs}`, `تذكره الجماهير بسبب ${trivia.achievement}`, `هل ينطبق عليه وصف ${neutralNote}؟`],
+    [`مسيرته تجمع بين تجربة محلية وبروز أوروبي في أندية مثل: ${trivia.clubs}`, `حقق أو شارك في إنجاز مهم هو ${trivia.achievement}`, `مركزه وطريقته يجعلان وصف «${neutralNote}» مناسباً له`],
+  ] : [];
+  const standardClues: [string, string, string][] = [
+    [`${statusText}، ويلعب في مركز ${positionLabels[player.position]}`, `تقييمه قريب من بقية الاختيارات، لذلك لا تعتمد على الرقم وحده`, `من أبرز ما يميزه: ${neutralNote}`],
+    [`الاختيارات الأربعة من نفس مركز ${positionLabels[player.position]}`, `هذا اللاعب ${statusText === "من نجوم الجيل الحالي" ? "ما زال حاضراً في الملاعب" : "ترك بصمة واضحة قبل الاعتزال"}`, `أسلوبه الأقرب هو: ${neutralNote}`],
+    [`إذا عرفت مركز ${positionLabels[player.position]} فلن تكفي المعلومة وحدها`, `اختر اللاعب الذي يناسبه تقييم يقارب ${Math.max(80, player.rating - 2)} إلى ${Math.min(99, player.rating + 2)}`, `التفصيلة الفنية الحاسمة: ${neutralNote}`],
+    [`السؤال عن لاعب ${statusText} وليس عن حارس أو مهاجم من اختيار آخر`, `يظهر الفارق بين الخيارات في طريقة التحرك واتخاذ القرار`, `الوصف الذي يطابقه أكثر: ${neutralNote}`],
+    [`كل المرشحين متقاربون في المركز والمستوى`, `فكر في لاعب يعتمد على ${neutralNote.replace("و", " و")}`, `اختَر الاسم الذي يجمع بين الدور والمستوى والصفة الفنية`],
+    [`ينتمي إلى ${statusText} ومركزه ${positionLabels[player.position]}`, `واجه منافسين من نفس المركز في أكثر من موسم`, `لو شاهدت طريقة لعبه ستلاحظ: ${neutralNote}`],
+    [`ينتمي إلى حقبة مختلفة عن بعض الاختيارات، لكنهم جميعاً من نفس المركز`, `لا تحسم من العمر وحده؛ قارن بين الدور داخل الملعب`, `أسلوبه يناسب الوصف: ${neutralNote}`],
+    [`لاعب ذو حضور مستمر في مركز ${positionLabels[player.position]}`, `أرقامه وتقييمه قريبان من المشتتين، لذلك تحتاج إلى تلميح الأسلوب`, `التفصيل الذي يساعدك: ${neutralNote}`],
   ];
   const categoryIndex = variant % categories.length;
-  return { playerName: player.name, clues: clueSets[categoryIndex], options, category: trivia ? "trivia" : categories[categoryIndex] };
+  const clues = trivia ? triviaClues[variant % triviaClues.length] : standardClues[categoryIndex];
+  return { playerName: player.name, clues, options, category: trivia ? "trivia" : categories[categoryIndex] };
 };
 
 const curated = curatedQuestions.map((question) => ({ ...question, options: question.options ?? [], category: "trivia" as const }));
