@@ -45,6 +45,7 @@ export default function Home() {
       } else {
         setRoundIndex((index) => index + 1);
         setCurrentBid(null);
+        setBidAmountText("");
         setLeader(null);
         setPassed([false, false]);
       }

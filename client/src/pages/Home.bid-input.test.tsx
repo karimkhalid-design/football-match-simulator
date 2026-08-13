@@ -1,11 +1,31 @@
 /** @vitest-environment happy-dom */
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+
+afterEach(() => cleanup());
 import Home from "./Home";
 
 describe("total bid price control", () => {
+  it("resets the price input when the auction advances to a new round", async () => {
+    const user = userEvent.setup();
+    render(<Home />);
+
+    await user.click(screen.getByRole("button", { name: "ابدأ المزاد الآن" }));
+    const input = screen.getByRole("textbox", { name: "السعر الإجمالي للاعب بالمليون" }) as HTMLInputElement;
+    await user.type(input, "20");
+    await user.click(screen.getAllByRole("button", { name: "ابدأ بـ 20M لاعب رقم ١" })[0]);
+    const activePass = screen.getAllByRole("button", { name: /انسحاب/ }).find((button) => !(button as HTMLButtonElement).disabled);
+    await user.click(activePass!);
+    await user.click(screen.getByRole("button", { name: /حسم المزاد/ }));
+
+    await new Promise((resolve) => setTimeout(resolve, 2800));
+    const nextRoundInput = screen.getByRole("textbox", { name: "السعر الإجمالي للاعب بالمليون" }) as HTMLInputElement;
+    expect(nextRoundInput.value).toBe("");
+    expect(screen.getByText("السعر الحالي").parentElement?.querySelector("strong")?.textContent).not.toBe("20M");
+  });
+
   it("uses the entered amount as the total price and rejects lower bids", async () => {
     const user = userEvent.setup();
     render(<Home />);

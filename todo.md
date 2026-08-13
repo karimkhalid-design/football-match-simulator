@@ -69,3 +69,6 @@
 
 - [x] Treat the bid field as the total player price, so entering 20M bids exactly 20M instead of adding 20M to the current price.
 - [x] Add regression coverage for total-price bids, lower-than-current rejection, and budget/future-round safety.
+
+- [x] Reset the current auction price and total-bid input between rounds so each player uses that round's own starting price.
+- [x] Add regression coverage proving the next round does not inherit the previous winner's price.
