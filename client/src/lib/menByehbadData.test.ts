@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { menByehbadStatements, shuffleMenByehbad } from "./menByehbadData";
+import { drawMenByehbadAid, getMenByehbadAidPoints, menByehbadStatements, shuffleMenByehbad } from "./menByehbadData";
 
 describe("مين بيهبد؟ data", () => {
   it("contains valid truth/bluff statements across football categories", () => {
@@ -14,6 +14,20 @@ describe("مين بيهبد؟ data", () => {
     expect(hard.length).toBeGreaterThanOrEqual(15);
     expect(new Set(hard.map((item) => item.category))).toEqual(new Set(["players", "clubs", "competitions", "egypt"]));
     expect(hard.every((item) => item.statement.length >= 25 && item.explanation.length >= 35)).toBe(true);
+  });
+
+  it("draws an owner and one aid card deterministically from the participating players", () => {
+    const aid = drawMenByehbadAid(["كريم", "محمد", "عمر"], () => 0);
+    expect(aid.owner).toBe("كريم");
+    expect(aid.title).toBeTruthy();
+    expect(aid.description).toBeTruthy();
+  });
+
+  it("applies the aid only to its owner and keeps ordinary players at 100 points", () => {
+    const aid = drawMenByehbadAid(["كريم", "محمد"], () => 0);
+    expect(getMenByehbadAidPoints(aid, aid.owner, "كريم", true)).toBeGreaterThanOrEqual(100);
+    expect(getMenByehbadAidPoints(aid, aid.owner, "محمد", true)).toBe(100);
+    expect(getMenByehbadAidPoints({ ...aid, kind: "shield" }, aid.owner, "كريم", false)).toBe(0);
   });
 
   it("shuffles rounds without changing the pool or introducing duplicates", () => {

@@ -56,6 +56,8 @@ describe("مين بيهبد؟", () => {
     expect(screen.queryByText("حقيقة", { selector: ".menbyehbad-secret small" })).toBe(null);
     fireEvent.click(screen.getByRole("button", { name: /هبد/ }));
     fireEvent.click(screen.getByRole("button", { name: /حقيقة/ }));
+    fireEvent.click(screen.getByRole("button", { name: /اسحب كارت المساعدة/ }));
+    fireEvent.click(screen.getByRole("button", { name: /استخدم الكارت واكشف/ }));
     expect(screen.getByRole("button", { name: /اكشف الحقيقة/ })).toBeTruthy();
   });
 
@@ -69,6 +71,8 @@ describe("مين بيهبد؟", () => {
       fireEvent.click(screen.getByRole("button", { name: /حقيقة/ }));
       fireEvent.click(screen.getByRole("button", { name: /هبد/ }));
       fireEvent.click(screen.getByRole("button", { name: /حقيقة/ }));
+      fireEvent.click(screen.getByRole("button", { name: /اسحب كارت المساعدة/ }));
+      fireEvent.click(screen.getByRole("button", { name: /استخدم الكارت واكشف/ }));
       fireEvent.click(screen.getByRole("button", { name: /اكشف الحقيقة/ }));
       act(() => { vi.advanceTimersByTime(800); });
       expect(screen.getByText("الحقيقة ظهرت")).toBeTruthy();

@@ -55,3 +55,30 @@ export function shuffleMenByehbad<T>(items: T[], random = Math.random): T[] {
   }
   return result;
 }
+
+
+export type MenByehbadAidKind = "double" | "bonus" | "shield" | "risk";
+export type MenByehbadAid = { kind: MenByehbadAidKind; title: string; description: string; owner: string };
+
+const MEN_BYEHBAD_AIDS: Omit<MenByehbadAid, "owner">[] = [
+  { kind: "double", title: "مضاعف الحقيقة", description: "لو إجابتك صح، نقاطك في الراوند ده تتضاعف." },
+  { kind: "bonus", title: "دفعة إضافية", description: "الإجابة الصحيحة تمنحك 50 نقطة إضافية." },
+  { kind: "shield", title: "حماية من الهبد", description: "لو إجابتك غلط، تخسر صفر بدلاً من أي خصم." },
+  { kind: "risk", title: "كارت المخاطرة", description: "إجابة صح تمنحك 200 نقطة، وإجابة غلط تخصم 50 نقطة." },
+];
+
+export function drawMenByehbadAid(names: string[], random = Math.random): MenByehbadAid {
+  if (!names.length) throw new Error("لا يمكن سحب مساعدة بدون لاعبين");
+  const owner = names[Math.floor(random() * names.length)] ?? names[0];
+  const card = MEN_BYEHBAD_AIDS[Math.floor(random() * MEN_BYEHBAD_AIDS.length)] ?? MEN_BYEHBAD_AIDS[0];
+  return { ...card, owner };
+}
+
+export function getMenByehbadAidPoints(aid: MenByehbadAid | null, owner: string, player: string, isCorrect: boolean) {
+  if (!isCorrect) return aid?.kind === "shield" && aid.owner === player ? 0 : aid?.kind === "risk" && aid.owner === player ? -50 : 0;
+  if (!aid || aid.owner !== player) return 100;
+  if (aid.kind === "double") return 200;
+  if (aid.kind === "bonus") return 150;
+  if (aid.kind === "risk") return 200;
+  return 100;
+}

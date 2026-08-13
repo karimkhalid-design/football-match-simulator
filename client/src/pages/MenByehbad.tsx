@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Check, Clock3, Eye, Plus, RotateCcw, Trophy, Users, X } from "lucide-react";
-import { menByehbadStatements, shuffleMenByehbad, type MenByehbadStatement } from "../lib/menByehbadData";
+import { drawMenByehbadAid, getMenByehbadAidPoints, menByehbadStatements, shuffleMenByehbad, type MenByehbadAid, type MenByehbadStatement } from "../lib/menByehbadData";
 import ShareResult from "../components/ShareResult";
 
 const MEN_BYEHBAD_LOGO_URL = "/manus-storage/men-byehbad-logo_a02e06b2.png";
-type Phase = "setup" | "instructions" | "discussion" | "secret" | "reveal" | "score" | "finished";
+type Phase = "setup" | "instructions" | "discussion" | "secret" | "aid" | "reveal" | "score" | "finished";
 type Props = { onBackToHub: () => void; initialNames?: string[] };
 type ShellProps = { children: React.ReactNode; onBackToHub: () => void; phase: Phase; roundIndex: number };
 
@@ -27,6 +27,7 @@ export default function MenByehbad({ onBackToHub, initialNames }: Props) {
   const [scores, setScores] = useState<Record<string, number>>({});
   const [roundPoints, setRoundPoints] = useState<Record<number, number>>({});
   const [checking, setChecking] = useState(false);
+  const [aid, setAid] = useState<MenByehbadAid | null>(null);
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -55,6 +56,7 @@ export default function MenByehbad({ onBackToHub, initialNames }: Props) {
     setNames(cleaned);
     setScores(Object.fromEntries(cleaned.map((name) => [name, 0])));
     setAnswers(emptyAnswers(cleaned.length));
+    setAid(null);
     setQuestions(shuffleMenByehbad(menByehbadStatements));
     setRoundIndex(0);
     setPhase("instructions");
@@ -71,15 +73,19 @@ export default function MenByehbad({ onBackToHub, initialNames }: Props) {
       setCurrentPlayer((value) => value + 1);
       setPhase("secret");
     } else {
-      setPhase("reveal");
+      setPhase("aid");
     }
+  };
+
+  const drawAid = () => {
+    setAid(drawMenByehbadAid(names));
   };
 
   const revealTruth = () => {
     if (checking) return;
     setChecking(true);
     window.setTimeout(() => {
-      const points = Object.fromEntries(names.map((_, index) => [index, answers[index] === round.correctAnswer ? 100 : 0]));
+      const points = Object.fromEntries(names.map((name, index) => [index, getMenByehbadAidPoints(aid, aid?.owner ?? "", name, answers[index] === round.correctAnswer)]));
       setRoundPoints(points);
       setScores((current) => Object.fromEntries(names.map((name, index) => [name, (current[name] ?? 0) + (points[index] ?? 0)])));
       setChecking(false);
@@ -93,6 +99,7 @@ export default function MenByehbad({ onBackToHub, initialNames }: Props) {
     setCurrentPlayer(0);
     setAnswers(emptyAnswers(names.length));
     setRoundPoints({});
+    setAid(null);
     setSeconds(20);
     setPhase("instructions");
   };
@@ -105,6 +112,7 @@ export default function MenByehbad({ onBackToHub, initialNames }: Props) {
     setAnswers({});
     setScores({});
     setRoundPoints({});
+    setAid(null);
     setSetupError("");
     setPhase("setup");
   };
@@ -122,9 +130,11 @@ export default function MenByehbad({ onBackToHub, initialNames }: Props) {
 
   if (phase === "secret") return <MenByehbadShell onBackToHub={onBackToHub} phase={phase} roundIndex={roundIndex}><section className="menbyehbad-card menbyehbad-secret"><div className="menbyehbad-lock">🔒</div><p className="menbyehbad-kicker">اختيار سري</p><h1>دور <em>{names[currentPlayer]}</em></h1><p>اختار إجابتك، وبعدها خبّي الشاشة ومرر الموبايل للي بعدك.</p><div className="menbyehbad-secret-buttons"><button className="truth" onClick={() => chooseAnswer(true)}><Check /> حقيقة</button><button className="bluff" onClick={() => chooseAnswer(false)}><X /> هبد</button></div><small>إجابات اللاعبين اللي فاتوا اتقفلت ومش هتظهر.</small></section></MenByehbadShell>;
 
+  if (phase === "aid") return <MenByehbadShell onBackToHub={onBackToHub} phase={phase} roundIndex={roundIndex}><section className="menbyehbad-card menbyehbad-aid"><div className="menbyehbad-card-icon">🃏</div><p className="menbyehbad-kicker">مساعدة عشوائية للراوند</p>{!aid ? <><h1>مين هيكسب <em>الكارت؟</em></h1><p>بعد ما كل اللاعبين اختاروا، اسحبوا كارتاً عشوائياً. اللاعب والميزة بيتحددوا كل راوند من جديد.</p><button className="menbyehbad-primary" onClick={drawAid}>اسحب كارت المساعدة <ArrowRight /></button></> : <><div className="menbyehbad-aid-card"><span>الكارت وصل إلى</span><strong>{aid.owner}</strong><b>{aid.title}</b><small>{aid.description}</small></div><p>استخدم الميزة في كشف نتيجة الراوند، وبعدها ننتقل للنتيجة.</p><button className="menbyehbad-primary" onClick={() => setPhase("reveal")}>استخدم الكارت واكشف <Eye /></button></>}</section></MenByehbadShell>;
+
   if (phase === "reveal") return <MenByehbadShell onBackToHub={onBackToHub} phase={phase} roundIndex={roundIndex}><section className="menbyehbad-card menbyehbad-reveal"><div className="menbyehbad-search">{checking ? "CHECKING…" : "🔍"}</div><p className="menbyehbad-kicker">نكشف الحقيقة؟</p><h1>{checking ? "استنى… بنراجع المعلومة" : "اضغط عشان نعرف"}</h1><p>{checking ? "بنراجع كل تفصيلة كروية…" : "كل الإجابات اتسجلت. مستعدين؟"}</p>{!checking && <button className="menbyehbad-primary" onClick={revealTruth}><Eye /> اكشف الحقيقة</button>}</section></MenByehbadShell>;
 
-  if (phase === "score") return <MenByehbadShell onBackToHub={onBackToHub} phase={phase} roundIndex={roundIndex}><section className="menbyehbad-card menbyehbad-score"><div className={`menbyehbad-verdict ${round.correctAnswer ? "truth" : "bluff"}`}>{round.correctAnswer ? <><Check /> حقيقة</> : <><X /> هبد</>}</div><p className="menbyehbad-kicker">الحقيقة ظهرت</p><h1>{round.correctAnswer ? "طلعت صح يا موسوعة!" : "يا نهار أبيض، دي هبد!"}</h1><div className="menbyehbad-statement small">{round.statement}</div><p className="menbyehbad-explanation">{round.explanation}</p><div className="menbyehbad-round-scores">{names.map((name, index) => <div key={name}><span>{name}</span><b className={roundPoints[index] ? "earned" : ""}>{roundPoints[index] ? "+100" : "+0"}</b><small>{answers[index] === round.correctAnswer ? "إجابة صح" : "إجابة غلط"}</small></div>)}</div><button className="menbyehbad-primary" onClick={nextRound}>{roundIndex >= 9 ? "النتيجة النهائية" : "الجولة الجاية"} <ArrowRight /></button></section></MenByehbadShell>;
+  if (phase === "score") return <MenByehbadShell onBackToHub={onBackToHub} phase={phase} roundIndex={roundIndex}><section className="menbyehbad-card menbyehbad-score"><div className={`menbyehbad-verdict ${round.correctAnswer ? "truth" : "bluff"}`}>{round.correctAnswer ? <><Check /> حقيقة</> : <><X /> هبد</>}</div><p className="menbyehbad-kicker">الحقيقة ظهرت</p><h1>{round.correctAnswer ? "طلعت صح يا موسوعة!" : "يا نهار أبيض، دي هبد!"}</h1><div className="menbyehbad-statement small">{round.statement}</div><p className="menbyehbad-explanation">{round.explanation}</p>{aid && <div className="menbyehbad-used-aid">🃏 {aid.owner} استخدم «{aid.title}»</div>}<div className="menbyehbad-round-scores">{names.map((name, index) => <div key={name}><span>{name}</span><b className={roundPoints[index] ? "earned" : ""}>{roundPoints[index] ? "+100" : "+0"}</b><small>{answers[index] === round.correctAnswer ? "إجابة صح" : "إجابة غلط"}</small></div>)}</div><button className="menbyehbad-primary" onClick={nextRound}>{roundIndex >= 9 ? "النتيجة النهائية" : "الجولة الجاية"} <ArrowRight /></button></section></MenByehbadShell>;
 
   return <MenByehbadShell onBackToHub={onBackToHub} phase={phase} roundIndex={roundIndex}><section className="menbyehbad-card menbyehbad-finished"><div className="menbyehbad-card-icon"><Trophy /></div><p className="menbyehbad-kicker">انتهت اللعبة</p><h1>مين كان <em>موسوعة؟</em></h1><div className="menbyehbad-leaderboard">{leaderboard.map((entry, index) => <div key={entry.name} className={index === 0 ? "winner" : ""}><strong>{index + 1}</strong><span>{entry.name}</span><b>{entry.score}</b></div>)}</div><div className="menbyehbad-titles"><span>🧠 كاشف الهبد: {leaderboard[0]?.name}</span><span>🔥 موسوعة كورة: {leaderboard[0]?.name}</span><span>🤡 بيصدق أي حاجة: {leaderboard[leaderboard.length - 1]?.name}</span></div><ShareResult gameName="مين بيهبد؟" eyebrow="النتيجة النهائية · 10 جولات" winnerName={leaderboard[0]?.name ?? "الفائز"} winnerScore={`${leaderboard[0]?.score ?? 0} نقطة`} rows={leaderboard.map((entry) => ({ label: entry.name, score: `${entry.score} نقطة`, detail: entry.score === leaderboard[0]?.score ? "الفائز · كاشف الهبد" : "نتيجة اللاعب" }))} highlights={["كاشف الهبد", "موسوعة كورة"]} accent="#ffcd6e" /><button className="menbyehbad-primary" onClick={restart}><RotateCcw /> لعبة جديدة</button></section></MenByehbadShell>;
 }
