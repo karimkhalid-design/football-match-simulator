@@ -17,6 +17,8 @@ describe("Kora Keda iPhone PWA prototype", () => {
 
   it("ships a service worker for the installed prototype", () => {
     expect(existsSync(serviceWorkerPath)).toBe(true);
-    expect(readFileSync(serviceWorkerPath, "utf8")).toContain("kora-keda-pwa-v1");
+    const serviceWorker = readFileSync(serviceWorkerPath, "utf8");
+    expect(serviceWorker).toContain("kora-keda-pwa-v2");
+    expect(serviceWorker).toContain('event.request.mode === "navigate"');
   });
 });
