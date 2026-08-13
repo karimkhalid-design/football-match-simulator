@@ -39,5 +39,9 @@ describe("online room readiness", () => {
     expect(first.events.some((event) => event.event === "room_state" && event.payload.status === "question" && event.payload.round === 2)).toBe(false);
     vi.advanceTimersByTime(1);
     expect(first.events.some((event) => event.event === "room_state" && event.payload.status === "question" && event.payload.round === 2)).toBe(true);
+    vi.advanceTimersByTime(19_999);
+    expect(first.events.some((event) => event.event === "room_state" && event.payload.status === "round_result" && event.payload.round === 2)).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(first.events.some((event) => event.event === "room_state" && event.payload.status === "round_result" && event.payload.round === 2)).toBe(true);
   });
 });
