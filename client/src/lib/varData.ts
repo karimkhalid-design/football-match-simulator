@@ -41,6 +41,23 @@ const realVarRounds: VarRound[] = [
   { id: 102, type: "goal", badge: "لقطة حقيقية · هدف ولا لأ؟", title: "كرة اليابان على الخط", minute: "51:00", description: "اليابان سجلت هدفاً ثانياً أمام إسبانيا بعد كرة بدت لكثيرين وكأنها خرجت بالكامل من الملعب. هل تلغيه أم تحتسبه؟", varInfo: "المراجعة اعتمدت على صورة خط المرمى/الخط الجانبي، والكرة لم تتجاوز الخط بالكامل رغم زاوية البث المربكة.", originalDecision: "هدف", options: VAR_DECISIONS, correctAnswer: "هدف", explanation: "FIFA أوضحت أن الكرة لم تعبر الخط بالكامل؛ بقاء جزء منها فوق الخط يعني استمرار اللعب واحتساب الهدف.", comment: "الصورة قالت الكرة برّه، والتكنولوجيا قالت لسه جوّه… VAR كسب النقاش.", isReal: true, mediaUrl: "https://www.youtube.com/embed/y2vGIXA-UVU", sourceUrl: "https://www.bbc.co.uk/sport/football/63829718", sourceLabel: "BBC · تفسير FIFA للهدف" },
 ];
 
-export const varRounds: VarRound[] = [...realVarRounds, ...fictionalVarRounds].slice(0, 10);
+const trainingVarRounds = fictionalVarRounds.map((round) => ({
+  ...round,
+  sourceUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(`football VAR ${round.title}`)}`,
+  sourceLabel: "شاهد فيديوهات مرجعية للحالة",
+}));
+
+export const varRounds: VarRound[] = [...realVarRounds, ...trainingVarRounds].slice(0, 10);
+
+export const shuffleVarRounds = (rounds: VarRound[], seed = Math.random()) => {
+  const shuffled = [...rounds];
+  let state = Math.floor((seed % 1) * 2147483647) || 1;
+  const random = () => { state = (state * 48271) % 2147483647; return state / 2147483647; };
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
+};
 
 export const getRoundTypeLabel = (type: VarRoundType) => ({ penalty: "PENALTY REVIEW", offside: "OFFSIDE REVIEW", goal: "GOAL REVIEW", "red-card": "RED CARD REVIEW", foul: "FOUL REVIEW", change: "DECISION REVIEW" }[type]);

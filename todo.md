@@ -143,3 +143,13 @@
 - [x] Keep the original referee decision hidden until the VAR reveal, then show the verified decision and explanation.
 - [x] Add source metadata and an embed/link-only rights-safe strategy for real incidents, without downloading or redistributing footage.
 - [x] Test incident uniqueness, hidden answers, reveal accuracy, source visibility, and mobile replay presentation.
+
+- [x] Give every VAR round a playable video source or a reliable watch fallback, with a visible unavailable-source state instead of a broken embed.
+- [x] Shuffle the VAR round order on every new game while keeping the selected session free of repeated incident IDs.
+- [x] Add tests for media coverage, fallback handling, random ordering across seeds, and no repeats within a session.
+
+- [x] Add an iframe/media error fallback state with a clear unavailable-source message and a source-link action.
+- [x] Label training-round search links as references rather than guaranteed playable clips, and keep real embeds as externally hosted sources.
+- [x] Add UI tests proving fallback controls appear for non-embed rounds and unavailable media is handled visibly.
+
+- [x] Reset media failure state on every next-round transition and test that the following round can render its own media/reference state.

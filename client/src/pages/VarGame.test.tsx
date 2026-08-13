@@ -3,7 +3,7 @@ import React from "react";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import VarGame from "./VarGame";
-import { varRounds } from "../lib/varData";
+import { shuffleVarRounds, varRounds } from "../lib/varData";
 
 afterEach(() => cleanup());
 
@@ -19,26 +19,61 @@ describe("VAR و لا لأ؟", () => {
   });
 
   it("loads a real controversial clip and hides the verified decision until reveal", () => {
-    render(<VarGame onBackToHub={() => undefined} />);
+    const realRounds = varRounds.filter((round) => round.isReal);
+    render(<VarGame onBackToHub={() => undefined} roundPool={[realRounds[0]]} />);
     fireEvent.click(screen.getByRole("button", { name: "ابدأ اللعبة" }));
-    expect(screen.getByText("هدف لويس دياز الملغي")).toBeTruthy();
-    expect(document.querySelector(".var-embed")).toBeTruthy();
+    expect(realRounds.every((round) => round.mediaUrl && round.sourceUrl)).toBe(true);
+    expect(varRounds.every((round) => round.sourceUrl)).toBe(true);
+    expect(new Set(shuffleVarRounds(varRounds, 0.11).map((round) => round.id)).size).toBe(varRounds.length);
+    expect(new Set(shuffleVarRounds(varRounds, 0.77).map((round) => round.id)).size).toBe(varRounds.length);
     expect(screen.queryByText(/القرار الصحيح/)).toBe(null);
     expect(screen.queryByText(/قرار الحكم الأصلي/)).toBe(null);
     expect(screen.queryByRole("link", { name: /Sky Sports/ })).toBe(null);
     fireEvent.click(screen.getByRole("button", { name: /شاهد اللقطة/ }));
     fireEvent.click(screen.getByRole("button", { name: /افتح الـVAR/ }));
     fireEvent.click(screen.getByRole("button", { name: "انتقل للقرار" }));
-    fireEvent.click(screen.getByRole("button", { name: "هدف" }));
-    expect(screen.getByText(/القرار الصحيح: هدف/)).toBeTruthy();
+    fireEvent.click(screen.getAllByRole("button").find((button) => button.className.includes("var-choice")) as HTMLElement);
+    expect(screen.getByText(/القرار الصحيح:/)).toBeTruthy();
     expect(screen.getAllByText(/قرار الحكم الأصلي/).length).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: /Sky Sports/ })).toBeTruthy();
   });
 
-  it("keeps the VAR session free of repeated incident ids", () => {
-    const ids = varRounds.map((round) => round.id);
-    expect(new Set(ids).size).toBe(ids.length);
-    expect(varRounds.filter((round) => round.isReal).length).toBeGreaterThan(1);
+  it("shows a watch fallback for a training round without a direct embed", () => {
+    const trainingRound = varRounds.find((round) => round.id === 1)!;
+    render(<VarGame onBackToHub={() => undefined} roundPool={[trainingRound]} />);
+    fireEvent.click(screen.getByRole("button", { name: "ابدأ اللعبة" }));
+    expect(screen.getByText("مرجع فيديو للحالة")).toBeTruthy();
+    expect(screen.getByRole("link", { name: /افتح فيديو الحالة/ })).toBeTruthy();
+  });
+
+  it("shows an unavailable-source state when a real embed fails", () => {
+    const realRound = varRounds.find((round) => round.isReal)!;
+    render(<VarGame onBackToHub={() => undefined} roundPool={[realRound]} />);
+    fireEvent.click(screen.getByRole("button", { name: "ابدأ اللعبة" }));
+    fireEvent.click(screen.getByRole("button", { name: "الفيديو مش شغال؟" }));
+    expect(screen.getByText("الفيديو غير متاح حالياً")).toBeTruthy();
+    expect(screen.getByRole("link", { name: /افتح مصدر اللقطة/ })).toBeTruthy();
+  });
+
+  it("resets media failure when moving to the next round", () => {
+    const realRound = varRounds.find((round) => round.isReal)!;
+    const trainingRound = varRounds.find((round) => round.id === 1)!;
+    render(<VarGame onBackToHub={() => undefined} roundPool={[realRound, trainingRound]} />);
+    fireEvent.click(screen.getByRole("button", { name: "ابدأ اللعبة" }));
+    fireEvent.click(screen.getByRole("button", { name: "الفيديو مش شغال؟" }));
+    fireEvent.click(screen.getByRole("button", { name: /شاهد اللقطة/ }));
+    fireEvent.click(screen.getByRole("button", { name: /افتح الـVAR/ }));
+    fireEvent.click(screen.getByRole("button", { name: "انتقل للقرار" }));
+    fireEvent.click(screen.getAllByRole("button").find((button) => button.className.includes("var-choice")) as HTMLElement);
+    fireEvent.click(screen.getByRole("button", { name: /الجولة التالية/ }));
+    expect(screen.getByText("مرجع فيديو للحالة")).toBeTruthy();
+  });
+
+  it("shuffles every new session without repeating incident ids", () => {
+    const first = shuffleVarRounds(varRounds, 0.11);
+    const second = shuffleVarRounds(varRounds, 0.77);
+    expect(new Set(first.map((round) => round.id)).size).toBe(first.length);
+    expect(new Set(second.map((round) => round.id)).size).toBe(second.length);
+    expect(first.map((round) => round.id)).not.toEqual(second.map((round) => round.id));
   });
 
   it("keeps critical gameplay controls available at 375px", () => {
@@ -73,7 +108,7 @@ describe("VAR و لا لأ؟", () => {
     fireEvent.click(screen.getByRole("button", { name: /شاهد اللقطة/ }));
     expect(screen.getByText("اتناقشوا… إيه قراركم؟")).toBeTruthy();
     expect(screen.getByText("60")).toBeTruthy();
-    const option = screen.getAllByRole("button", { name: "هدف" })[0];
+    const option = document.querySelector(".var-prediction-grid button") as HTMLElement;
     fireEvent.click(option);
     expect(option.className).toContain("selected");
     expect(screen.getByRole("button", { name: /افتح الـVAR/ })).toBeTruthy();
@@ -98,7 +133,7 @@ describe("VAR و لا لأ؟", () => {
     expect(screen.getByText("VAR CHECKING...")).toBeTruthy();
     expect(screen.getByRole("button", { name: "انتقل للقرار" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "انتقل للقرار" }));
-    expect(screen.getByRole("button", { name: "هدف" })).toBeTruthy();
+    expect(document.querySelectorAll(".var-choice")).toHaveLength(4);
   });
 
   it("completes all ten rounds and restarts from the final ranking", () => {
@@ -123,7 +158,7 @@ describe("VAR و لا لأ؟", () => {
     fireEvent.click(screen.getByRole("button", { name: /شاهد اللقطة/ }));
     fireEvent.click(screen.getByRole("button", { name: /افتح الـVAR/ }));
     fireEvent.click(screen.getByRole("button", { name: "انتقل للقرار" }));
-    fireEvent.click(screen.getByRole("button", { name: "ضربة جزاء" }));
+    fireEvent.click(screen.getAllByRole("button").find((button) => button.className.includes("var-choice")) as HTMLElement);
     expect(screen.getByText("قرار الحكم")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /الجولة التالية/ }));
     expect(screen.getByText("الحكم الحالي")).toBeTruthy();

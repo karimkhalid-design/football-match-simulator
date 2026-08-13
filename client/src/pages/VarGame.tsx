@@ -1,16 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Check, Clock3, Eye, Flag, RotateCcw, ShieldAlert, Trophy, Tv, Volume2, X, Zap } from "lucide-react";
-import { VarDecision, VarRound, VAR_DECISIONS, getRoundTypeLabel, varRounds } from "../lib/varData";
+import { VarDecision, VarRound, VAR_DECISIONS, getRoundTypeLabel, shuffleVarRounds, varRounds } from "../lib/varData";
 
 const VAR_LOGO_URL = "/manus-storage/4A3546B6-12EE-496E-B7CF-41A005590FB6_5eea2af3.png";
 type Phase = "setup" | "watch" | "discussion" | "var" | "decision" | "result" | "finished";
-type VarGameProps = { onBackToHub: () => void };
+type VarGameProps = { onBackToHub: () => void; roundPool?: VarRound[] };
 
 const defaultNames = ["لاعب ١", "لاعب ٢", "لاعب ٣", "لاعب ٤", "لاعب ٥", "لاعب ٦", "لاعب ٧", "لاعب ٨", "لاعب ٩", "لاعب ١٠"];
 const emptyPredictions = (names: string[]) => Object.fromEntries(names.map((name) => [name, ""])) as Record<string, string>;
 const decisionLabel = (round: VarRound) => round.type === "change" ? "هل يتغير القرار؟" : "إيه قرار الحكم؟";
 
-export default function VarGame({ onBackToHub }: VarGameProps) {
+export default function VarGame({ onBackToHub, roundPool }: VarGameProps) {
   useEffect(() => {
     const previousTitle = document.title;
     document.title = "VAR و لا لأ؟";
@@ -19,6 +19,7 @@ export default function VarGame({ onBackToHub }: VarGameProps) {
   const [phase, setPhase] = useState<Phase>("setup");
   const [playerCount, setPlayerCount] = useState(4);
   const [names, setNames] = useState(defaultNames.slice(0, 4));
+  const [sessionRounds, setSessionRounds] = useState<VarRound[]>(() => shuffleVarRounds(roundPool?.length ? roundPool : varRounds));
   const [roundIndex, setRoundIndex] = useState(0);
   const [seconds, setSeconds] = useState(60);
   const [varSeconds, setVarSeconds] = useState(5);
@@ -26,8 +27,10 @@ export default function VarGame({ onBackToHub }: VarGameProps) {
   const [predictions, setPredictions] = useState<Record<string, string>>({});
   const [scores, setScores] = useState<Record<string, number>>({});
   const [roundScored, setRoundScored] = useState(false);
+  const [mediaFailed, setMediaFailed] = useState(false);
+  const sourceRounds = roundPool?.length ? roundPool : varRounds;
 
-  const round = varRounds[roundIndex];
+  const round = sessionRounds[roundIndex] ?? sessionRounds[0];
   const judge = names[roundIndex % names.length];
   const sortedScores = useMemo(() => names.map((name) => ({ name, score: scores[name] ?? 0 })).sort((a, b) => b.score - a.score), [names, scores]);
   const correctDecision = round.type === "change" ? round.changeAnswer : round.correctAnswer;
@@ -61,6 +64,7 @@ export default function VarGame({ onBackToHub }: VarGameProps) {
 
   const startGame = () => {
     const cleaned = names.map((name, index) => name.trim() || defaultNames[index]);
+    setSessionRounds(roundPool?.length ? sourceRounds : shuffleVarRounds(sourceRounds));
     setNames(cleaned);
     setScores(Object.fromEntries(cleaned.map((name) => [name, 0])));
     setPredictions(emptyPredictions(cleaned));
@@ -83,8 +87,9 @@ export default function VarGame({ onBackToHub }: VarGameProps) {
   };
 
   const nextRound = () => {
-    if (roundIndex >= varRounds.length - 1) { setPhase("finished"); return; }
+    if (roundIndex >= sessionRounds.length - 1) { setPhase("finished"); return; }
     setRoundIndex((current) => current + 1);
+    setMediaFailed(false);
     setSelectedDecision(null);
     setPredictions(emptyPredictions(names));
     setRoundScored(false);
@@ -94,8 +99,10 @@ export default function VarGame({ onBackToHub }: VarGameProps) {
   };
 
   const restart = () => {
+    setSessionRounds(roundPool?.length ? sourceRounds : shuffleVarRounds(sourceRounds));
     setPhase("setup");
     setRoundIndex(0);
+    setMediaFailed(false);
     setSelectedDecision(null);
     setPredictions({});
     setScores({});
@@ -109,11 +116,11 @@ export default function VarGame({ onBackToHub }: VarGameProps) {
   const showDecisionControls = phase === "decision";
   const showPredictions = phase === "discussion" || phase === "var" || phase === "decision";
   return <main className="var-page" dir="rtl"><div className="var-grid" /><div className={`var-alert var-alert-${phase}`} />
-    <header className="var-header"><button className="var-back" onClick={onBackToHub}><ArrowRight /> كل الألعاب</button><div className="var-header-brand"><span>VAR CONTROL ROOM</span><img src={VAR_LOGO_URL} alt="شعار VAR و لا لأ؟" /></div><div className="var-round-pill">{roundIndex + 1} / {varRounds.length}<i /></div></header>
+    <header className="var-header"><button className="var-back" onClick={onBackToHub}><ArrowRight /> كل الألعاب</button><div className="var-header-brand"><span>VAR CONTROL ROOM</span><img src={VAR_LOGO_URL} alt="شعار VAR و لا لأ؟" /></div><div className="var-round-pill">{roundIndex + 1} / {sessionRounds.length}<i /></div></header>
     <section className="var-round-head"><div><p className="var-kicker"><Flag /> {round.badge}</p><h1>{round.title}</h1><p>{round.minute} · {getRoundTypeLabel(round.type)}</p></div><div className="var-judge"><small>الحكم الحالي</small><b>{judge}</b><span>يمسك الموبايل</span></div></section>
     <section className="var-main-card">
-      <div className={`var-screen var-screen-${phase}`}><div className="var-screen-top"><span>LIVE REVIEW</span><span><i /> VAR ROOM</span></div>{phase === "watch" && <div className="var-scene">{round.isReal && round.mediaUrl ? <iframe className="var-embed" title={`لقطة ${round.title}`} src={round.mediaUrl} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen /> : <Tv />}<b>اللقطة جاهزة</b><small>{round.description}</small><button className="var-watch" onClick={watchClip}><Eye /> شاهد اللقطة</button></div>}{phase === "discussion" && <div className="var-scene"><div className="var-countdown"><Clock3 /><strong>{seconds}</strong><small>ثانية للنقاش</small></div><b>اتناقشوا… إيه قراركم؟</b><small>{round.description}</small><span className="var-live-note"><Volume2 /> الحكم فقط يستخدم الموبايل</span></div>}{phase === "var" && <div className="var-checking"><span className="var-replay-lines" /><Tv /><b>VAR CHECKING...</b><small>{round.varInfo}</small><div className="var-progress"><i /></div><strong>{varSeconds}</strong></div>}{(phase === "decision" || phase === "result") && <div className="var-review-result"><span className="var-replay-tag">REPLAY · SLOW MOTION</span><div className="var-fake-pitch"><span /><i /><b>PLAY</b></div><small>{round.varInfo}</small>{phase === "result" && round.originalDecision && <em>قرار الحكم الأصلي: {round.originalDecision}</em>}</div>}</div>
-      <div className="var-decision-panel">{phase === "watch" && <div className="var-panel-message"><ShieldAlert /><b>استنى يا حكم!</b><span>شغّل اللقطة الأول، وبعدها يبدأ وقت النقاش.</span></div>}{phase === "discussion" && <><div className="var-panel-title"><b>سجّل توقعات الصحاب</b><span>بعد ما تتفقوا، اختار توقع كل لاعب</span></div><PredictionGrid names={names} predictions={predictions} onChange={updatePrediction} options={round.options} /><button className="var-primary" onClick={openVar}><Tv /> افتح الـVAR</button></>}{phase === "var" && <div className="var-panel-message var-panel-checking"><ShieldAlert /><b>استنى يا حكم!</b><span>الإعادة البطيئة شغالة… الـVAR بيفحص كل زاوية.</span><button className="var-primary" onClick={() => setPhase("decision")}>انتقل للقرار</button></div>}{showDecisionControls && <><div className="var-panel-title"><b>{decisionLabel(round)}</b><span>الحكم يختار القرار النهائي</span></div><div className="var-decision-options">{round.options.map((option) => <button key={option} className="var-choice" onClick={() => chooseDecision(option)}><span>{option}</span><ArrowRight /></button>)}</div></>}{phase === "result" && <ResultPanel round={round} selected={selectedDecision} correct={isCorrect} onNext={nextRound} isLast={roundIndex === varRounds.length - 1} />}</div>
+      <div className={`var-screen var-screen-${phase}`}><div className="var-screen-top"><span>LIVE REVIEW</span><span><i /> VAR ROOM</span></div>{phase === "watch" && <div className="var-scene">{round.isReal && round.mediaUrl && !mediaFailed ? <><iframe className="var-embed" title={`لقطة ${round.title}`} src={round.mediaUrl} onError={() => setMediaFailed(true)} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen /><button className="var-media-report" onClick={() => setMediaFailed(true)}>الفيديو مش شغال؟</button></> : <div className={`var-media-fallback ${mediaFailed ? "is-unavailable" : "is-reference"}`}><Tv /><b>{mediaFailed ? "الفيديو غير متاح حالياً" : "مرجع فيديو للحالة"}</b><small>{mediaFailed ? "المصدر الخارجي لم يفتح داخل اللعبة. افتح رابط المصدر أو أكمل النقاش." : "هذه الجولة لها مادة مشاهدة خارجية؛ افتحها قبل بدء النقاش."}</small>{round.sourceUrl && <a className="var-watch var-watch-link" href={round.sourceUrl} target="_blank" rel="noreferrer"><Eye /> {mediaFailed ? "افتح مصدر اللقطة" : "افتح فيديو الحالة"}</a>}</div>}<b>اللقطة جاهزة</b><small>{round.description}</small><button className="var-watch" onClick={watchClip}><Eye /> شاهد اللقطة</button></div>}{phase === "discussion" && <div className="var-scene"><div className="var-countdown"><Clock3 /><strong>{seconds}</strong><small>ثانية للنقاش</small></div><b>اتناقشوا… إيه قراركم؟</b><small>{round.description}</small><span className="var-live-note"><Volume2 /> الحكم فقط يستخدم الموبايل</span></div>}{phase === "var" && <div className="var-checking"><span className="var-replay-lines" /><Tv /><b>VAR CHECKING...</b><small>{round.varInfo}</small><div className="var-progress"><i /></div><strong>{varSeconds}</strong></div>}{(phase === "decision" || phase === "result") && <div className="var-review-result"><span className="var-replay-tag">REPLAY · SLOW MOTION</span><div className="var-fake-pitch"><span /><i /><b>PLAY</b></div><small>{round.varInfo}</small>{phase === "result" && round.originalDecision && <em>قرار الحكم الأصلي: {round.originalDecision}</em>}</div>}</div>
+      <div className="var-decision-panel">{phase === "watch" && <div className="var-panel-message"><ShieldAlert /><b>استنى يا حكم!</b><span>شغّل اللقطة الأول، وبعدها يبدأ وقت النقاش.</span></div>}{phase === "discussion" && <><div className="var-panel-title"><b>سجّل توقعات الصحاب</b><span>بعد ما تتفقوا، اختار توقع كل لاعب</span></div><PredictionGrid names={names} predictions={predictions} onChange={updatePrediction} options={round.options} /><button className="var-primary" onClick={openVar}><Tv /> افتح الـVAR</button></>}{phase === "var" && <div className="var-panel-message var-panel-checking"><ShieldAlert /><b>استنى يا حكم!</b><span>الإعادة البطيئة شغالة… الـVAR بيفحص كل زاوية.</span><button className="var-primary" onClick={() => setPhase("decision")}>انتقل للقرار</button></div>}{showDecisionControls && <><div className="var-panel-title"><b>{decisionLabel(round)}</b><span>الحكم يختار القرار النهائي</span></div><div className="var-decision-options">{round.options.map((option) => <button key={option} className="var-choice" onClick={() => chooseDecision(option)}><span>{option}</span><ArrowRight /></button>)}</div></>}{phase === "result" && <ResultPanel round={round} selected={selectedDecision} correct={isCorrect} onNext={nextRound} isLast={roundIndex === sessionRounds.length - 1} />}</div>
     </section>
     {showPredictions && <div className="var-prediction-strip"><span>توقعات الجولة</span>{names.map((name) => <b key={name}>{name}: {predictions[name] || "—"}</b>)}</div>}
     <footer className="var-footer"><span>VAR و لا لأ؟ · صناعة كريم</span><span>الجولة {roundIndex + 1} من {varRounds.length}</span></footer>
