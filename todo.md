@@ -84,3 +84,8 @@
 
 - [x] Add an automatic temporary-pass state after a valid bid, without permanently marking the opponent as passed.
 - [x] Allow the temporarily passed opponent to re-enter by entering a higher total price, and cover settlement after no re-entry.
+
+- [x] Add a first-entry game hub page with an active «اعمل الصح» card and a disabled «أفتكر» card.
+- [x] Upload and use the provided Aftakar logo from project static storage.
+- [x] Route the active card into the auction game and provide a return-to-games control.
+- [x] Verify desktop and 375px mobile layouts plus Game Hub interaction tests.

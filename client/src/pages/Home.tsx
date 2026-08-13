@@ -12,7 +12,7 @@ const LOGO_URL = "/manus-storage/e3mal-elsah-logo_b8d9ae3f.png";
 
 const money = (value: number) => `${value}M`;
 
-export default function Home() {
+export default function Home({ onBackToHub }: { onBackToHub?: () => void }) {
   const [teamNames, setTeamNames] = useState<TeamNames>({ ali: "لاعب رقم ١", hussein: "لاعب رقم ٢" });
   const [landing, setLanding] = useState(true);
   const [teams, setTeams] = useState<AuctionTeam[]>(() => createTeams(teamNames));
@@ -131,7 +131,7 @@ export default function Home() {
     setScreen("match");
   };
 
-  if (landing) return <Landing teamNames={teamNames} onNamesChange={setTeamNames} onStart={startAuction} />;
+  if (landing) return <Landing teamNames={teamNames} onNamesChange={setTeamNames} onStart={startAuction} onBackToHub={onBackToHub} />;
   if (screen === "final") return <FinalResults teams={teams} auctionCounts={teamAuctionCounts} hiddenCounts={teamHiddenCounts} onSimulate={simulateFinal} onReset={resetGame} />;
   if (screen === "match" && match) return <MatchResults teams={teams} match={match} onReset={resetGame} />;
 
@@ -180,10 +180,10 @@ function BrandLockup({ compact = false }: { compact?: boolean }) {
   return <div className={`brand-lockup ${compact ? "compact" : ""}`}><img src={LOGO_URL} alt="اعمل الصح" /><div><b>اعمل الصح</b><small>لعبة المزاد الكروي</small></div></div>;
 }
 
-function Landing({ teamNames, onNamesChange, onStart }: { teamNames: TeamNames; onNamesChange: (names: TeamNames) => void; onStart: () => void }) {
+function Landing({ teamNames, onNamesChange, onStart, onBackToHub }: { teamNames: TeamNames; onNamesChange: (names: TeamNames) => void; onStart: () => void; onBackToHub?: () => void }) {
   return <main className="landing-page" dir="rtl">
     <div className="landing-grain" /><div className="landing-flare flare-one" /><div className="landing-flare flare-two" />
-    <header className="landing-nav"><BrandLockup /><span>FOOTBALL AUCTION · SEASON ONE</span></header>
+    <header className="landing-nav"><BrandLockup /><span>FOOTBALL AUCTION · SEASON ONE</span>{onBackToHub && <button className="hub-back-button" type="button" onClick={onBackToHub}><ArrowLeft /> كل الألعاب</button>}</header>
     <section className="landing-hero">
       <div className="landing-copy"><p className="landing-kicker"><Crown /> مزاد. قرار. بطولة.</p><h1>اعمل الصح<br /><em>وخليك أنت البطل.</em></h1><p>لعبة مزاد كروي بين فريقين. زايد بذكاء، خاطر بالسعر، وخد فريقك إلى المباراة النهائية قبل منافسك.</p><div className="landing-points"><span><b>11</b> جولة</span><i /><span><b>122</b> لاعباً</span><i /><span><b>1</b> لاعب خفي</span></div></div>
       <div className="logo-showcase"><div className="logo-glow" /><img src={LOGO_URL} alt="شعار اعمل الصح" /><span className="logo-caption">اللعبة التي لا يكسبها الأعلى سعراً دائماً.</span></div>
