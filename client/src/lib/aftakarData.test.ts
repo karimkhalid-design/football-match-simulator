@@ -8,11 +8,15 @@ describe("Aftakar question bank", () => {
     expect(aftakarQuestionBank.every((question) => question.options.length === 4)).toBe(true);
     expect(aftakarQuestionBank.every((question) => new Set(question.options).size === 4)).toBe(true);
     expect(aftakarQuestionBank.every((question) => question.options.includes(question.playerName))).toBe(true);
+    const catalogueNames = new Set(playerCatalogue.map((player) => player.name));
+    const triviaQuestions = aftakarQuestionBank.filter((question) => question.category === "trivia");
+    expect(triviaQuestions.every((question) => question.options.every((option) => catalogueNames.has(option)))).toBe(true);
+    expect(triviaQuestions.every((question) => question.options.length === 4)).toBe(true);
     expect(aftakarQuestionBank.filter((question) => question.category === "trivia").length).toBeGreaterThanOrEqual(250);
     expect(new Set(aftakarQuestionBank.map((question) => question.category)).size).toBeGreaterThanOrEqual(4);
 
     const forbiddenGenericPhrases = ["تقييمه في الكتالوج", "من نجوم", "العلامة الفنية", "التفصيلة الفنية", "أسلوبه الأقرب", "لا تعتمد على الرقم"];
-    const factualMarkers = /الأندية|إنجاز|مركز|الكرة الذهبية|هدفاً|موسم 20|الحذاء الذهبي|دوري أبطال|كأس العالم|لقب/;
+    const factualMarkers = /الأندية|إنجاز|مركز|الكرة الذهبية|هدفاً|موسم 20|عام 20|الحذاء الذهبي|دوري أبطال|كأس العالم|لقب|بطولة|جائزة|انتقال|مسيرة|هداف/;
     expect(aftakarQuestionBank.every((question) => question.clues.every((clue) => !forbiddenGenericPhrases.some((phrase) => clue.includes(phrase))))).toBe(true);
     expect(aftakarQuestionBank.every((question) => question.clues.some((clue) => factualMarkers.test(clue)))).toBe(true);
     expect(aftakarQuestionBank.every((question) => question.clues.every((clue) => !clue.includes(question.playerName)))).toBe(true);

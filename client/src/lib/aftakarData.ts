@@ -1,4 +1,4 @@
-import { CataloguePlayer, playerCatalogue, positionLabels } from "./auctionData";
+import { CataloguePlayer, playerCatalogue } from "./auctionData";
 
 type AftakarCategory = "trivia" | "career" | "record" | "tactical" | "era" | "transfer" | "competition" | "award" | "match-event";
 type RealisticOptionGroup = "premier-league-golden-boot" | "champions-league-top-scorers" | "ballon-dor-winners" | "ballon-dor-1990s" | "ballon-dor-2000s" | "ballon-dor-2010s" | "la-liga-pichichi-winners" | "bundesliga-top-scorers";
@@ -89,36 +89,39 @@ const factualQuestions: AftakarQuestion[] = [
 const curatedNames = new Set(curatedQuestions.map((question) => question.playerName));
 
 const distractorPool = (player: CataloguePlayer) => {
-  const samePosition = playerCatalogue
-    .filter((candidate) => candidate.name !== player.name && candidate.position === player.position)
+  const sameContext = playerCatalogue
+    .filter((candidate) => candidate.name !== player.name && Boolean(triviaMetadata[candidate.name]) && candidate.position === player.position)
     .sort((a, b) => Math.abs(a.rating - player.rating) - Math.abs(b.rating - player.rating) || a.name.localeCompare(b.name));
-  return [...samePosition.filter((candidate) => candidate.status === player.status), ...samePosition.filter((candidate) => candidate.status !== player.status)];
+  const verifiedFallbacks = playerCatalogue
+    .filter((candidate) => candidate.name !== player.name && Boolean(triviaMetadata[candidate.name]))
+    .sort((a, b) => Math.abs(a.rating - player.rating) - Math.abs(b.rating - player.rating) || a.name.localeCompare(b.name));
+  return [...sameContext.filter((candidate) => candidate.status === player.status), ...sameContext.filter((candidate) => candidate.status !== player.status), ...verifiedFallbacks];
 };
 
 const generatedQuestion = (player: CataloguePlayer, variant: number): AftakarQuestion => {
   const nearby = distractorPool(player);
   const offset = Math.min(variant, Math.max(0, nearby.length - 3));
-  const orderedCandidates = [...nearby.slice(offset), ...nearby.slice(0, offset), ...playerCatalogue.filter((candidate) => candidate.name !== player.name && candidate.position !== player.position)];
+  const orderedCandidates = [...nearby.slice(offset), ...nearby.slice(0, offset)];
   const options = [player.name, ...orderedCandidates.map((candidate) => candidate.name).filter((name, index, names) => names.indexOf(name) === index)].slice(0, 4);
   const trivia = triviaMetadata[player.name];
-  if (!trivia) return { playerName: player.name, clues: [`هذا اللاعب ضمن مركز ${positionLabels[player.position]} في مكتبة كورة كده`, `مسيرته الكروية موثقة وتظهر في ملف اللاعب داخل المكتبة`, `هل تستطيع تمييزه من بين هذه الأسماء القريبة؟`], options, category: "trivia" };
+  if (!trivia) throw new Error(`Missing verified football metadata for ${player.name}`);
   const factualClues: [string, string, string][] = [
-    [`ارتبطت مسيرته بالأندية: ${trivia.clubs}`, `ومن أبرز إنجازاته: ${trivia.achievement}`, `يظهر في مركز ${positionLabels[player.position]}`],
-    [`من محطات هذا اللاعب: ${trivia.clubs}`, `حقق أو شارك في إنجاز موثق هو ${trivia.achievement}`, `يعرفه بعض المتابعين بلقب «${trivia.alias}»`],
-    [`توزعت مسيرته بين الأندية التالية: ${trivia.clubs}`, `ارتبط اسمه ببطولة أو جائزة مهمة: ${trivia.achievement}`, `مركزه المسجل في البيانات هو ${positionLabels[player.position]}`],
-    [`لعب مع أكثر من نادٍ بارز، منها: ${trivia.clubs}`, `من العلامات الواضحة في مسيرته: ${trivia.achievement}`, `لقبه المتداول هو «${trivia.alias}»`],
-    [`إذا تتبعت مسيرته ستجد الأندية: ${trivia.clubs}`, `من إنجازاته التي تساعد في التعرف عليه: ${trivia.achievement}`, `يلعب في مركز ${positionLabels[player.position]}`],
-    [`الأندية المرتبطة بهذا اللاعب تشمل: ${trivia.clubs}`, `فاز أو ساهم في إنجاز هو ${trivia.achievement}`, `يحمل لقب «${trivia.alias}» في بعض التغطيات`],
-    [`بدأ أو واصل مسيرته مع أندية مثل: ${trivia.clubs}`, `ارتبط اسمه تاريخياً بـ${trivia.achievement}`, `المركز الأقرب له في الكتالوج: ${positionLabels[player.position]}`],
-    [`من سجل مسيرته: ${trivia.clubs}`, `تتضمن إنجازاته ${trivia.achievement}`, `هل تتذكر اللاعب المعروف بلقب «${trivia.alias}»؟`],
-    [`هذه الأندية جزء من مسيرته: ${trivia.clubs}`, `وهذا إنجاز منسوب إليه: ${trivia.achievement}`, `يُصنّف في مركز ${positionLabels[player.position]}`],
-    [`للتعرف عليه راجع محطات الأندية: ${trivia.clubs}`, `ثم طابقها مع الإنجاز: ${trivia.achievement}`, `آخر تلميح: مركزه ${positionLabels[player.position]} ولقبه «${trivia.alias}»`],
+    [`بدأت محطاته الأشهر مع أندية مثل: ${trivia.clubs}`, `ومن العلامات الفارقة في مسيرته: ${trivia.achievement}`, `ارتبط اسمه بلقب «${trivia.alias}»`],
+    [`إذا رتبت محطات مسيرته ستجد: ${trivia.clubs}`, `الإنجاز الذي يضيّق الاختيارات هو: ${trivia.achievement}`, `يُعرف بين الجماهير بلقب «${trivia.alias}»`],
+    [`السؤال عن لاعب جمع بين هذه المحطات: ${trivia.clubs}`, `وحقق أو شارك في: ${trivia.achievement}`, `لا تخلط بينه وبين أصحاب الألقاب المتشابهة؛ لقبه هنا «${trivia.alias}»`],
+    [`تتبّع الأندية التالية للوصول إلى الاسم: ${trivia.clubs}`, `ثم اربطها بإنجاز: ${trivia.achievement}`, `آخر خيط هو اللقب «${trivia.alias}»`],
+    [`تظهر في مسيرته أسماء أندية مثل: ${trivia.clubs}`, `ويُذكر بسبب إنجاز: ${trivia.achievement}`, `لقبه المتداول في الصحافة «${trivia.alias}»`],
+    [`ليست كل الأسماء في الاختيارات مرت بهذه المحطات: ${trivia.clubs}`, `المعلومة الحاسمة هي: ${trivia.achievement}`, `اللقب الذي تبحث عنه هو «${trivia.alias}»`],
+    [`اجمع بين مسار الأندية: ${trivia.clubs}`, `والإنجاز الموثق: ${trivia.achievement}`, `ثم اختبر الاسم المرتبط بلقب «${trivia.alias}»`],
+    [`من سجل الانتقالات والبطولات: ${trivia.clubs}`, `تظهر علامة مهمة هي ${trivia.achievement}`, `وتتكرر في قصته تسمية «${trivia.alias}»`],
+    [`راجع الأندية أولاً: ${trivia.clubs}`, `ثم طابق الإنجاز: ${trivia.achievement}`, `واللقب: «${trivia.alias}»`],
+    [`الاختيارات من أسماء كبيرة، لكن المسار الصحيح هو: ${trivia.clubs}`, `والإنجاز الفاصل هو ${trivia.achievement}`, `واللقب يساعدك على الحسم: «${trivia.alias}»`],
   ];
   return { playerName: player.name, clues: factualClues[variant % factualClues.length], options, category: "trivia" };
 };
 
 const curated: AftakarQuestion[] = [];
-const generated = playerCatalogue.flatMap((player) => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((variant) => generatedQuestion(player, variant)));
+const generated = playerCatalogue.filter((player) => Boolean(triviaMetadata[player.name])).flatMap((player) => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((variant) => generatedQuestion(player, variant)));
 export const aftakarQuestionBank: AftakarQuestion[] = [...curated, ...factualQuestions, ...generated];
 
 const hashSeed = (value: number) => {
