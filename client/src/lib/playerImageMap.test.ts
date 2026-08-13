@@ -8,9 +8,7 @@ describe("player image catalogue coverage", () => {
 
     for (const player of playerCatalogue) {
       const url = PLAYER_IMAGE_URLS[player.name];
-      expect(url, `${player.name} is missing from PLAYER_IMAGE_URLS`).toMatch(
-        /^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\/thumb\/.+\/250px-.+\?utm_source=en\.wikipedia\.org&utm_campaign=api&utm_content=thumbnail$/,
-      );
+      expect(url, `${player.name} is missing from PLAYER_IMAGE_URLS`).toMatch(/^\/manus-storage\/[a-z0-9-]+_[a-f0-9]+\.jpg$/);
     }
 
     expect(Object.keys(PLAYER_IMAGE_URLS)).toHaveLength(playerCatalogue.length);

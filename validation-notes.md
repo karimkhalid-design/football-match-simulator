@@ -63,3 +63,5 @@ The actual desktop preview after switching to eager image loading shows Lev Yash
 The completed auction results screen was verified on desktop. Both final squad lists displayed mapped football-player thumbnails beside their names, including Lev Yashin, Carles Puyol, Thiago Silva, Roberto Carlos, Toni Kroos, Mohamed Salah, Eden Hazard, and Harry Kane.
 
 The 375px mobile full-auction check reached the final results screen and rendered all 22 player-photo elements in the final squad lists. The isolated offscreen iframe reported zero completed external thumbnails because the network images are outside that iframe's viewport/cache, while the same mapped URLs rendered in the actual desktop preview; the branded fallback remains available for delayed requests.
+
+After caching the thumbnails in project storage, the true 375px mobile full-auction check reached the final screen with 22 final-player-photo elements. It found 20 unique hosted image resources across the live card and final list, and all 20 loaded successfully with non-zero naturalWidth through same-origin Image objects. The previously flaky Wikimedia network dependency is no longer used by the app.

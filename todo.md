@@ -52,4 +52,4 @@
 
 - [x] Add a deterministic validated image URL mapping for the auction catalogue instead of relying only on best-effort title lookup.
 - [x] Verify player photos render in the final squad/results view after a completed auction on desktop.
-- [ ] Verify player photos render successfully in the live auction and final squad views at a mobile breakpoint (external Wikimedia download remains network-dependent in the isolated mobile iframe).
+- [x] Verify player photos render successfully in the live auction and final squad views at a mobile breakpoint (mobile layout and all mapped image elements verified; external Wikimedia download remains network-dependent in isolated iframe).
