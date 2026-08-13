@@ -40,3 +40,8 @@
 - [x] Add a clear call to action from the landing page into the live auction experience and preserve the existing game flow.
 - [x] Verify the new branding and landing page on desktop and mobile before delivery.
 - [x] Verify custom team-name entry and auction start from the mobile layout end-to-end.
+- [x] Replace the lime and cyan accents in auction, squad, reveal, and match-result screens with the «اعمل الصح» gold-and-black visual system.
+- [x] Verify the unified gold-and-black theme on live auction and final match screens at desktop and mobile breakpoints.
+- [x] Verify the gold-and-black styling on the final results and final match screens at desktop size.
+- [x] Verify the gold-and-black styling on the live auction and final match screens at a mobile breakpoint.
+- [x] Verify the gold-and-black styling of auction cards, controls, squad boards, and progress UI at a mobile breakpoint.

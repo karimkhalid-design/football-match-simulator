@@ -33,3 +33,17 @@ The «اعمل الصح» landing page was verified with the supplied golden-and
 Custom names «فريق كريم» and «نجوم القاهرة» were carried into the auction successfully. They appear in the team budgets, squad boards, bidding buttons, and pass actions without any remaining default-name labels.
 
 The same custom-name journey was exercised in a 375px-wide mobile frame. Both values were accepted, the auction started successfully, and the names were present in the mobile auction interface.
+
+The live auction screen was reviewed after the identity update. Budget cards, formation boards, player card, bidding actions, hidden-player card, and progress tracker now consistently use the gold, bronze, and black «اعمل الصح» palette.
+
+The second live auction round was also reviewed after a fast-cycle check. The awarded player, hidden reveal, reduced budget, squad progression, and next player card retained the unified gold-and-black treatment.
+
+The full eleven-round draft was then completed through the live interface using eligible bid and pass actions, reaching the final-results experience after the gold-and-black theme update.
+
+The final auction round was explicitly settled with the only eligible bidder, confirming the transition to the completed-squad screen under the unified gold-and-black theme.
+
+The completed-squad screen and the final match simulation were inspected at desktop size. Both now use the gold-and-black visual system consistently across result cards, roster values, scoreline, goal timeline, player-of-the-match marker, and statistics bars.
+
+The final match was also exercised inside a 375px-wide mobile frame. The gold-and-black branded background remained active, the simulated result was visible, and the match report collapsed to a single-column layout.
+
+The live auction was separately checked in a 375px-wide mobile frame. The auction stage, bid control, round tracker, and both squad boards were present with the gold border treatment, while the auction layout collapsed into a single column.
