@@ -71,3 +71,5 @@ The mobile winner-reveal check at 375px now reports one grid column, two stacked
 The duplicate regression was tested through the complete browser flow. After all 11 rounds, the final results contained 22 player photos, 22 unique player names, and no duplicates; the final match simulation then opened successfully.
 
 Flexible-bid mobile validation passed at 375px: the +1/+5/+10 presets were present, selecting +5 set the increment to 5, and after the opening bid the opposing button displayed an actual “ارفع بـ 5M إلى 14M” raise.
+
+Clearable bid-input validation passed at 375px: the input type is text with numeric mobile mode, clearing it produced an empty value, typing 6 retained “6”, and after the opening bid the opponent button displayed “ارفع بـ 6M إلى 13M”.

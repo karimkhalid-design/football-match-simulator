@@ -13,6 +13,7 @@ describe("auction budget rules", () => {
     expect(normalizeBidIncrement(1)).toBe(1);
     expect(normalizeBidIncrement(5.9)).toBe(5);
     expect(normalizeBidIncrement(0)).toBe(1);
+    expect(normalizeBidIncrement(Number(""))).toBe(1);
     expect(normalizeBidIncrement(Number.NaN)).toBe(1);
     expect(nextBidAmount(null, 9, 10)).toBe(9);
     expect(nextBidAmount(9, 9, 1)).toBe(10);

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, CircleDollarSign, Crown, Goal, Gavel, LockKeyhole, Medal, RefreshCw, Sparkles, Swords, Trophy, UsersRound } from "lucide-react";
 import { buildAuctionRounds, formationSlots, playerCatalogue, type AuctionRound, type PositionCode } from "@/lib/auctionData";
 import { PLAYER_IMAGE_URLS } from "@/lib/playerImageMap";
@@ -19,7 +19,7 @@ export default function Home() {
   const [rounds, setRounds] = useState<AuctionRound[]>(() => buildAuctionRounds());
   const [roundIndex, setRoundIndex] = useState(0);
   const [currentBid, setCurrentBid] = useState<number | null>(null);
-  const [bidIncrement, setBidIncrement] = useState(1);
+  const [bidIncrementText, setBidIncrementText] = useState("1");
   const [leader, setLeader] = useState<number | null>(null);
   const [passed, setPassed] = useState<[boolean, boolean]>([false, false]);
   const [award, setAward] = useState<Award | null>(null);
@@ -29,6 +29,7 @@ export default function Home() {
   const round = rounds[roundIndex];
   const remainingRounds = rounds.length - roundIndex - 1;
   const bidAmount = currentBid ?? round.startPrice;
+  const bidIncrement = normalizeBidIncrement(Number(bidIncrementText));
   const canAward = leader !== null && passed[1 - leader];
   const roundProgress = ((roundIndex + 1) / rounds.length) * 100;
 
@@ -85,7 +86,7 @@ export default function Home() {
     setRounds(buildAuctionRounds(Date.now()));
     setRoundIndex(0);
     setCurrentBid(null);
-    setBidIncrement(1);
+    setBidIncrementText("1");
     setLeader(null);
     setPassed([false, false]);
     setAward(null);
@@ -101,7 +102,7 @@ export default function Home() {
     setRounds(buildAuctionRounds(Date.now()));
     setRoundIndex(0);
     setCurrentBid(null);
-    setBidIncrement(1);
+    setBidIncrementText("1");
     setLeader(null);
     setPassed([false, false]);
     setAward(null);
@@ -143,7 +144,7 @@ export default function Home() {
         <div className="player-hero"><PlayerPhoto name={round.auction.name} className="hero-player-photo" /><div className={`tier-ring ${round.auction.tier.toLowerCase()}`}><span>{round.auction.rating}</span><small>OVR</small></div><p className="tier-label">{round.auction.tier}</p><h2>{round.auction.name}</h2><span>{round.auction.note}</span></div>
         <div className="price-panel"><span>السعر الحالي</span><strong>{money(bidAmount)}</strong><small>سعر البداية: {money(round.startPrice)}</small></div>
         <div className="hidden-player"><span className="lock-orb"><LockKeyhole /></span><div><b>اللاعب الخفي</b><small>سيتم الكشف عنه بعد حسم المزاد</small></div><i>?</i></div>
-        <div className="bid-step-control"><div><span>قيمة الزيادة</span><small>تقدر تزود بأكثر من 1M</small></div><label><input type="number" min="1" max="100" step="1" value={bidIncrement} onChange={(event) => setBidIncrement(normalizeBidIncrement(Number(event.target.value)))} /><b>M</b></label><div className="bid-step-presets"><button type="button" onClick={() => setBidIncrement(1)}>+1</button><button type="button" onClick={() => setBidIncrement(5)}>+5</button><button type="button" onClick={() => setBidIncrement(10)}>+10</button></div></div>
+        <div className="bid-step-control"><div><span>قيمة الزيادة</span><small>تقدر تزود بأكثر من 1M</small></div><label><input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="1" aria-label="قيمة الزيادة بالمليون" value={bidIncrementText} onChange={(event) => setBidIncrementText(event.target.value.replace(/[^0-9]/g, ""))} /><b>M</b></label><div className="bid-step-presets"><button type="button" onClick={() => setBidIncrementText("1")}>+1</button><button type="button" onClick={() => setBidIncrementText("5")}>+5</button><button type="button" onClick={() => setBidIncrementText("10")}>+10</button></div></div>
         <div className="bidding-grid">
           {teams.map((team, index) => {
             const nextBid = nextBidAmount(currentBid, round.startPrice, bidIncrement);

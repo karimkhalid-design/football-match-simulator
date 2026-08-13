@@ -63,3 +63,6 @@
 - [x] Add regression tests for flexible bid validation and UI bid controls.
 
 - [x] Add an automated regression test for numeric bid input, +1/+5/+10 presets, next-bid label calculation, and oversized-bid blocking.
+
+- [x] Allow the bid-increment field to be cleared and typed naturally, including entering 6M without an automatic reset to 1 during editing.
+- [x] Add regression coverage for empty input, typed values, preset values, and safe fallback behavior.
