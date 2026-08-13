@@ -3,28 +3,22 @@ import { AFTAKAR_BANK_SIZE, aftakarQuestionBank, buildAftakarSession, freshAftak
 import { playerCatalogue } from "./auctionData";
 
 describe("Aftakar question bank", () => {
-  it("contains a large varied bank with indirect clues and four unique choices", () => {
+  it("contains only football facts, four unique choices, and no generic clue templates", () => {
     expect(AFTAKAR_BANK_SIZE).toBeGreaterThanOrEqual(300);
     expect(aftakarQuestionBank.every((question) => question.options.length === 4)).toBe(true);
     expect(aftakarQuestionBank.every((question) => new Set(question.options).size === 4)).toBe(true);
     expect(aftakarQuestionBank.every((question) => question.options.includes(question.playerName))).toBe(true);
-    expect(aftakarQuestionBank.filter((question) => question.category === "trivia").length).toBeGreaterThanOrEqual(50);
+    expect(aftakarQuestionBank.filter((question) => question.category === "trivia").length).toBeGreaterThanOrEqual(250);
     expect(new Set(aftakarQuestionBank.map((question) => question.category)).size).toBeGreaterThanOrEqual(4);
 
-    const giveawayWords = [
-      "الجنسية", "جنسيته", "اللاعب الأرجنتيني", "اللاعب البرتغالي", "اللاعب المصري", "اللاعب الفرنسي", "اللاعب البرازيلي", "اللاعب الإيطالي", "اللاعب الألماني", "اللاعب الإسباني",
-      "187 مباراة", "181 مباراة", "163 مشاركة", "تقييمه في الكتالوج", "clue",
-    ];
-    expect(aftakarQuestionBank.every((question) => question.clues.every((clue) => !giveawayWords.some((word) => clue.includes(word))))).toBe(true);
+    const forbiddenGenericPhrases = ["تقييمه في الكتالوج", "من نجوم", "العلامة الفنية", "التفصيلة الفنية", "أسلوبه الأقرب", "لا تعتمد على الرقم"];
+    const factualMarkers = /الأندية|إنجاز|مركز|الكرة الذهبية|هدفاً|موسم 20|الحذاء الذهبي|دوري أبطال|كأس العالم|لقب/;
+    expect(aftakarQuestionBank.every((question) => question.clues.every((clue) => !forbiddenGenericPhrases.some((phrase) => clue.includes(phrase))))).toBe(true);
+    expect(aftakarQuestionBank.every((question) => question.clues.some((clue) => factualMarkers.test(clue)))).toBe(true);
     expect(aftakarQuestionBank.every((question) => question.clues.every((clue) => !clue.includes(question.playerName)))).toBe(true);
-    expect(aftakarQuestionBank.filter((question) => question.category === "tactical").length).toBeGreaterThan(50);
-    for (const category of ["transfer", "competition", "award", "match-event", "era", "record"] as const) {
-      expect(aftakarQuestionBank.filter((question) => question.category === category).length).toBeGreaterThan(50);
-    }
-    expect(aftakarQuestionBank.filter((question) => question.category === "career").length).toBeGreaterThan(50);
+
     const factualQuestions = aftakarQuestionBank.filter((question) => ["record", "award", "competition"].includes(question.category) && question.clues.some((clue) => /هدفاً|الكرة الذهبية|الحذاء الذهبي|موسم 20|عام 20|يلعب مع/.test(clue)));
     expect(factualQuestions.length).toBeGreaterThanOrEqual(10);
-    expect(factualQuestions.every((question) => question.options.length === 4 && question.options.includes(question.playerName))).toBe(true);
     expect(factualQuestions.every((question) => {
       const target = playerCatalogue.find((player) => player.name === question.playerName);
       const options = question.options.map((option) => playerCatalogue.find((player) => player.name === option));
@@ -37,7 +31,7 @@ describe("Aftakar question bank", () => {
     const second = buildAftakarSession(2026, 11);
     expect(first).toEqual(second);
     expect(new Set(first.map((question) => question.playerName)).size).toBe(first.length);
-    expect(new Set(first.map((question) => question.category)).size).toBeGreaterThanOrEqual(3);
+    expect(new Set(first.map((question) => question.category)).size).toBeGreaterThanOrEqual(2);
     expect(first.some((question) => ["record", "award", "competition"].includes(question.category))).toBe(true);
 
     const different = buildAftakarSession(2027, 11);

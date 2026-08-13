@@ -82,32 +82,25 @@ const generatedQuestion = (player: CataloguePlayer, variant: number): AftakarQue
   const nearby = distractorPool(player);
   const offset = Math.min(variant, Math.max(0, nearby.length - 3));
   const options = [player, ...nearby.slice(offset, offset + 3)].map((candidate) => candidate.name);
-  const neutralNote = player.note.replace("هدوء إيطالي", "هدوء محسوب");
   const trivia = triviaMetadata[player.name];
-  const statusText = player.status === "legend" ? "من نجوم جيله السابق" : "من نجوم الجيل الحالي";
-  const categories: AftakarCategory[] = ["transfer", "competition", "award", "match-event", "tactical", "career", "era", "record"];
-  const triviaClues: [string, string, string][] = trivia ? [
-    [`لعب في أكثر من محطة كبيرة، ومن أبرز الأندية المرتبطة بمسيرته: ${trivia.clubs}`, `ارتبط اسمه بإنجاز واضح: ${trivia.achievement}`, `يلعب بأسلوب قريب من وصف: ${neutralNote}`],
-    [`بدأ من محطة مبكرة ثم انتقل إلى أندية أكبر، ومن بينها: ${trivia.clubs}`, `تذكره الجماهير بسبب ${trivia.achievement}`, `هل ينطبق عليه وصف ${neutralNote}؟`],
-    [`مسيرته تجمع بين تجربة محلية وبروز أوروبي في أندية مثل: ${trivia.clubs}`, `حقق أو شارك في إنجاز مهم هو ${trivia.achievement}`, `مركزه وطريقته يجعلان وصف «${neutralNote}» مناسباً له`],
-  ] : [];
-  const standardClues: [string, string, string][] = [
-    [`${statusText}، ويلعب في مركز ${positionLabels[player.position]}`, `تقييمه قريب من بقية الاختيارات، لذلك لا تعتمد على الرقم وحده`, `من أبرز ما يميزه: ${neutralNote}`],
-    [`الاختيارات الأربعة من نفس مركز ${positionLabels[player.position]}`, `هذا اللاعب ${statusText === "من نجوم الجيل الحالي" ? "ما زال حاضراً في الملاعب" : "ترك بصمة واضحة قبل الاعتزال"}`, `أسلوبه الأقرب هو: ${neutralNote}`],
-    [`إذا عرفت مركز ${positionLabels[player.position]} فلن تكفي المعلومة وحدها`, `اختر اللاعب الذي يناسبه تقييم يقارب ${Math.max(80, player.rating - 2)} إلى ${Math.min(99, player.rating + 2)}`, `التفصيلة الفنية الحاسمة: ${neutralNote}`],
-    [`السؤال عن لاعب ${statusText} وليس عن حارس أو مهاجم من اختيار آخر`, `يظهر الفارق بين الخيارات في طريقة التحرك واتخاذ القرار`, `الوصف الذي يطابقه أكثر: ${neutralNote}`],
-    [`كل المرشحين متقاربون في المركز والمستوى`, `فكر في لاعب يعتمد على ${neutralNote.replace("و", " و")}`, `اختَر الاسم الذي يجمع بين الدور والمستوى والصفة الفنية`],
-    [`ينتمي إلى ${statusText} ومركزه ${positionLabels[player.position]}`, `واجه منافسين من نفس المركز في أكثر من موسم`, `لو شاهدت طريقة لعبه ستلاحظ: ${neutralNote}`],
-    [`ينتمي إلى حقبة مختلفة عن بعض الاختيارات، لكنهم جميعاً من نفس المركز`, `لا تحسم من العمر وحده؛ قارن بين الدور داخل الملعب`, `أسلوبه يناسب الوصف: ${neutralNote}`],
-    [`لاعب ذو حضور مستمر في مركز ${positionLabels[player.position]}`, `أرقامه وتقييمه قريبان من المشتتين، لذلك تحتاج إلى تلميح الأسلوب`, `التفصيل الذي يساعدك: ${neutralNote}`],
+  if (!trivia) throw new Error(`Missing verified trivia metadata for ${player.name}`);
+  const factualClues: [string, string, string][] = [
+    [`ارتبطت مسيرته بالأندية: ${trivia.clubs}`, `ومن أبرز إنجازاته: ${trivia.achievement}`, `يظهر في مركز ${positionLabels[player.position]}`],
+    [`من محطات هذا اللاعب: ${trivia.clubs}`, `حقق أو شارك في إنجاز موثق هو ${trivia.achievement}`, `يعرفه بعض المتابعين بلقب «${trivia.alias}»`],
+    [`توزعت مسيرته بين الأندية التالية: ${trivia.clubs}`, `ارتبط اسمه ببطولة أو جائزة مهمة: ${trivia.achievement}`, `مركزه المسجل في البيانات هو ${positionLabels[player.position]}`],
+    [`لعب مع أكثر من نادٍ بارز، منها: ${trivia.clubs}`, `من العلامات الواضحة في مسيرته: ${trivia.achievement}`, `لقبه المتداول هو «${trivia.alias}»`],
+    [`إذا تتبعت مسيرته ستجد الأندية: ${trivia.clubs}`, `من إنجازاته التي تساعد في التعرف عليه: ${trivia.achievement}`, `يلعب في مركز ${positionLabels[player.position]}`],
+    [`الأندية المرتبطة بهذا اللاعب تشمل: ${trivia.clubs}`, `فاز أو ساهم في إنجاز هو ${trivia.achievement}`, `يحمل لقب «${trivia.alias}» في بعض التغطيات`],
+    [`بدأ أو واصل مسيرته مع أندية مثل: ${trivia.clubs}`, `ارتبط اسمه تاريخياً بـ${trivia.achievement}`, `المركز الأقرب له في الكتالوج: ${positionLabels[player.position]}`],
+    [`من سجل مسيرته: ${trivia.clubs}`, `تتضمن إنجازاته ${trivia.achievement}`, `هل تتذكر اللاعب المعروف بلقب «${trivia.alias}»؟`],
+    [`هذه الأندية جزء من مسيرته: ${trivia.clubs}`, `وهذا إنجاز منسوب إليه: ${trivia.achievement}`, `يُصنّف في مركز ${positionLabels[player.position]}`],
+    [`للتعرف عليه راجع محطات الأندية: ${trivia.clubs}`, `ثم طابقها مع الإنجاز: ${trivia.achievement}`, `آخر تلميح: مركزه ${positionLabels[player.position]} ولقبه «${trivia.alias}»`],
   ];
-  const categoryIndex = variant % categories.length;
-  const clues = trivia ? triviaClues[variant % triviaClues.length] : standardClues[categoryIndex];
-  return { playerName: player.name, clues, options, category: trivia ? "trivia" : categories[categoryIndex] };
+  return { playerName: player.name, clues: factualClues[variant % factualClues.length], options, category: "trivia" };
 };
 
-const curated = curatedQuestions.map((question) => ({ ...question, options: question.options ?? [], category: "trivia" as const }));
-const generated = playerCatalogue.filter((player) => !curatedNames.has(player.name)).flatMap((player) => [0, 1, 2, 3, 4, 5, 6, 7].map((variant) => generatedQuestion(player, variant)));
+const curated: AftakarQuestion[] = [];
+const generated = playerCatalogue.filter((player) => Boolean(triviaMetadata[player.name])).flatMap((player) => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((variant) => generatedQuestion(player, variant)));
 export const aftakarQuestionBank: AftakarQuestion[] = [...curated, ...factualQuestions, ...generated];
 
 const hashSeed = (value: number) => {
