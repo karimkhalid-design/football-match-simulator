@@ -25,6 +25,9 @@ describe("Kora Keda iPhone PWA prototype", () => {
   it("ships a Safari fallback skip button in the HTML shell", () => {
     const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
     expect(html).toContain('id="safari-skip-fallback"');
+    expect(html).toContain('rel="icon"');
+    expect(html).toContain('rel="apple-touch-icon"');
+    expect(html).toContain("kora-keda-app-icon_9f5a2e2f.png");
     expect(html).toContain('window.location.hash = "#hub"');
   });
 });

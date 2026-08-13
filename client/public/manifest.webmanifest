@@ -4,6 +4,7 @@
   "description": "بوابة ألعاب كرة القدم للأصحاب",
   "lang": "ar",
   "dir": "rtl",
+  "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -16,13 +17,13 @@
       "src": "/manus-storage/kora-keda-app-icon_9f5a2e2f.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/manus-storage/kora-keda-app-icon_9f5a2e2f.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
   ]
 }
