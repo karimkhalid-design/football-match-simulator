@@ -238,3 +238,9 @@
 - [x] توحيد اسم الموقع من «كوره كده» إلى «كورة كده» في كل الواجهات والبيانات الوصفية
 - [x] تحديث اختبارات الاسم والتحقق من اختفاء الصيغة القديمة
 - [x] التحقق البصري وحفظ checkpoint لتحديث الاسم
+
+- [x] Build a reusable end-of-game share summary popup with winner, rankings, and score details
+- [x] Generate a branded share image from each completed game's score summary
+- [x] Add native share, copy-link, download-image, and share-image actions with graceful fallbacks
+- [x] Integrate the share popup into Auction, Aftakar, VAR, and Men Byhbad finish screens
+- [x] Add tests and mobile visual verification for the cross-game sharing flow

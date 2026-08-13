@@ -204,3 +204,44 @@ button { font:inherit; border:0; cursor:pointer; } button:disabled { cursor:not-
 
 /* Safari / iOS WebKit fallback for the splash action */
 .app-splash-skip { -webkit-appearance:none; appearance:none; position:relative; z-index:10; display:inline-flex; align-items:center; justify-content:center; visibility:visible; opacity:1; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+
+/* Cross-game score sharing */
+.share-result-trigger { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:11px 17px; border:1px solid rgba(196,251,97,.42); border-radius:12px; background:linear-gradient(135deg,rgba(196,251,97,.18),rgba(196,251,97,.05)); color:var(--lime); font-weight:800; box-shadow:0 10px 28px rgba(0,0,0,.18); transition:transform .18s ease,border-color .18s ease,background .18s ease; }
+.share-result-trigger:hover { transform:translateY(-2px); border-color:var(--lime); background:rgba(196,251,97,.25); }
+.share-result-trigger svg { width:17px; }
+.match-share-wrap { display:flex; justify-content:center; margin:26px auto 0; }
+.share-result-backdrop { position:fixed; z-index:100; inset:0; display:grid; place-items:center; padding:20px; background:rgba(1,5,3,.76); backdrop-filter:blur(14px); animation:shareBackdropIn .2s ease both; }
+.share-result-modal { position:relative; width:min(100%,520px); max-height:min(92vh,780px); overflow:auto; padding:26px; border:1px solid rgba(196,251,97,.22); border-radius:27px; background:linear-gradient(150deg,#142b1e,#07100b 75%); box-shadow:0 30px 100px rgba(0,0,0,.55),0 0 55px rgba(196,251,97,.08); animation:shareModalIn .3s cubic-bezier(.23,1,.32,1) both; }
+.share-result-close { position:absolute; top:16px; left:16px; display:grid; place-items:center; width:36px; height:36px; border:1px solid var(--line); border-radius:50%; background:rgba(255,255,255,.05); color:var(--muted); }
+.share-result-close:hover { color:var(--ink); border-color:var(--lime); }
+.share-result-close svg { width:17px; }
+.share-result-heading { display:flex; align-items:center; gap:13px; padding-left:42px; }
+.share-result-heading p { margin:0 0 4px; color:var(--lime); font-family:var(--mono); font-size:9px; letter-spacing:.12em; }
+.share-result-heading h2 { margin:0; color:var(--ink); font-family:var(--display); font-size:clamp(20px,4vw,27px); line-height:1.2; }
+.share-result-icon { display:grid; flex:0 0 auto; place-items:center; width:48px; height:48px; border-radius:16px 16px 6px 16px; background:var(--lime); color:#132016; box-shadow:0 0 28px rgba(196,251,97,.22); transform:rotate(-5deg); }
+.share-result-icon svg { width:24px; }
+.share-result-card { position:relative; margin:23px 0 13px; overflow:hidden; padding:20px 22px 17px; border:1px solid rgba(196,251,97,.3); border-radius:20px; background:radial-gradient(circle at 15% 10%,rgba(196,251,97,.22),transparent 42%),linear-gradient(135deg,#193c28,#0b1810); text-align:right; }
+.share-result-card::after { content:""; position:absolute; right:-65px; bottom:-100px; width:220px; height:220px; border:1px solid rgba(255,255,255,.08); border-radius:50%; box-shadow:0 0 0 25px rgba(255,255,255,.025),0 0 0 50px rgba(255,255,255,.018); }
+.share-result-card > span { color:var(--lime); font-family:var(--mono); font-size:8px; letter-spacing:.12em; }
+.share-result-card h3 { position:relative; z-index:1; margin:5px 0 17px; color:#fff; font-family:var(--display); font-size:24px; }
+.share-result-card > small { display:block; color:#a5b8a9; font-size:10px; }
+.share-result-card > strong { position:relative; z-index:1; display:block; margin-top:2px; color:#fff; font-family:var(--display); font-size:28px; }
+.share-result-card > b { position:relative; z-index:1; display:block; margin-top:3px; color:var(--gold); font-family:var(--display); font-size:23px; }
+.share-result-mini-grid { position:relative; z-index:1; display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-top:18px; }
+.share-result-mini-grid > div { min-width:0; padding:9px 6px; border:1px solid rgba(255,255,255,.1); border-radius:10px; background:rgba(0,0,0,.16); text-align:center; }
+.share-result-mini-grid small { display:block; overflow:hidden; color:#a6b9aa; font-size:8px; text-overflow:ellipsis; white-space:nowrap; }
+.share-result-mini-grid b { display:block; margin-top:4px; overflow:hidden; color:#fff; font-family:var(--display); font-size:12px; text-overflow:ellipsis; white-space:nowrap; }
+.share-result-copy { margin:0 0 14px; color:var(--muted); font-size:11px; text-align:center; }
+.share-result-actions { display:grid; grid-template-columns:1.25fr 1fr 1fr; gap:8px; }
+.share-result-actions button { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:43px; padding:9px 8px; border-radius:11px; font-size:10px; transition:transform .16s ease,opacity .16s ease; }
+.share-result-actions button:hover:not(:disabled) { transform:translateY(-2px); }
+.share-result-actions button:disabled { opacity:.42; }
+.share-result-primary { background:var(--lime); color:#122016; font-weight:800; }
+.share-result-secondary { border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--ink); }
+.share-result-actions svg { width:15px; }
+.share-result-note { display:flex; align-items:center; justify-content:center; gap:6px; margin:14px 0 0; color:#718779; font-size:9px; }
+.share-result-note svg { width:13px; }
+@keyframes shareBackdropIn { from { opacity:0; } to { opacity:1; } }
+@keyframes shareModalIn { from { opacity:0; transform:translateY(16px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+@media (max-width:560px) { .share-result-backdrop { align-items:end; padding:10px; }.share-result-modal { max-height:90vh; padding:21px 16px 17px; border-radius:23px; }.share-result-heading h2 { font-size:20px; }.share-result-card { margin-top:18px; padding:17px; }.share-result-mini-grid { gap:5px; }.share-result-mini-grid > div { padding:8px 3px; }.share-result-actions { grid-template-columns:1fr 1fr; }.share-result-primary { grid-column:1/-1; }.share-result-trigger { width:100%; } }
+@media (prefers-reduced-motion:reduce) { .share-result-backdrop,.share-result-modal { animation:none; }.share-result-trigger,.share-result-actions button { transition:none; } }

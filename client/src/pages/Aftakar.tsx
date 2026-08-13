@@ -3,6 +3,7 @@ import { ArrowRight, Check, ChevronLeft, RotateCcw, Sparkles, Trophy, X } from "
 import { playerCatalogue, positionLabels } from "../lib/auctionData";
 import { AFTAKAR_BANK_SIZE, buildAftakarSession, freshAftakarSeed } from "../lib/aftakarData";
 import { PLAYER_IMAGE_URLS } from "../lib/playerImageMap";
+import ShareResult from "../components/ShareResult";
 
 const AFTAKAR_LOGO_URL = "/manus-storage/aftakar-logo_c6bb6361.png";
 
@@ -76,7 +77,7 @@ export default function Aftakar({ onBackToHub }: { onBackToHub: () => void }) {
           <h1>ذاكرتك الكروية <em>قوية.</em></h1>
           <p className="aftakar-finish-copy">أنهيت كل الجولات وحصلت على نتيجتك النهائية.</p>
           <div className="aftakar-score"><small>مجموع النقاط</small><strong>{score.toLocaleString("ar-EG")}</strong><span>من {rounds.length * 1000} نقطة</span></div>
-          <div className="aftakar-finish-actions"><button className="aftakar-primary" onClick={restart}><RotateCcw /> العب من جديد</button><button className="aftakar-secondary" onClick={onBackToHub}>العودة للألعاب</button></div>
+          <div className="aftakar-finish-actions"><ShareResult gameName="أفتكر" eyebrow="نتيجة تحدي الذاكرة الكروية" winnerName="أنت" winnerScore={`${score.toLocaleString("ar-EG")} نقطة`} rows={[{ label: "النقاط النهائية", score: score.toLocaleString("ar-EG") }, { label: "عدد الجولات", score: rounds.length }, { label: "الحد الأقصى", score: `${rounds.length * 1000} نقطة` }, { label: "الترتيب", score: "بطل الجولة" }]} highlights={["ذاكرة كروية قوية", "كورة كده"]} accent="#b786ff" /><button className="aftakar-primary" onClick={restart}><RotateCcw /> العب من جديد</button><button className="aftakar-secondary" onClick={onBackToHub}>العودة للألعاب</button></div>
         </section>
         <footer className="aftakar-footer">أفتكر · صناعة كريم</footer>
       </main>
