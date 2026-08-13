@@ -12,6 +12,7 @@ describe("Kora Keda iPhone PWA prototype", () => {
     expect(manifest.orientation).toBe("portrait");
     expect(manifest.start_url).toBe("/");
     expect(manifest.icons).toHaveLength(2);
+    expect(manifest.icons.every((icon: { src: string }) => icon.src.includes("kora-keda-app-icon_9f5a2e2f.png"))).toBe(true);
   });
 
   it("ships a service worker for the installed prototype", () => {

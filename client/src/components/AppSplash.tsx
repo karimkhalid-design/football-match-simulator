@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 
-const HUB_LOGO_URL = "/manus-storage/kora-e3mal-elsah-logo_85537310.png";
+const HUB_LOGO_URL = "/manus-storage/kora-keda-app-icon_9f5a2e2f.png";
 
 type Props = { onDone: () => void };
 
