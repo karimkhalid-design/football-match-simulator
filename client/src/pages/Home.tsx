@@ -62,8 +62,14 @@ export default function Home() {
     setLeader(teamIndex);
   };
 
+  const canTeamWithdraw = (teamIndex: number) => {
+    if (award || passed[teamIndex] || leader === teamIndex) return false;
+    if (enteredBidAmount === null) return true;
+    return canOutbid(currentBid, proposedBid, round.startPrice) && canPlaceBid(teams[teamIndex], proposedBid, remainingRounds);
+  };
+
   const pass = (teamIndex: number) => {
-    if (award || passed[teamIndex] || leader === teamIndex) return;
+    if (!canTeamWithdraw(teamIndex)) return;
     const other = teamIndex === 0 ? 1 : 0;
     setPassed((state) => teamIndex === 0 ? [true, state[1]] : [state[0], true]);
     if (leader === null && canPlaceBid(teams[other], round.startPrice, remainingRounds)) {
@@ -154,8 +160,8 @@ export default function Home() {
             return <button key={team.id} className={`bid-button ${index === 0 ? "lime" : "sky"} ${leader === index ? "leading" : ""}`} disabled={!eligible} onClick={() => placeBid(index)}><span>{leader === index ? "أنت متصدر المزاد" : currentBid === null ? `ابدأ بـ ${money(nextBid)}` : `ارفع إلى ${money(nextBid)}`}</span><b>{team.name}</b></button>;
           })}
         </div>
-        <div className="auction-actions"><button className="pass-button" disabled={Boolean(award) || passed[0] || leader === 0} onClick={() => pass(0)}>{teams[0].name} · انسحاب</button><button className="award-button" disabled={!canAward || Boolean(award)} onClick={awardRound}><Trophy /> حسم المزاد</button><button className="pass-button" disabled={Boolean(award) || passed[1] || leader === 1} onClick={() => pass(1)}>{teams[1].name} · انسحاب</button></div>
-        <p className="auction-hint">{leader === null ? `اكتب سعراً لا يقل عن ${money(round.startPrice)} — الرقم هو السعر الإجمالي.` : canAward ? "انسحب المنافس. يمكنك الآن حسم المزاد." : `المتصدر: ${teams[leader].name} · يجب أن يكون عرضك أعلى من ${money(currentBid ?? round.startPrice)}.`}</p>
+        <div className="auction-actions"><button className="pass-button" disabled={!canTeamWithdraw(0)} onClick={() => pass(0)}>{teams[0].name} · انسحاب</button><button className="award-button" disabled={!canAward || Boolean(award)} onClick={awardRound}><Trophy /> حسم المزاد</button><button className="pass-button" disabled={!canTeamWithdraw(1)} onClick={() => pass(1)}>{teams[1].name} · انسحاب</button></div>
+        <p className="auction-hint">{enteredBidAmount !== null && !canOutbid(currentBid, proposedBid, round.startPrice) ? `السعر غير صالح — اكتب ${money(currentBid === null ? round.startPrice : (currentBid + 1))} أو أكثر، ثم تابع.` : leader === null ? `اكتب سعراً لا يقل عن ${money(round.startPrice)} — الرقم هو السعر الإجمالي.` : canAward ? "انسحب المنافس. يمكنك الآن حسم المزاد." : `المتصدر: ${teams[leader].name} · يجب أن يكون عرضك أعلى من ${money(currentBid ?? round.startPrice)}.`}</p>
         {award && <AwardReveal award={award} teams={teams} />}
       </article>
       <SquadBoard team={teams[1]} accent="sky" />

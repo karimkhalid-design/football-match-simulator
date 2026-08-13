@@ -75,3 +75,6 @@
 
 - [x] Block any total-price bid below or equal to the current auction price and show clear feedback instead of accepting it.
 - [x] Add regression coverage for lower, equal, and higher total-price bids in the rendered auction flow.
+
+- [x] Disable withdrawal when the typed total price is invalid or below the round/current required price, preventing an accidental player lock.
+- [x] Add rendered-flow regression coverage for invalid-price withdrawal and valid withdrawal behavior.
