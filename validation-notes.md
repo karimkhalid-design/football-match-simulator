@@ -73,3 +73,5 @@ The duplicate regression was tested through the complete browser flow. After all
 Flexible-bid mobile validation passed at 375px: the +1/+5/+10 presets were present, selecting +5 set the increment to 5, and after the opening bid the opposing button displayed an actual “ارفع بـ 5M إلى 14M” raise.
 
 Clearable bid-input validation passed at 375px: the input type is text with numeric mobile mode, clearing it produced an empty value, typing 6 retained “6”, and after the opening bid the opponent button displayed “ارفع بـ 6M إلى 13M”.
+
+Total-price bidding validation passed at 375px: entering 20 before the first bid was accepted as exactly 20M and the price panel showed 20M. After entering 6M, the opponent button showed “ارفع إلى 6M” but the pure validation rules reject it because it is below the current 20M bid.

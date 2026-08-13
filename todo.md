@@ -66,3 +66,6 @@
 
 - [x] Allow the bid-increment field to be cleared and typed naturally, including entering 6M without an automatic reset to 1 during editing.
 - [x] Add regression coverage for empty input, typed values, preset values, and safe fallback behavior.
+
+- [x] Treat the bid field as the total player price, so entering 20M bids exactly 20M instead of adding 20M to the current price.
+- [x] Add regression coverage for total-price bids, lower-than-current rejection, and budget/future-round safety.

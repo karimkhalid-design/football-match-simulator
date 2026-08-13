@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, CircleDollarSign, Crown, Goal, Gavel, LockKeyhole, Medal, RefreshCw, Sparkles, Swords, Trophy, UsersRound } from "lucide-react";
 import { buildAuctionRounds, formationSlots, playerCatalogue, type AuctionRound, type PositionCode } from "@/lib/auctionData";
 import { PLAYER_IMAGE_URLS } from "@/lib/playerImageMap";
-import { canPlaceBid, createTeams, nextBidAmount, normalizeBidIncrement, simulateDraftMatch, squadValue, teamStrength, totalSpent, type AuctionTeam, type TeamNames } from "@/lib/auctionLogic";
+import { canOutbid, canPlaceBid, createTeams, parseBidAmount, simulateDraftMatch, squadValue, teamStrength, totalBidAmount, totalSpent, type AuctionTeam, type TeamNames } from "@/lib/auctionLogic";
 
 type Award = { round: AuctionRound; winner: number; loser: number; price: number };
 type Screen = "auction" | "final" | "match";
@@ -19,7 +19,7 @@ export default function Home() {
   const [rounds, setRounds] = useState<AuctionRound[]>(() => buildAuctionRounds());
   const [roundIndex, setRoundIndex] = useState(0);
   const [currentBid, setCurrentBid] = useState<number | null>(null);
-  const [bidIncrementText, setBidIncrementText] = useState("1");
+  const [bidAmountText, setBidAmountText] = useState("");
   const [leader, setLeader] = useState<number | null>(null);
   const [passed, setPassed] = useState<[boolean, boolean]>([false, false]);
   const [award, setAward] = useState<Award | null>(null);
@@ -28,8 +28,9 @@ export default function Home() {
 
   const round = rounds[roundIndex];
   const remainingRounds = rounds.length - roundIndex - 1;
-  const bidAmount = currentBid ?? round.startPrice;
-  const bidIncrement = normalizeBidIncrement(Number(bidIncrementText));
+  const enteredBidAmount = parseBidAmount(bidAmountText);
+  const proposedBid = totalBidAmount(currentBid, round.startPrice, enteredBidAmount);
+  const bidAmount = currentBid ?? (enteredBidAmount ?? round.startPrice);
   const canAward = leader !== null && passed[1 - leader];
   const roundProgress = ((roundIndex + 1) / rounds.length) * 100;
 
@@ -54,8 +55,8 @@ export default function Home() {
 
   const placeBid = (teamIndex: number) => {
     if (award || passed[teamIndex] || leader === teamIndex) return;
-    const next = nextBidAmount(currentBid, round.startPrice, bidIncrement);
-    if (!canPlaceBid(teams[teamIndex], next, remainingRounds)) return;
+    const next = totalBidAmount(currentBid, round.startPrice, enteredBidAmount);
+    if (!canOutbid(currentBid, next) || !canPlaceBid(teams[teamIndex], next, remainingRounds)) return;
     setCurrentBid(next);
     setLeader(teamIndex);
   };
@@ -86,7 +87,7 @@ export default function Home() {
     setRounds(buildAuctionRounds(Date.now()));
     setRoundIndex(0);
     setCurrentBid(null);
-    setBidIncrementText("1");
+    setBidAmountText("");
     setLeader(null);
     setPassed([false, false]);
     setAward(null);
@@ -102,7 +103,7 @@ export default function Home() {
     setRounds(buildAuctionRounds(Date.now()));
     setRoundIndex(0);
     setCurrentBid(null);
-    setBidIncrementText("1");
+    setBidAmountText("");
     setLeader(null);
     setPassed([false, false]);
     setAward(null);
@@ -144,12 +145,12 @@ export default function Home() {
         <div className="player-hero"><PlayerPhoto name={round.auction.name} className="hero-player-photo" /><div className={`tier-ring ${round.auction.tier.toLowerCase()}`}><span>{round.auction.rating}</span><small>OVR</small></div><p className="tier-label">{round.auction.tier}</p><h2>{round.auction.name}</h2><span>{round.auction.note}</span></div>
         <div className="price-panel"><span>السعر الحالي</span><strong>{money(bidAmount)}</strong><small>سعر البداية: {money(round.startPrice)}</small></div>
         <div className="hidden-player"><span className="lock-orb"><LockKeyhole /></span><div><b>اللاعب الخفي</b><small>سيتم الكشف عنه بعد حسم المزاد</small></div><i>?</i></div>
-        <div className="bid-step-control"><div><span>قيمة الزيادة</span><small>تقدر تزود بأكثر من 1M</small></div><label><input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="1" aria-label="قيمة الزيادة بالمليون" value={bidIncrementText} onChange={(event) => setBidIncrementText(event.target.value.replace(/[^0-9]/g, ""))} /><b>M</b></label><div className="bid-step-presets"><button type="button" onClick={() => setBidIncrementText("1")}>+1</button><button type="button" onClick={() => setBidIncrementText("5")}>+5</button><button type="button" onClick={() => setBidIncrementText("10")}>+10</button></div></div>
+        <div className="bid-step-control"><div><span>السعر الإجمالي للاعب</span><small>اكتب المبلغ النهائي مثل 20M</small></div><label><input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="السعر" aria-label="السعر الإجمالي للاعب بالمليون" value={bidAmountText} onChange={(event) => setBidAmountText(event.target.value.replace(/[^0-9]/g, ""))} /><b>M</b></label><div className="bid-step-presets"><button type="button" onClick={() => setBidAmountText("10")}>10M</button><button type="button" onClick={() => setBidAmountText("20")}>20M</button><button type="button" onClick={() => setBidAmountText("30")}>30M</button></div></div>
         <div className="bidding-grid">
           {teams.map((team, index) => {
-            const nextBid = nextBidAmount(currentBid, round.startPrice, bidIncrement);
-            const eligible = !award && !passed[index] && leader !== index && canPlaceBid(team, nextBid, remainingRounds);
-            return <button key={team.id} className={`bid-button ${index === 0 ? "lime" : "sky"} ${leader === index ? "leading" : ""}`} disabled={!eligible} onClick={() => placeBid(index)}><span>{leader === index ? "أنت متصدر المزاد" : currentBid === null ? `ابدأ بـ ${money(round.startPrice)}` : `ارفع بـ ${money(bidIncrement)} إلى ${money(nextBid)}`}</span><b>{team.name}</b></button>;
+            const nextBid = proposedBid;
+            const eligible = !award && !passed[index] && leader !== index && canOutbid(currentBid, nextBid) && canPlaceBid(team, nextBid, remainingRounds);
+            return <button key={team.id} className={`bid-button ${index === 0 ? "lime" : "sky"} ${leader === index ? "leading" : ""}`} disabled={!eligible} onClick={() => placeBid(index)}><span>{leader === index ? "أنت متصدر المزاد" : currentBid === null ? `ابدأ بـ ${money(nextBid)}` : `ارفع إلى ${money(nextBid)}`}</span><b>{team.name}</b></button>;
           })}
         </div>
         <div className="auction-actions"><button className="pass-button" disabled={Boolean(award) || passed[0] || leader === 0} onClick={() => pass(0)}>{teams[0].name} · انسحاب</button><button className="award-button" disabled={!canAward || Boolean(award)} onClick={awardRound}><Trophy /> حسم المزاد</button><button className="pass-button" disabled={Boolean(award) || passed[1] || leader === 1} onClick={() => pass(1)}>{teams[1].name} · انسحاب</button></div>

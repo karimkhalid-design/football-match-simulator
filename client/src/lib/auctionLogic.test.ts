@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canPlaceBid, createTeams, nextBidAmount, normalizeBidIncrement, simulateDraftMatch, totalSpent } from "./auctionLogic";
+import { canOutbid, canPlaceBid, createTeams, parseBidAmount, simulateDraftMatch, totalBidAmount, totalSpent } from "./auctionLogic";
 import { buildAuctionRounds } from "./auctionData";
 
 describe("auction budget rules", () => {
@@ -9,19 +9,20 @@ describe("auction budget rules", () => {
     expect(canPlaceBid(team, 8, 10)).toBe(true);
   });
 
-  it("calculates the numeric input and preset bid increments used by the controls", () => {
-    expect(normalizeBidIncrement(1)).toBe(1);
-    expect(normalizeBidIncrement(5.9)).toBe(5);
-    expect(normalizeBidIncrement(0)).toBe(1);
-    expect(normalizeBidIncrement(Number(""))).toBe(1);
-    expect(normalizeBidIncrement(Number.NaN)).toBe(1);
-    expect(nextBidAmount(null, 9, 10)).toBe(9);
-    expect(nextBidAmount(9, 9, 1)).toBe(10);
-    expect(nextBidAmount(9, 9, 5)).toBe(14);
-    expect(nextBidAmount(9, 9, 10)).toBe(19);
+  it("treats the entered amount as the total player price", () => {
+    expect(parseBidAmount("")).toBeNull();
+    expect(parseBidAmount("20M")).toBe(20);
+    expect(parseBidAmount("6")).toBe(6);
+    expect(totalBidAmount(null, 9, 20)).toBe(20);
+    expect(totalBidAmount(14, 9, 20)).toBe(20);
+    expect(totalBidAmount(14, 9, null)).toBe(15);
+    expect(canOutbid(null, 9)).toBe(true);
+    expect(canOutbid(14, 20)).toBe(true);
+    expect(canOutbid(14, 14)).toBe(false);
+    expect(canOutbid(14, 13)).toBe(false);
   });
 
-  it("allows flexible multi-million bid increments when the budget is safe", () => {
+  it("allows larger total-price bids when the budget is safe", () => {
     const [team] = createTeams();
     expect(canPlaceBid(team, 13, 10)).toBe(true);
     expect(canPlaceBid(team, 18, 10)).toBe(true);

@@ -5,32 +5,35 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import Home from "./Home";
 
-describe("flexible bid increment control", () => {
-  it("can be cleared, typed, preset, and safely used for the next bid", async () => {
+describe("total bid price control", () => {
+  it("uses the entered amount as the total price and rejects lower bids", async () => {
     const user = userEvent.setup();
     render(<Home />);
 
     await user.click(screen.getByRole("button", { name: "ابدأ المزاد الآن" }));
-    const input = screen.getByRole("textbox", { name: "قيمة الزيادة بالمليون" }) as HTMLInputElement;
+    const input = screen.getByRole("textbox", { name: "السعر الإجمالي للاعب بالمليون" }) as HTMLInputElement;
 
-    expect(input.value).toBe("1");
-    await user.clear(input);
     expect(input.value).toBe("");
-
-    const openingBid = screen.getAllByRole("button", { name: /ابدأ بـ/ })[0];
+    await user.type(input, "20");
+    expect(input.value).toBe("20");
+    const openingBid = screen.getAllByRole("button", { name: "ابدأ بـ 20M لاعب رقم ١" })[0];
+    expect((openingBid as HTMLButtonElement).disabled).toBe(false);
     await user.click(openingBid);
-    expect((screen.getByRole("button", { name: /ارفع بـ 1M إلى/ }) as HTMLButtonElement).disabled).toBe(false);
 
     await user.clear(input);
     await user.type(input, "6");
     expect(input.value).toBe("6");
-    expect((screen.getByRole("button", { name: /ارفع بـ 6M إلى/ }) as HTMLButtonElement).disabled).toBe(false);
+    expect((screen.getByRole("button", { name: "ارفع إلى 6M لاعب رقم ٢" }) as HTMLButtonElement).disabled).toBe(true);
 
-    await user.click(screen.getByRole("button", { name: "+5" }));
-    expect(input.value).toBe("5");
-    await user.click(screen.getByRole("button", { name: "+10" }));
+    await user.clear(input);
+    await user.type(input, "25");
+    expect((screen.getByRole("button", { name: "ارفع إلى 25M لاعب رقم ٢" }) as HTMLButtonElement).disabled).toBe(false);
+
+    await user.click(screen.getByRole("button", { name: "10M" }));
     expect(input.value).toBe("10");
-    await user.click(screen.getByRole("button", { name: "+1" }));
-    expect(input.value).toBe("1");
+    await user.click(screen.getByRole("button", { name: "20M" }));
+    expect(input.value).toBe("20");
+    await user.click(screen.getByRole("button", { name: "30M" }));
+    expect(input.value).toBe("30");
   });
 });

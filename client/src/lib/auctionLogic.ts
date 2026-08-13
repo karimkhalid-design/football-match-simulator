@@ -13,12 +13,20 @@ export function createTeams(names: Partial<TeamNames> = {}): AuctionTeam[] {
   ];
 }
 
-export function normalizeBidIncrement(value: number) {
-  return Number.isFinite(value) ? Math.max(1, Math.floor(value)) : 1;
+export function parseBidAmount(value: string) {
+  const digits = value.replace(/[^0-9]/g, "");
+  if (!digits) return null;
+  const amount = Number(digits);
+  return Number.isFinite(amount) && amount > 0 ? Math.floor(amount) : null;
 }
 
-export function nextBidAmount(currentBid: number | null, startPrice: number, increment: number) {
-  return currentBid === null ? startPrice : currentBid + normalizeBidIncrement(increment);
+export function totalBidAmount(currentBid: number | null, startPrice: number, enteredAmount: number | null) {
+  if (enteredAmount !== null) return enteredAmount;
+  return currentBid === null ? startPrice : currentBid + 1;
+}
+
+export function canOutbid(currentBid: number | null, proposedBid: number) {
+  return currentBid === null || proposedBid > currentBid;
 }
 
 export function canPlaceBid(team: AuctionTeam, bid: number, remainingRounds: number) {
