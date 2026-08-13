@@ -25,8 +25,8 @@ export function totalBidAmount(currentBid: number | null, startPrice: number, en
   return currentBid === null ? startPrice : currentBid + 1;
 }
 
-export function canOutbid(currentBid: number | null, proposedBid: number) {
-  return currentBid === null || proposedBid > currentBid;
+export function canOutbid(currentBid: number | null, proposedBid: number, startPrice: number) {
+  return currentBid === null ? proposedBid >= startPrice : proposedBid > currentBid;
 }
 
 export function canPlaceBid(team: AuctionTeam, bid: number, remainingRounds: number) {

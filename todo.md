@@ -72,3 +72,6 @@
 
 - [x] Reset the current auction price and total-bid input between rounds so each player uses that round's own starting price.
 - [x] Add regression coverage proving the next round does not inherit the previous winner's price.
+
+- [x] Block any total-price bid below or equal to the current auction price and show clear feedback instead of accepting it.
+- [x] Add regression coverage for lower, equal, and higher total-price bids in the rendered auction flow.

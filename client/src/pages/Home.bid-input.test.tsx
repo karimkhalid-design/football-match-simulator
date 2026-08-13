@@ -34,11 +34,20 @@ describe("total bid price control", () => {
     const input = screen.getByRole("textbox", { name: "السعر الإجمالي للاعب بالمليون" }) as HTMLInputElement;
 
     expect(input.value).toBe("");
+    await user.type(input, "1");
+    const belowStartBid = screen.getAllByRole("button", { name: /ابدأ بـ 1M/ })[0] as HTMLButtonElement;
+    expect(belowStartBid.disabled).toBe(true);
+    await user.clear(input);
     await user.type(input, "20");
     expect(input.value).toBe("20");
     const openingBid = screen.getAllByRole("button", { name: "ابدأ بـ 20M لاعب رقم ١" })[0];
     expect((openingBid as HTMLButtonElement).disabled).toBe(false);
     await user.click(openingBid);
+
+    await user.clear(input);
+    await user.type(input, "20");
+    expect(input.value).toBe("20");
+    expect((screen.getByRole("button", { name: "ارفع إلى 20M لاعب رقم ٢" }) as HTMLButtonElement).disabled).toBe(true);
 
     await user.clear(input);
     await user.type(input, "6");

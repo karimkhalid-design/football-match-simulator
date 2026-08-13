@@ -57,7 +57,7 @@ export default function Home() {
   const placeBid = (teamIndex: number) => {
     if (award || passed[teamIndex] || leader === teamIndex) return;
     const next = totalBidAmount(currentBid, round.startPrice, enteredBidAmount);
-    if (!canOutbid(currentBid, next) || !canPlaceBid(teams[teamIndex], next, remainingRounds)) return;
+    if (!canOutbid(currentBid, next, round.startPrice) || !canPlaceBid(teams[teamIndex], next, remainingRounds)) return;
     setCurrentBid(next);
     setLeader(teamIndex);
   };
@@ -150,12 +150,12 @@ export default function Home() {
         <div className="bidding-grid">
           {teams.map((team, index) => {
             const nextBid = proposedBid;
-            const eligible = !award && !passed[index] && leader !== index && canOutbid(currentBid, nextBid) && canPlaceBid(team, nextBid, remainingRounds);
+            const eligible = !award && !passed[index] && leader !== index && canOutbid(currentBid, nextBid, round.startPrice) && canPlaceBid(team, nextBid, remainingRounds);
             return <button key={team.id} className={`bid-button ${index === 0 ? "lime" : "sky"} ${leader === index ? "leading" : ""}`} disabled={!eligible} onClick={() => placeBid(index)}><span>{leader === index ? "أنت متصدر المزاد" : currentBid === null ? `ابدأ بـ ${money(nextBid)}` : `ارفع إلى ${money(nextBid)}`}</span><b>{team.name}</b></button>;
           })}
         </div>
         <div className="auction-actions"><button className="pass-button" disabled={Boolean(award) || passed[0] || leader === 0} onClick={() => pass(0)}>{teams[0].name} · انسحاب</button><button className="award-button" disabled={!canAward || Boolean(award)} onClick={awardRound}><Trophy /> حسم المزاد</button><button className="pass-button" disabled={Boolean(award) || passed[1] || leader === 1} onClick={() => pass(1)}>{teams[1].name} · انسحاب</button></div>
-        <p className="auction-hint">{leader === null ? "ابدأ المزايدة — القرار الأول يغيّر شكل التشكيلة." : canAward ? "انسحب المنافس. يمكنك الآن حسم المزاد." : `المتصدر: ${teams[leader].name} · انتظر رد المنافس.`}</p>
+        <p className="auction-hint">{leader === null ? `اكتب سعراً لا يقل عن ${money(round.startPrice)} — الرقم هو السعر الإجمالي.` : canAward ? "انسحب المنافس. يمكنك الآن حسم المزاد." : `المتصدر: ${teams[leader].name} · يجب أن يكون عرضك أعلى من ${money(currentBid ?? round.startPrice)}.`}</p>
         {award && <AwardReveal award={award} teams={teams} />}
       </article>
       <SquadBoard team={teams[1]} accent="sky" />

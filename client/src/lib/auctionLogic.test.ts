@@ -16,10 +16,11 @@ describe("auction budget rules", () => {
     expect(totalBidAmount(null, 9, 20)).toBe(20);
     expect(totalBidAmount(14, 9, 20)).toBe(20);
     expect(totalBidAmount(14, 9, null)).toBe(15);
-    expect(canOutbid(null, 9)).toBe(true);
-    expect(canOutbid(14, 20)).toBe(true);
-    expect(canOutbid(14, 14)).toBe(false);
-    expect(canOutbid(14, 13)).toBe(false);
+    expect(canOutbid(null, 9, 9)).toBe(true);
+    expect(canOutbid(null, 6, 9)).toBe(false);
+    expect(canOutbid(14, 20, 9)).toBe(true);
+    expect(canOutbid(14, 14, 9)).toBe(false);
+    expect(canOutbid(14, 13, 9)).toBe(false);
   });
 
   it("allows larger total-price bids when the budget is safe", () => {
