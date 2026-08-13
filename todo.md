@@ -248,3 +248,7 @@
 - [x] Add the approved كورة كده logo to every generated share score card with a stylish branded composition
 - [x] Verify logo loading and score-card generation across the sharing popup
 - [x] Run tests, verify mobile presentation, and save the branded share-card checkpoint
+
+- [x] Fix disabled Save as photo button when the logo image does not complete loading
+- [x] Add regression coverage for image readiness and save action availability
+- [x] Verify the popup on mobile and save a checkpoint for the fix

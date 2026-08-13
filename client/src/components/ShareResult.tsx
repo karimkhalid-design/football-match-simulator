@@ -37,9 +37,33 @@ const fitText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number) 
 
 const loadLogo = () => new Promise<HTMLImageElement | null>((resolve) => {
   const image = new Image();
-  image.onload = () => resolve(image);
-  image.onerror = () => resolve(null);
+  let settled = false;
+  const finish = (value: HTMLImageElement | null) => {
+    if (settled) return;
+    settled = true;
+    resolve(value);
+  };
+  image.onload = () => finish(image);
+  image.onerror = () => finish(null);
   image.src = KORA_LOGO_URL;
+  window.setTimeout(() => finish(null), 1200);
+});
+
+const canvasToBlob = (canvas: HTMLCanvasElement) => new Promise<Blob | null>((resolve) => {
+  if (typeof canvas.toBlob === "function") {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else resolve(null);
+    }, "image/png", 0.94);
+    return;
+  }
+  try {
+    const dataUrl = canvas.toDataURL("image/png");
+    if (!dataUrl) { resolve(null); return; }
+    void fetch(dataUrl).then((response) => response.blob()).then(resolve).catch(() => resolve(null));
+  } catch {
+    resolve(null);
+  }
 });
 
 const generateScoreImage = async (data: ShareResultProps) => {
@@ -138,7 +162,7 @@ const generateScoreImage = async (data: ShareResultProps) => {
   ctx.fillStyle = "#789182";
   ctx.font = "400 24px Arial";
   ctx.fillText("صناعة كريم · كورة كده", 960, 1290);
-  return new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png", 0.94));
+  return canvasToBlob(canvas);
 };
 
 export default function ShareResult({ triggerLabel = "شارك النتيجة", triggerClassName = "share-result-trigger", gameName, eyebrow, winnerName, winnerScore, rows, highlights, accent }: ShareResultProps) {
