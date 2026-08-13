@@ -18,6 +18,8 @@ describe("game hub", () => {
     expect(screen.getByAltText("شعار أفتكر").getAttribute("src")).toContain("aftakar-logo");
     expect(screen.getByRole("button", { name: /VAR و لا لأ/ })).toBeTruthy();
     expect(screen.getByAltText("شعار VAR و لا لأ؟").getAttribute("src")).toContain("4A3546B6-12EE-496E-B7CF-41A005590FB6");
+    expect(screen.getByRole("button", { name: /مين بيهبد/ })).toBeTruthy();
+    expect(screen.getByAltText("شعار مين بيهبد؟").getAttribute("src")).toContain("men-byehbad-logo");
   });
 
   it("enters the auction game from the active card", async () => {
@@ -34,6 +36,14 @@ describe("game hub", () => {
     const { container } = render(<GameHub onSelectAuction={() => undefined} onSelectVar={onSelectVar} />);
     await user.click(container.querySelector(".game-card-var") as HTMLElement);
     expect(onSelectVar).toHaveBeenCalledOnce();
+  });
+
+  it("enters مين بيهبد؟ from its active card", async () => {
+    const user = userEvent.setup();
+    const onSelectMenByehbad = vi.fn();
+    const { container } = render(<GameHub onSelectAuction={() => undefined} onSelectMenByehbad={onSelectMenByehbad} />);
+    await user.click(container.querySelector(".game-card-menbyehbad") as HTMLElement);
+    expect(onSelectMenByehbad).toHaveBeenCalledOnce();
   });
 
   it("enters Aftakar from its active card", async () => {
