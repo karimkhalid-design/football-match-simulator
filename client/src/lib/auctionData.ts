@@ -1,4 +1,6 @@
 export type PositionCode = "GK" | "CB" | "RB" | "LB" | "CM" | "CAM" | "RW" | "LW" | "ST";
+import { expandedPlayerSeeds } from "./expandedPlayerSeeds";
+
 export type PlayerStatus = "active" | "legend";
 
 export type AuctionPlayer = { name: string; rating: number; tier: "LEGEND" | "ELITE" | "STAR" | "PRO"; note: string; };
@@ -45,7 +47,11 @@ const slug = (value: string) => value.toLowerCase().normalize("NFD").replace(/[\
 const tierFor = (rating: number): AuctionPlayer["tier"] => rating >= 91 ? "LEGEND" : rating >= 88 ? "ELITE" : rating >= 85 ? "STAR" : "PRO";
 const priceFor = (rating: number) => rating >= 95 ? 15 : rating >= 92 ? 13 : rating >= 90 ? 11 : rating >= 88 ? 9 : rating >= 85 ? 7 : 5;
 
-export const playerCatalogue: CataloguePlayer[] = (Object.entries(pools) as [PositionCode, Seed[]][]).flatMap(([position, players]) => players.map(([name, rating, note, status = "active"]) => ({ id: slug(`${position}-${name}`), name, rating, note, status, position, tier: tierFor(rating), startPrice: priceFor(rating) })));
+const basePlayerCatalogue: CataloguePlayer[] = (Object.entries(pools) as [PositionCode, Seed[]][]).flatMap(([position, players]) => players.map(([name, rating, note, status = "active"]) => ({ id: slug(`${position}-${name}`), name, rating, note, status, position, tier: tierFor(rating), startPrice: priceFor(rating) })));
+const baseNames = new Set(basePlayerCatalogue.map((player) => player.name));
+const expandedCatalogue: CataloguePlayer[] = expandedPlayerSeeds.filter(([name]) => !baseNames.has(name)).map(([name, position, rating, status]) => ({ id: slug(`${position}-${name}`), name, rating, note: "مسيرة كروية تستحق الاكتشاف", status, position, tier: tierFor(rating), startPrice: priceFor(rating) }));
+const mergedCatalogue = [...basePlayerCatalogue, ...expandedCatalogue];
+export const playerCatalogue: CataloguePlayer[] = mergedCatalogue.filter((player, index, players) => players.findIndex((candidate) => candidate.name === player.name) === index);
 
 const find = (name: string) => playerCatalogue.find((player) => player.name === name)!;
 const asAuctionPlayer = (player: CataloguePlayer): AuctionPlayer => ({ name: player.name, rating: player.rating, tier: player.tier, note: player.note });

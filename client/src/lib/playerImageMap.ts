@@ -1,5 +1,8 @@
 // Generated from Wikipedia page-image thumbnails. Keep URLs immutable per catalogue name.
-export const PLAYER_IMAGE_URLS: Record<string, string> = {
+import { EXPANDED_PLAYER_IMAGE_URLS } from "./expandedPlayerImageMap";
+import { playerCatalogue } from "./auctionData";
+
+const BASE_PLAYER_IMAGE_URLS: Record<string, string> = {
   "Lev Yashin": "/manus-storage/lev-yashin_eb96a077.jpg",
   "Gianluigi Buffon": "/manus-storage/gianluigi-buffon_8323ca21.jpg",
   "Iker Casillas": "/manus-storage/iker-casillas_a8ff2c7c.jpg",
@@ -125,3 +128,9 @@ export const PLAYER_IMAGE_URLS: Record<string, string> = {
   "Robin van Persie": "https://commons.wikimedia.org/wiki/Special:FilePath/Robin%20van%20Persie%202014.jpg?width=256",
   "Pierre-Emerick Aubameyang": "https://commons.wikimedia.org/wiki/Special:FilePath/Pierre-Emerick%20Aubameyang%202019.jpg?width=256"
 };
+
+
+const expandedImageFallbacks = EXPANDED_PLAYER_IMAGE_URLS;
+const generatedImageFallbacks = Object.fromEntries(playerCatalogue.map((player) => [player.name, expandedImageFallbacks[player.name] ?? `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(player.name)}.jpg?width=256`]));
+export const PLAYER_IMAGE_URLS: Record<string, string> = { ...BASE_PLAYER_IMAGE_URLS, ...expandedImageFallbacks, ...generatedImageFallbacks };
+

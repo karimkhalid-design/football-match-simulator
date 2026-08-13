@@ -1,5 +1,7 @@
 export type RoadDifficulty = "easy" | "medium" | "hard";
 
+import { playerLibrary } from "./playerLibrary";
+
 export type RoadTimelineNode = { year: string; club: string; country: string; rating: number; value?: string };
 export type RoadHint = { label: string; text: string };
 export type RoadPlayer = {
@@ -36,7 +38,35 @@ const ROAD_PLAYERS: RoadPlayer[] = [
   { id: "son", name: "Son Heung-min", arabicName: "سون هيونغ مين", alternativeNames: ["son heung min", "son", "سون", "سون هيونغ مين"], nationality: "كوريا الجنوبية", position: "جناح أيسر", preferredFoot: "اليمنى", birthYear: 1992, height: "183 سم", difficulty: "hard", timeline: [{ year: "2010", club: "هامبورغ", country: "ألمانيا", rating: 67 }, { year: "2013", club: "باير ليفركوزن", country: "ألمانيا", rating: 76 }, { year: "2015", club: "توتنهام", country: "إنجلترا", rating: 86 }, { year: "2021", club: "توتنهام", country: "إنجلترا", rating: 91 }], hints: [{ label: "القارة", text: "لاعب آسيوي بدأ مسيرته الأوروبية في ألمانيا." }, { label: "القدم", text: "يجيد التسديد بكلتا القدمين ويعتمد على الركض خلف المدافعين." }, { label: "الثنائي", text: "كوّن شراكة هجومية تاريخية مع مهاجم إنجليزي في لندن." }, { label: "الإنجاز", text: "فاز بالحذاء الذهبي في الدوري الإنجليزي من دون ركلات جزاء." }, { label: "المنتخب", text: "قاد منتخب بلاده في كأس العالم وارتدى شارة القيادة." }, { label: "الهوية", text: "هو أحد أشهر لاعبي كرة القدم في شرق آسيا." }] }
 ];
 
-export const roadGamePlayers = [...ROAD_PLAYERS];
+const curatedRoadNames = new Set(ROAD_PLAYERS.map((player) => player.name));
+const catalogueRoadPlayers: RoadPlayer[] = playerLibrary.filter((player) => !curatedRoadNames.has(player.name)).map((player) => ({
+  id: `catalogue-${player.id}`,
+  name: player.name,
+  arabicName: player.arabicName,
+  alternativeNames: player.aliases,
+  nationality: player.nationality,
+  position: player.position,
+  preferredFoot: "غير محدد",
+  birthYear: 0,
+  height: "غير متاح",
+  difficulty: player.rating >= 90 ? "hard" : player.rating >= 85 ? "medium" : "easy",
+  image: player.image,
+  timeline: [
+    { year: "البداية", club: "محطة البداية", country: player.nationality, rating: Math.max(60, player.rating - 12) },
+    { year: "المحطة الثانية", club: "مسيرة أوروبية أو محلية", country: player.nationality, rating: Math.max(65, player.rating - 7) },
+    { year: "القمة", club: "فريق بارز في المسيرة", country: player.nationality, rating: Math.max(70, player.rating - 3) },
+    { year: "الآن", club: player.currentClub, country: player.nationality, rating: player.rating },
+  ],
+  hints: [
+    { label: "المركز", text: `يلعب في مركز ${player.position}.` },
+    { label: "الهوية", text: `ينتمي إلى جيل ${player.careerLabel}.` },
+    { label: "التقييم", text: `تقييمه في مكتبة كورة كده ${player.rating}.` },
+    { label: "الاسم", text: "اسمه موجود في مكتبة اللاعبين الواسعة داخل الموقع." },
+    { label: "التحدي", text: "قارن المسار الظاهر مع الأسماء المتاحة قبل الإجابة." },
+    { label: "اللمسة الأخيرة", text: `ابحث عن اللاعب المعروف باسم ${player.arabicName}.` },
+  ],
+}));
+export const roadGamePlayers = [...ROAD_PLAYERS, ...catalogueRoadPlayers];
 
 export function normalizeRoadName(value: string) {
   return value.toLocaleLowerCase("ar").normalize("NFKD").replace(/[\u064B-\u065F\u0670]/g, "").replace(/[أإآ]/g, "ا").replace(/ى/g, "ي").replace(/[ًٌٍَُِّْـ]/g, "").replace(/[^a-z0-9\u0600-\u06ff]/g, "");

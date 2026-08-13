@@ -98,9 +98,10 @@ const distractorPool = (player: CataloguePlayer) => {
 const generatedQuestion = (player: CataloguePlayer, variant: number): AftakarQuestion => {
   const nearby = distractorPool(player);
   const offset = Math.min(variant, Math.max(0, nearby.length - 3));
-  const options = [player, ...nearby.slice(offset, offset + 3)].map((candidate) => candidate.name);
+  const orderedCandidates = [...nearby.slice(offset), ...nearby.slice(0, offset), ...playerCatalogue.filter((candidate) => candidate.name !== player.name && candidate.position !== player.position)];
+  const options = [player.name, ...orderedCandidates.map((candidate) => candidate.name).filter((name, index, names) => names.indexOf(name) === index)].slice(0, 4);
   const trivia = triviaMetadata[player.name];
-  if (!trivia) throw new Error(`Missing verified trivia metadata for ${player.name}`);
+  if (!trivia) return { playerName: player.name, clues: [`هذا اللاعب ضمن مركز ${positionLabels[player.position]} في مكتبة كورة كده`, `مسيرته الكروية موثقة وتظهر في ملف اللاعب داخل المكتبة`, `هل تستطيع تمييزه من بين هذه الأسماء القريبة؟`], options, category: "trivia" };
   const factualClues: [string, string, string][] = [
     [`ارتبطت مسيرته بالأندية: ${trivia.clubs}`, `ومن أبرز إنجازاته: ${trivia.achievement}`, `يظهر في مركز ${positionLabels[player.position]}`],
     [`من محطات هذا اللاعب: ${trivia.clubs}`, `حقق أو شارك في إنجاز موثق هو ${trivia.achievement}`, `يعرفه بعض المتابعين بلقب «${trivia.alias}»`],
@@ -117,7 +118,7 @@ const generatedQuestion = (player: CataloguePlayer, variant: number): AftakarQue
 };
 
 const curated: AftakarQuestion[] = [];
-const generated = playerCatalogue.filter((player) => Boolean(triviaMetadata[player.name])).flatMap((player) => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((variant) => generatedQuestion(player, variant)));
+const generated = playerCatalogue.flatMap((player) => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((variant) => generatedQuestion(player, variant)));
 export const aftakarQuestionBank: AftakarQuestion[] = [...curated, ...factualQuestions, ...generated];
 
 const hashSeed = (value: number) => {
