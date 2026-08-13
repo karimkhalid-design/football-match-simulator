@@ -28,3 +28,15 @@
 - [x] Test the complete eleven-round auction lifecycle, reset behavior, and responsive design on desktop and mobile.
 - [x] Add a broad editable player catalogue with varied current players and legends across every required position, rating tier, and starting-price band.
 - [x] Test reset-game behavior from an in-progress auction and verify every visible game state returns to its initial values.
+- [x] Apply the supplied «اعمل الصح» logo as the primary game identity and rename the product throughout the interface.
+- [x] Build a premium golden-and-black landing page that introduces the football auction concept and its main rules.
+- [x] Add editable team-name fields before starting the auction and carry the chosen names through all game screens.
+- [x] Add a clear call to action from the landing page into the live auction experience and preserve the existing game flow.
+- [x] Verify the new branding, landing page, and editable team names on desktop and mobile before delivery.
+- [x] Add a prominent «صناعة كريم» creator credit to the «اعمل الصح» landing experience.
+- [x] Replace default names in auction action labels with the user-entered team names.
+- [x] Apply the supplied «اعمل الصح» logo as the primary game identity and rename the product throughout the interface.
+- [x] Build a premium golden-and-black landing page that introduces the football auction concept and its main rules.
+- [x] Add a clear call to action from the landing page into the live auction experience and preserve the existing game flow.
+- [x] Verify the new branding and landing page on desktop and mobile before delivery.
+- [x] Verify custom team-name entry and auction start from the mobile layout end-to-end.

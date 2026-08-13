@@ -2,11 +2,14 @@ import { MINIMUM_FUTURE_PRICE, TEAM_STARTING_BUDGET, type AuctionPlayer, type Po
 
 export type DraftedPlayer = AuctionPlayer & { position: PositionCode; paid: number; source: "auction" | "hidden" };
 export type AuctionTeam = { id: "ali" | "hussein"; name: string; budget: number; players: DraftedPlayer[] };
+export type TeamNames = { ali: string; hussein: string };
 
-export function createTeams(): AuctionTeam[] {
+export function createTeams(names: Partial<TeamNames> = {}): AuctionTeam[] {
+  const aliName = names.ali?.trim() || "علي مختار";
+  const husseinName = names.hussein?.trim() || "حسين إيهاب";
   return [
-    { id: "ali", name: "علي مختار", budget: TEAM_STARTING_BUDGET, players: [] },
-    { id: "hussein", name: "حسين إيهاب", budget: TEAM_STARTING_BUDGET, players: [] },
+    { id: "ali", name: aliName, budget: TEAM_STARTING_BUDGET, players: [] },
+    { id: "hussein", name: husseinName, budget: TEAM_STARTING_BUDGET, players: [] },
   ];
 }
 

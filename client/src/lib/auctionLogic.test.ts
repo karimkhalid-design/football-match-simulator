@@ -15,6 +15,11 @@ describe("auction budget rules", () => {
     expect(totalSpent(team)).toBe(27);
   });
 
+  it("creates teams with user-provided display names", () => {
+    const teams = createTeams({ ali: "فريق كريم", hussein: "نجوم القاهرة" });
+    expect(teams.map((team) => team.name)).toEqual(["فريق كريم", "نجوم القاهرة"]);
+  });
+
   it("simulates a final match with score, events, and core statistics", () => {
     const teams = createTeams();
     const rounds = buildAuctionRounds();

@@ -27,3 +27,9 @@ The live interface automatically advanced to round two after the reveal. The rem
 The final screen correctly listed both full squads, remaining budgets, auction-versus-hidden counts, and paid squad values. Selecting the match simulation then generated a final score, goal timeline with scorers and assists, man of the match, possession, shots, shots on target, and dangerous chances.
 
 The reset action was tested from an active bid state. It restored round 01/11, cleared both squads to 0/11, returned each team budget to 100M, removed the active leader, and restored the opening bidding prompt.
+
+The «اعمل الصح» landing page was verified with the supplied golden-and-black logo. The creator credit for كريم is present, and both team-name inputs accepted custom values before the auction begins.
+
+Custom names «فريق كريم» and «نجوم القاهرة» were carried into the auction successfully. They appear in the team budgets, squad boards, bidding buttons, and pass actions without any remaining default-name labels.
+
+The same custom-name journey was exercised in a 375px-wide mobile frame. Both values were accepted, the auction started successfully, and the names were present in the mobile auction interface.

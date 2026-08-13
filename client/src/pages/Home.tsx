@@ -1,17 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-import { CircleDollarSign, Crown, Goal, Gavel, LockKeyhole, Medal, RefreshCw, Shield, Sparkles, Swords, Trophy, UsersRound } from "lucide-react";
+import { ArrowLeft, CircleDollarSign, Crown, Goal, Gavel, LockKeyhole, Medal, RefreshCw, Sparkles, Swords, Trophy, UsersRound } from "lucide-react";
 import { buildAuctionRounds, formationSlots, playerCatalogue, type AuctionRound, type PositionCode } from "@/lib/auctionData";
-import { canPlaceBid, createTeams, simulateDraftMatch, squadValue, teamStrength, totalSpent, type AuctionTeam } from "@/lib/auctionLogic";
+import { canPlaceBid, createTeams, simulateDraftMatch, squadValue, teamStrength, totalSpent, type AuctionTeam, type TeamNames } from "@/lib/auctionLogic";
 
 type Award = { round: AuctionRound; winner: number; loser: number; price: number };
 type Screen = "auction" | "final" | "match";
 
 const positionLabel: Record<PositionCode, string> = { GK: "GK", CB: "CB", RB: "RB", LB: "LB", CM: "CM", CAM: "CAM", RW: "RW", LW: "LW", ST: "ST" };
+const LOGO_URL = "/manus-storage/e3mal-elsah-logo_b8d9ae3f.png";
 
 const money = (value: number) => `${value}M`;
 
 export default function Home() {
-  const [teams, setTeams] = useState<AuctionTeam[]>(createTeams);
+  const [teamNames, setTeamNames] = useState<TeamNames>({ ali: "علي مختار", hussein: "حسين إيهاب" });
+  const [landing, setLanding] = useState(true);
+  const [teams, setTeams] = useState<AuctionTeam[]>(() => createTeams(teamNames));
   const [rounds, setRounds] = useState<AuctionRound[]>(() => buildAuctionRounds());
   const [roundIndex, setRoundIndex] = useState(0);
   const [currentBid, setCurrentBid] = useState<number | null>(null);
@@ -76,7 +79,7 @@ export default function Home() {
   };
 
   const resetGame = () => {
-    setTeams(createTeams());
+    setTeams(createTeams(teamNames));
     setRounds(buildAuctionRounds(Date.now()));
     setRoundIndex(0);
     setCurrentBid(null);
@@ -85,6 +88,22 @@ export default function Home() {
     setAward(null);
     setMatch(null);
     setScreen("auction");
+    setLanding(true);
+  };
+
+  const startAuction = () => {
+    const names = { ali: teamNames.ali.trim() || "الفريق الأول", hussein: teamNames.hussein.trim() || "الفريق الثاني" };
+    setTeamNames(names);
+    setTeams(createTeams(names));
+    setRounds(buildAuctionRounds(Date.now()));
+    setRoundIndex(0);
+    setCurrentBid(null);
+    setLeader(null);
+    setPassed([false, false]);
+    setAward(null);
+    setMatch(null);
+    setScreen("auction");
+    setLanding(false);
   };
 
   const simulateFinal = () => {
@@ -92,14 +111,15 @@ export default function Home() {
     setScreen("match");
   };
 
+  if (landing) return <Landing teamNames={teamNames} onNamesChange={setTeamNames} onStart={startAuction} />;
   if (screen === "final") return <FinalResults teams={teams} auctionCounts={teamAuctionCounts} hiddenCounts={teamHiddenCounts} onSimulate={simulateFinal} onReset={resetGame} />;
   if (screen === "match" && match) return <MatchResults teams={teams} match={match} onReset={resetGame} />;
 
   return <main className="auction-app" dir="rtl">
     <div className="noise" /><div className="spotlight spotlight-one" /><div className="spotlight spotlight-two" />
     <header className="auction-header">
-      <div className="brand-lockup"><span className="brand-icon"><Gavel /></span><div><b>المزاد</b><small>AL MZAD · FOOTBALL DRAFT</small></div></div>
-      <div className="header-rule"><span>LIVE AUCTION</span><i /><span>SEASON ONE</span></div>
+      <BrandLockup />
+      <div className="header-rule"><span>اعمل الصح</span><i /><span>LIVE AUCTION</span></div>
       <button className="reset-button" onClick={resetGame}><RefreshCw /> إعادة اللعبة</button>
     </header>
 
@@ -126,12 +146,30 @@ export default function Home() {
             return <button key={team.id} className={`bid-button ${index === 0 ? "lime" : "sky"} ${leader === index ? "leading" : ""}`} disabled={!eligible} onClick={() => placeBid(index)}><span>{leader === index ? "أنت متصدر المزاد" : currentBid === null ? `ابدأ بـ ${money(round.startPrice)}` : `ارفع إلى ${money(nextBid)}`}</span><b>{team.name}</b></button>;
           })}
         </div>
-        <div className="auction-actions"><button className="pass-button" disabled={Boolean(award) || passed[0] || leader === 0} onClick={() => pass(0)}>علي مختار · انسحاب</button><button className="award-button" disabled={!canAward || Boolean(award)} onClick={awardRound}><Trophy /> حسم المزاد</button><button className="pass-button" disabled={Boolean(award) || passed[1] || leader === 1} onClick={() => pass(1)}>حسين إيهاب · انسحاب</button></div>
+        <div className="auction-actions"><button className="pass-button" disabled={Boolean(award) || passed[0] || leader === 0} onClick={() => pass(0)}>{teams[0].name} · انسحاب</button><button className="award-button" disabled={!canAward || Boolean(award)} onClick={awardRound}><Trophy /> حسم المزاد</button><button className="pass-button" disabled={Boolean(award) || passed[1] || leader === 1} onClick={() => pass(1)}>{teams[1].name} · انسحاب</button></div>
         <p className="auction-hint">{leader === null ? "ابدأ المزايدة — القرار الأول يغيّر شكل التشكيلة." : canAward ? "انسحب المنافس. يمكنك الآن حسم المزاد." : `المتصدر: ${teams[leader].name} · انتظر رد المنافس.`}</p>
         {award && <AwardReveal award={award} teams={teams} />}
       </article>
       <SquadBoard team={teams[1]} accent="sky" />
     </section>
+  </main>;
+}
+
+function BrandLockup({ compact = false }: { compact?: boolean }) {
+  return <div className={`brand-lockup ${compact ? "compact" : ""}`}><img src={LOGO_URL} alt="اعمل الصح" /><div><b>اعمل الصح</b><small>لعبة المزاد الكروي</small></div></div>;
+}
+
+function Landing({ teamNames, onNamesChange, onStart }: { teamNames: TeamNames; onNamesChange: (names: TeamNames) => void; onStart: () => void }) {
+  return <main className="landing-page" dir="rtl">
+    <div className="landing-grain" /><div className="landing-flare flare-one" /><div className="landing-flare flare-two" />
+    <header className="landing-nav"><BrandLockup /><span>FOOTBALL AUCTION · SEASON ONE</span></header>
+    <section className="landing-hero">
+      <div className="landing-copy"><p className="landing-kicker"><Crown /> مزاد. قرار. بطولة.</p><h1>اعمل الصح<br /><em>وخليك أنت البطل.</em></h1><p>لعبة مزاد كروي بين فريقين. زايد بذكاء، خاطر بالسعر، وخد فريقك إلى المباراة النهائية قبل منافسك.</p><div className="landing-points"><span><b>11</b> جولة</span><i /><span><b>122</b> لاعباً</span><i /><span><b>1</b> لاعب خفي</span></div></div>
+      <div className="logo-showcase"><div className="logo-glow" /><img src={LOGO_URL} alt="شعار اعمل الصح" /><span className="logo-caption">اللعبة التي لا يكسبها الأعلى سعراً دائماً.</span></div>
+    </section>
+    <section className="start-panel"><div className="start-panel-head"><div><span>اختر أسماء المنافسين</span><h2>من سيعمل الصح اليوم؟</h2></div><p>ستظهر الأسماء في كل جولة، التشكيلات، والنتيجة النهائية.</p></div><div className="team-name-fields"><label className="name-field lime"><span>الفريق الأول</span><input value={teamNames.ali} maxLength={24} onChange={(event) => onNamesChange({ ...teamNames, ali: event.target.value })} placeholder="اكتب اسم الفريق الأول" /><i>01</i></label><div className="field-vs">VS</div><label className="name-field gold"><span>الفريق الثاني</span><input value={teamNames.hussein} maxLength={24} onChange={(event) => onNamesChange({ ...teamNames, hussein: event.target.value })} placeholder="اكتب اسم الفريق الثاني" /><i>02</i></label></div><button className="landing-cta" onClick={onStart}><Gavel /><span>ابدأ المزاد الآن</span><ArrowLeft /></button></section>
+    <section className="how-it-works"><article><span>01</span><h3>زايد بذكاء</h3><p>كل مبلغ تدفعه يؤثر في قدرتك على إنهاء التشكيلة كاملة.</p></article><article><span>02</span><h3>اكسب أو اخسر صح</h3><p>الخاسر لا يخرج فارغاً؛ لاعب خفي يمكن أن يقلب التوازن.</p></article><article><span>03</span><h3>احسم على الملعب</h3><p>بعد 11 جولة، تحاكي اللعبة المباراة بقوة فريقك الجديدة.</p></article></section>
+    <footer className="landing-author"><span>فكرة وتصميم اللعبة</span><b>كريم</b><i>©</i><span>اعمل الصح</span></footer>
   </main>;
 }
 
@@ -148,11 +186,11 @@ function AwardReveal({ award, teams }: { award: Award; teams: AuctionTeam[] }) {
 }
 
 function FinalResults({ teams, auctionCounts, hiddenCounts, onSimulate, onReset }: { teams: AuctionTeam[]; auctionCounts: number[]; hiddenCounts: number[]; onSimulate: () => void; onReset: () => void }) {
-  return <main className="auction-app final-screen" dir="rtl"><div className="noise" /><header className="auction-header"><div className="brand-lockup"><span className="brand-icon"><Gavel /></span><div><b>المزاد</b><small>FINAL DRAFT</small></div></div><button className="reset-button" onClick={onReset}><RefreshCw /> لعبة جديدة</button></header><section className="final-hero"><p className="micro-title"><Trophy /> ALL ROUNDS COMPLETE</p><h1>اكتملت التشكيلتان.<br /><em>حان وقت الحسم.</em></h1><p>تم توزيع 22 لاعباً بين المزاد والهدية الخفية. راجع التشكيلتين قبل محاكاة المباراة.</p></section><section className="final-squads">{teams.map((team, index) => <article className={`final-team ${index === 0 ? "lime" : "sky"}`} key={team.id}><div className="final-team-head"><div><span>{team.name}</span><b>{money(team.budget)} متبقي</b></div><strong>{teamStrength(team)}<small>TEAM OVR</small></strong></div><div className="final-team-stats"><span><b>{auctionCounts[index]}</b> من المزاد</span><span><b>{hiddenCounts[index]}</b> لاعب خفي</span><span><b>{money(squadValue(team))}</b> قيمة مدفوعة</span></div><div className="final-list">{team.players.map((player) => <div key={player.name}><span>{player.position}</span><b>{player.name}</b><small>{player.source === "hidden" ? "مجاناً" : money(player.paid)}</small><i>{player.rating}</i></div>)}</div></article>)}</section><button className="simulate-button" onClick={onSimulate}><Swords /><span>محاكاة المباراة النهائية</span><small>قوة اللاعبين · توازن التشكيلة · عامل مفاجأة</small></button></main>;
+  return <main className="auction-app final-screen" dir="rtl"><div className="noise" /><header className="auction-header"><BrandLockup /><button className="reset-button" onClick={onReset}><RefreshCw /> لعبة جديدة</button></header><section className="final-hero"><p className="micro-title"><Trophy /> ALL ROUNDS COMPLETE</p><h1>اكتملت التشكيلتان.<br /><em>حان وقت الحسم.</em></h1><p>تم توزيع 22 لاعباً بين المزاد والهدية الخفية. راجع التشكيلتين قبل محاكاة المباراة.</p></section><section className="final-squads">{teams.map((team, index) => <article className={`final-team ${index === 0 ? "lime" : "sky"}`} key={team.id}><div className="final-team-head"><div><span>{team.name}</span><b>{money(team.budget)} متبقي</b></div><strong>{teamStrength(team)}<small>TEAM OVR</small></strong></div><div className="final-team-stats"><span><b>{auctionCounts[index]}</b> من المزاد</span><span><b>{hiddenCounts[index]}</b> لاعب خفي</span><span><b>{money(squadValue(team))}</b> قيمة مدفوعة</span></div><div className="final-list">{team.players.map((player) => <div key={player.name}><span>{player.position}</span><b>{player.name}</b><small>{player.source === "hidden" ? "مجاناً" : money(player.paid)}</small><i>{player.rating}</i></div>)}</div></article>)}</section><button className="simulate-button" onClick={onSimulate}><Swords /><span>محاكاة المباراة النهائية</span><small>قوة اللاعبين · توازن التشكيلة · عامل مفاجأة</small></button></main>;
 }
 
 function MatchResults({ teams, match, onReset }: { teams: AuctionTeam[]; match: ReturnType<typeof simulateDraftMatch>; onReset: () => void }) {
-  return <main className="auction-app final-screen" dir="rtl"><div className="noise" /><header className="auction-header"><div className="brand-lockup"><span className="brand-icon"><Gavel /></span><div><b>المزاد</b><small>FINAL MATCH</small></div></div><button className="reset-button" onClick={onReset}><RefreshCw /> ابدأ لعبة جديدة</button></header><section className="match-hero"><p className="micro-title"><Goal /> SIMULATION COMPLETE</p><div className="final-score"><div><span>{teams[0].name}</span><b>{teamStrength(teams[0])} OVR</b></div><strong>{match.homeGoals}<i>—</i>{match.awayGoals}</strong><div><span>{teams[1].name}</span><b>{teamStrength(teams[1])} OVR</b></div></div><div className="motm"><Medal /><div><small>رجل المباراة</small><b>{match.manOfTheMatch}</b></div></div></section><section className="match-report"><article className="goal-feed"><div className="report-head"><span>GOAL TIMELINE</span><h2>أهداف اللقاء</h2></div>{match.events.length ? match.events.map((event, index) => <div className={`goal-event ${event.team === 0 ? "home" : "away"}`} key={`${event.minute}-${index}`}><span>{event.minute}'</span><Goal /><div><b>{event.scorer}</b><small>{event.assist ? `تمريرة حاسمة: ${event.assist}` : "هدف من اللعب"}</small></div></div>) : <div className="no-goals">مباراة تكتيكية بلا أهداف — الحراس تفوقوا.</div>}</article><article className="match-stats"><div className="report-head"><span>DATA ROOM</span><h2>إحصاءات المباراة</h2></div><Stat label="الاستحواذ" home={`${match.homeStats.possession}%`} away={`${match.awayStats.possession}%`} ratio={match.homeStats.possession} /><Stat label="التسديدات" home={match.homeStats.shots} away={match.awayStats.shots} ratio={(match.homeStats.shots / (match.homeStats.shots + match.awayStats.shots)) * 100} /><Stat label="على المرمى" home={match.homeStats.onTarget} away={match.awayStats.onTarget} ratio={(match.homeStats.onTarget / (match.homeStats.onTarget + match.awayStats.onTarget)) * 100} /><Stat label="الفرص الخطيرة" home={match.homeStats.chances} away={match.awayStats.chances} ratio={(match.homeStats.chances / (match.homeStats.chances + match.awayStats.chances)) * 100} /></article></section></main>;
+  return <main className="auction-app final-screen" dir="rtl"><div className="noise" /><header className="auction-header"><BrandLockup /><button className="reset-button" onClick={onReset}><RefreshCw /> ابدأ لعبة جديدة</button></header><section className="match-hero"><p className="micro-title"><Goal /> SIMULATION COMPLETE</p><div className="final-score"><div><span>{teams[0].name}</span><b>{teamStrength(teams[0])} OVR</b></div><strong>{match.homeGoals}<i>—</i>{match.awayGoals}</strong><div><span>{teams[1].name}</span><b>{teamStrength(teams[1])} OVR</b></div></div><div className="motm"><Medal /><div><small>رجل المباراة</small><b>{match.manOfTheMatch}</b></div></div></section><section className="match-report"><article className="goal-feed"><div className="report-head"><span>GOAL TIMELINE</span><h2>أهداف اللقاء</h2></div>{match.events.length ? match.events.map((event, index) => <div className={`goal-event ${event.team === 0 ? "home" : "away"}`} key={`${event.minute}-${index}`}><span>{event.minute}'</span><Goal /><div><b>{event.scorer}</b><small>{event.assist ? `تمريرة حاسمة: ${event.assist}` : "هدف من اللعب"}</small></div></div>) : <div className="no-goals">مباراة تكتيكية بلا أهداف — الحراس تفوقوا.</div>}</article><article className="match-stats"><div className="report-head"><span>DATA ROOM</span><h2>إحصاءات المباراة</h2></div><Stat label="الاستحواذ" home={`${match.homeStats.possession}%`} away={`${match.awayStats.possession}%`} ratio={match.homeStats.possession} /><Stat label="التسديدات" home={match.homeStats.shots} away={match.awayStats.shots} ratio={(match.homeStats.shots / (match.homeStats.shots + match.awayStats.shots)) * 100} /><Stat label="على المرمى" home={match.homeStats.onTarget} away={match.awayStats.onTarget} ratio={(match.homeStats.onTarget / (match.homeStats.onTarget + match.awayStats.onTarget)) * 100} /><Stat label="الفرص الخطيرة" home={match.homeStats.chances} away={match.awayStats.chances} ratio={(match.homeStats.chances / (match.homeStats.chances + match.awayStats.chances)) * 100} /></article></section></main>;
 }
 
 function Stat({ label, home, away, ratio }: { label: string; home: string | number; away: string | number; ratio: number }) { return <div className="match-stat"><b>{home}</b><div><span>{label}</span><i><em style={{ width: `${ratio}%` }} /></i></div><b>{away}</b></div>; }
