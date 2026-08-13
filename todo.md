@@ -369,3 +369,7 @@
 - [x] حفظ checkpoint بعد التحقق من الرجوع للأقسام
 
 - [x] Add a responsive «الأقسام» back button to the Group Games hub header and verify navigation back to Category Hub on mobile and desktop.
+
+- [x] ربط رقم اللاعبين في صفحة الأقسام بعدد لاعبي كتالوج كورة كده الفعلي
+- [x] إضافة اختبار يضمن تحديث العداد عند تغيّر حجم مكتبة اللاعبين
+- [x] التحقق البصري وحفظ checkpoint بعد ربط العداد

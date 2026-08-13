@@ -1,5 +1,6 @@
 import React from "react";
 import { ArrowLeft, ArrowRight, LockKeyhole, Sparkles, Swords } from "lucide-react";
+import { playerLibrary } from "@/lib/playerLibrary";
 
 const HUB_LOGO_URL = "/manus-storage/kora-e3mal-elsah-logo_85537310.png";
 const IN_GAME_LOGO_URL = "/manus-storage/e3mal-elsah-logo_b8d9ae3f.png";
@@ -25,7 +26,7 @@ export default function GameHub({ onSelectAuction, onSelectAftakar, onSelectVar,
           <p className="hub-kicker"><Sparkles /> اختار لعبتك</p>
           <h1>الكرة تبدأ<br /><em>من هنا.</em></h1>
           <p className="hub-description">ادخل عالم ألعاب كرة القدم من بوابة واحدة. كوّن فريقك، خاطر في المزاد، ناقش اللقطات، واستعد للجولة القادمة.</p>
-          <div className="hub-stats"><span><b>04</b> ألعاب</span><i /><span><b>122</b> لاعباً</span><i /><span><b>04</b> متاحة الآن</span></div>
+          <div className="hub-stats"><span><b>04</b> ألعاب</span><i /><span><b data-testid="hub-player-count">{playerLibrary.length}</b> لاعباً</span><i /><span><b>04</b> متاحة الآن</span></div>
         </div>
         <div className="hub-mark"><img src={HUB_LOGO_URL} alt="شعار كورة كده واعمل الصح" /></div>
       </section>

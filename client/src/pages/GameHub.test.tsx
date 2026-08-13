@@ -4,6 +4,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import GameHub from "./GameHub";
+import { playerLibrary } from "@/lib/playerLibrary";
 
 describe("game hub", () => {
   it("shows both active game cards with their separate logos", () => {
@@ -14,6 +15,7 @@ describe("game hub", () => {
     expect(screen.queryByAltText("شعار كورة واعمل الصح")).toBe(null);
     expect(screen.queryByText(/كوره كده/)).toBe(null);
     expect(screen.getByText("كورة كده · ألعاب كتير.")).toBeTruthy();
+    expect(screen.getByTestId("hub-player-count").textContent).toBe(String(playerLibrary.length));
     expect(screen.getByText("أفتكر")).toBeTruthy();
     expect(screen.getByText("ابدأ التحدي")).toBeTruthy();
     expect(screen.getByAltText("شعار أفتكر").getAttribute("src")).toContain("aftakar-logo");
