@@ -16,7 +16,9 @@ describe("online quiz question bank", () => {
     expect(new Set(onlineQuestions.map((question) => question.difficulty)).size).toBe(3);
   });
 
-  it("keeps football questions available for the first game identity", () => {
-    expect(onlineQuestions.filter((question) => question.category === "football").length).toBeGreaterThanOrEqual(10);
+  it("keeps at least ten football questions for every selected difficulty", () => {
+    expect(onlineQuestions.filter((question) => question.category === "football" && question.difficulty === "easy").length).toBeGreaterThanOrEqual(10);
+    expect(onlineQuestions.filter((question) => question.category === "football" && question.difficulty === "medium").length).toBeGreaterThanOrEqual(10);
+    expect(onlineQuestions.filter((question) => question.category === "football" && question.difficulty === "hard").length).toBeGreaterThanOrEqual(10);
   });
 });

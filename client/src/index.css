@@ -297,3 +297,6 @@ button { font:inherit; border:0; cursor:pointer; } button:disabled { cursor:not-
 .category-card{border-color:transparent!important;outline:none!important;box-shadow:0 18px 50px #0003,inset 0 0 48px #ffffff08!important}
 .category-card:before{border:0!important;outline:0!important;filter:none!important;box-shadow:none!important}
 .category-card-art img{display:block!important;margin-inline:auto!important;filter:none!important;outline:0!important}
+
+.online-category-fixed{margin-top:.45rem;border:1px solid #2b9dff66;background:#102b4e;color:#c7e5ff;border-radius:.8rem;padding:.75rem 1rem;font-weight:900;text-align:center}
+@media(min-width:900px){.category-intro{margin-top:26px!important;margin-bottom:28px!important;max-width:1180px!important;text-align:right!important}.category-cards{max-width:1180px!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:18px!important}.category-card{grid-template-rows:24px 158px auto 42px!important;min-height:430px!important;padding:18px!important}.category-card-art{height:158px!important;margin:8px 0!important}.category-card-art img{max-width:86%!important;max-height:150px!important}.category-card-online .category-card-art img{max-width:78%!important;max-height:145px!important}}

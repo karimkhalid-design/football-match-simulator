@@ -42,7 +42,7 @@ export default function CategoryHub({ onSelectGroup, onSelectSolo, onSelectLibra
         <button type="button" className="category-card category-card-online" onClick={onSelectOnline}>
           <div className="category-card-status"><span>متاحة الآن · 1 ضد 1</span><Users /></div>
           <div className="category-card-art"><img src={ONLINE_LOGO_URL} alt="شعار هتعرف تجاوب؟" /></div>
-          <div className="category-card-copy"><span>غرفة حقيقية · من أي جهاز</span><h2>هتعرف تجاوب؟</h2><p>اختبر معلوماتك واتحدى صاحبك في مباراة أسئلة أونلاين.</p></div>
+          <div className="category-card-copy"><span>غرفة حقيقية · من أي جهاز</span><h2>العب أونلاين</h2><p>اختبر معلوماتك واتحدى صاحبك في مباراة أسئلة أونلاين.</p></div>
           <div className="category-card-action">اعمل تحدي <ArrowLeft /></div>
         </button>
       </section>

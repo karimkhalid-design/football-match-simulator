@@ -16,7 +16,7 @@ describe("category hub", () => {
     render(<CategoryHub onSelectGroup={onSelectGroup} onSelectSolo={onSelectSolo} onSelectLibrary={onSelectLibrary} onSelectOnline={onSelectOnline} />);
     expect(screen.getByRole("heading", { name: "ألعاب جماعية" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "ألعاب فردية" })).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "هتعرف تجاوب؟" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "العب أونلاين" })).toBeTruthy();
     expect(screen.getByRole("img", { name: "شعار الألعاب الجماعية" })).toBeTruthy();
     expect(screen.getByRole("img", { name: "شعار الألعاب الفردية" })).toBeTruthy();
     expect(screen.getByRole("img", { name: "شعار هتعرف تجاوب؟" })).toBeTruthy();
@@ -36,7 +36,7 @@ describe("category hub", () => {
     render(<CategoryHub onSelectGroup={vi.fn()} onSelectSolo={vi.fn()} onSelectLibrary={vi.fn()} onSelectOnline={onSelectOnline} />);
     fireEvent.click(screen.getByRole("button", { name: /اعمل تحدي/ }));
     expect(onSelectOnline).toHaveBeenCalledOnce();
-    expect(screen.getByRole("heading", { name: "هتعرف تجاوب؟" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "العب أونلاين" })).toBeTruthy();
   });
 });
 
