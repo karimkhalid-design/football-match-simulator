@@ -3,10 +3,9 @@ import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { TRPCError } from "@trpc/server";
+import { publicProcedure, router } from "./_core/trpc";
 import { findPlayer, findTeam, getCatalogue } from "./footballCatalog";
-import { getMatchById, getRecentMatches, getStoredTeams, getUserByUsername, persistMatch, syncCatalogue, syncTeams, updateUserUsername } from "./db";
+import { getMatchById, getRecentMatches, getStoredTeams, persistMatch, syncCatalogue, syncTeams } from "./db";
 import { simulateMatch } from "../shared/football";
 
 const playerFilters = z.object({
@@ -39,14 +38,6 @@ export const appRouter = router({
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
-    }),
-    setUsername: protectedProcedure.input(z.object({ username: z.string().trim().min(3).max(24).regex(/^[a-zA-Z0-9_]+$/, "Username must use English letters, numbers, or underscore") })).mutation(async ({ ctx, input }) => {
-      const username = input.username.toLowerCase();
-      const existing = await getUserByUsername(username);
-      if (existing && existing.openId !== ctx.user.openId) throw new TRPCError({ code: "CONFLICT", message: "اسم المستخدم مستخدم بالفعل" });
-      const updated = await updateUserUsername(ctx.user.openId, username);
-      if (!updated) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "تعذر حفظ اسم المستخدم" });
-      return updated;
     }),
   }),
   football: router({

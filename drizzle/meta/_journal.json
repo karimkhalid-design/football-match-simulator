@@ -22,13 +22,6 @@
       "when": 1786578466890,
       "tag": "0002_nasty_ogun",
       "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1786649813361,
-      "tag": "0003_confused_doctor_strange",
-      "breakpoints": true
     }
   ]
 }

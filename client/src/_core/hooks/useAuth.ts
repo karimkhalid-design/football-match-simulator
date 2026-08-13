@@ -19,14 +19,6 @@ export function useAuth(options?: UseAuthOptions) {
   const meQuery = trpc.auth.me.useQuery(undefined, {
     retry: false,
     refetchOnWindowFocus: false,
-    refetchOnMount: "always",
-    refetchOnReconnect: true,
-  });
-
-  const usernameMutation = trpc.auth.setUsername.useMutation({
-    onSuccess: (updatedUser) => {
-      utils.auth.me.setData(undefined, updatedUser);
-    },
   });
 
   const logoutMutation = trpc.auth.logout.useMutation({
@@ -66,7 +58,7 @@ export function useAuth(options?: UseAuthOptions) {
     return {
       user: meQuery.data ?? null,
       loading: meQuery.isLoading || logoutMutation.isPending,
-      error: meQuery.error ?? logoutMutation.error ?? usernameMutation.error ?? null,
+      error: meQuery.error ?? logoutMutation.error ?? null,
       isAuthenticated: Boolean(meQuery.data),
     };
   }, [
@@ -75,7 +67,6 @@ export function useAuth(options?: UseAuthOptions) {
     meQuery.isLoading,
     logoutMutation.error,
     logoutMutation.isPending,
-    usernameMutation.error,
   ]);
 
   useEffect(() => {
@@ -103,7 +94,5 @@ export function useAuth(options?: UseAuthOptions) {
     ...state,
     refresh: () => meQuery.refetch(),
     logout,
-    setUsername: usernameMutation.mutateAsync,
-    settingUsername: usernameMutation.isPending,
   };
 }

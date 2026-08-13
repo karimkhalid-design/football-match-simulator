@@ -1,7 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { io, type Socket } from "socket.io-client";
-import { startLogin } from "@/const";
-import { useAuth } from "../_core/hooks/useAuth";
 import { ArrowRight, Check, Copy, Crown, Flame, Link2, LoaderCircle, LockKeyhole, Play, RotateCcw, Share2, Trophy, Volume2, VolumeX, X, Zap } from "lucide-react";
 import ShareResult from "../components/ShareResult";
 
@@ -14,7 +12,7 @@ const categoryOptions: Array<[Category, string]> = [["random", "عشوائي �
 
 export default function OnlineQuiz({ onBack }: { onBack: () => void }) {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [screen, setScreen] = useState<"home" | "auth" | "username" | "name" | "create" | "join" | "room" | "leaderboard">("home");
+  const [screen, setScreen] = useState<"home" | "name" | "create" | "join" | "room" | "leaderboard">("home");
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [category, setCategory] = useState<Category>("random");
@@ -26,34 +24,16 @@ export default function OnlineQuiz({ onBack }: { onBack: () => void }) {
   const [muted, setMuted] = useState(() => localStorage.getItem("kora-online-muted") === "1");
   const [now, setNow] = useState(Date.now());
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
-  const [usernameDraft, setUsernameDraft] = useState("");
-  const { user, loading: authLoading, isAuthenticated, logout, setUsername, settingUsername } = useAuth();
-  const accountName = user?.name?.trim() || user?.email?.split("@")[0] || "لاعب";
 
   useEffect(() => {
     const inviteCode = window.location.hash.match(/[?&]room=([A-Z0-9]{5})/i)?.[1];
-    if (inviteCode) { setCode(inviteCode.toUpperCase()); (window as any).__onlineIntent = "join"; setScreen("auth"); }
+    if (inviteCode) { setCode(inviteCode.toUpperCase()); (window as any).__onlineIntent = "join"; setScreen("name"); }
     const client = io(window.location.origin, { transports: ["websocket", "polling"] });
     client.on("room_state", (nextState) => { setState(nextState); setScreen("room"); });
     client.on("connect_error", () => setError("تعذر الاتصال بالخادم. جرّب مرة أخرى."));
     setSocket(client);
     return () => { client.disconnect(); };
   }, []);
-
-  useEffect(() => {
-    if (authLoading || !isAuthenticated) return;
-    const pendingIntent = sessionStorage.getItem("kora-online-auth-intent") as "create" | "join" | null;
-    if (pendingIntent) {
-      setName(user?.username || accountName);
-      if (user?.username) {
-        setScreen(pendingIntent);
-        sessionStorage.removeItem("kora-online-auth-intent");
-      } else {
-        setUsernameDraft("");
-        setScreen("username");
-      }
-    }
-  }, [accountName, authLoading, isAuthenticated, user?.username]);
 
   useEffect(() => { if (state?.status !== "question") return; const interval = window.setInterval(() => setNow(Date.now()), 100); return () => window.clearInterval(interval); }, [state?.status, state?.round]);
   useEffect(() => { localStorage.setItem("kora-online-muted", muted ? "1" : "0"); }, [muted]);
@@ -62,25 +42,11 @@ export default function OnlineQuiz({ onBack }: { onBack: () => void }) {
   const self = state?.players?.find((player: any) => player.isYou);
   const opponent = state?.players?.find((player: any) => !player.isYou);
   const winner = state?.scores?.slice().sort((a: any, b: any) => b.score - a.score)?.[0];
-  const goName = (next: "create" | "join") => { setError(""); setCode(next === "join" ? code : ""); setName(user?.username || accountName); setCategory("random"); setDifficulty("medium"); (window as any).__onlineIntent = next; sessionStorage.setItem("kora-online-auth-intent", next); if (!isAuthenticated) return setScreen("auth"); if (!user?.username) { setUsernameDraft(""); return setScreen("username"); } setScreen(next); };
+  const goName = (next: "create" | "join") => { setError(""); setScreen("name"); setCode(""); setName(""); setCategory("random"); setDifficulty("medium"); (window as any).__onlineIntent = next; };
   const emit = (event: string, payload: any, callback?: (response: any) => void) => { if (!socket) return; socket.emit(event, payload, callback); };
   const submitName = () => { if (!name.trim()) return setError("اكتب اسمك الأول"); setError(""); setScreen((window as any).__onlineIntent === "create" ? "create" : "join"); };
-  const submitUsername = async () => {
-    const normalized = usernameDraft.trim().toLowerCase();
-    if (!/^[a-z0-9_]{3,24}$/.test(normalized)) return setError("استخدم 3 إلى 24 حرفاً إنجليزياً أو رقماً أو _");
-    try {
-      await setUsername({ username: normalized });
-      setName(normalized);
-      setError("");
-      const pendingIntent = sessionStorage.getItem("kora-online-auth-intent") as "create" | "join" | null;
-      sessionStorage.removeItem("kora-online-auth-intent");
-      setScreen(pendingIntent ?? "home");
-    } catch (submitError: any) {
-      setError(submitError?.message ?? "اسم المستخدم مستخدم بالفعل");
-    }
-  };
-  const createRoom = () => emit("create_room", { nickname: (name || accountName).trim(), category: "football", difficulty }, (response) => { if (!response?.ok) return setError("تعذر إنشاء الغرفة"); sessionStorage.setItem("kora-online-token", response.token); setToken(response.token); setState(response.state); setScreen("room"); });
-  const joinRoom = () => emit("join_room", { code, nickname: (name || accountName).trim(), token }, (response) => { if (!response?.ok) return setError(response?.error ?? "تعذر دخول الغرفة"); sessionStorage.setItem("kora-online-token", response.token); setToken(response.token); setState(response.state); setScreen("room"); });
+  const createRoom = () => emit("create_room", { nickname: name, category: "football", difficulty }, (response) => { if (!response?.ok) return setError("تعذر إنشاء الغرفة"); sessionStorage.setItem("kora-online-token", response.token); setToken(response.token); setState(response.state); setScreen("room"); });
+  const joinRoom = () => emit("join_room", { code, nickname: name, token }, (response) => { if (!response?.ok) return setError(response?.error ?? "تعذر دخول الغرفة"); sessionStorage.setItem("kora-online-token", response.token); setToken(response.token); setState(response.state); setScreen("room"); });
   const setReady = () => emit("set_ready", { token });
   const answer = (optionIndex: number) => { if (!state?.ownAnswer && state?.status === "question" && !state?.bonus?.eliminatedOptions?.includes(optionIndex)) emit("answer", { token, optionIndex }); };
   const useBonusAid = () => emit("use_bonus_aid", { token });
@@ -91,11 +57,7 @@ export default function OnlineQuiz({ onBack }: { onBack: () => void }) {
 
   const shell = (content: React.ReactNode) => <main className="online-game" dir="rtl"><div className="online-orb online-orb-blue" /><div className="online-orb online-orb-red" /><header className="online-header"><button type="button" className="online-back" onClick={onBack}><ArrowRight /> التصنيفات</button><button type="button" className="online-sound" aria-label={muted ? "تشغيل الصوت" : "كتم الصوت"} onClick={() => setMuted((value) => !value)}>{muted ? <VolumeX /> : <Volume2 />}</button></header>{content}</main>;
 
-  if (screen === "home") return shell(<section className="online-hero"><img className="online-logo" src={ONLINE_LOGO_URL} alt="هتعرف تجاوب؟" /><p className="online-eyebrow">ONLINE FOOTBALL QUIZ · 1 VS 1</p><h1>هتعرف تجاوب؟</h1><p className="online-lead">اختبر معلوماتك… واتحدى صاحبك!<br />غرفة حقيقية، إجابات حقيقية، وفائز واحد.</p>{isAuthenticated && <div className="online-account-chip"><span>مرحباً، {accountName}</span><button type="button" onClick={() => void logout()}>خروج</button></div>}<div className="online-home-actions"><button type="button" className="online-primary" onClick={() => goName("create")}><Play /> اعمل لعبة</button><button type="button" className="online-secondary" onClick={() => goName("join")}><Link2 /> ادخل بكود</button><button type="button" className="online-ghost" onClick={showLeaderboard}><Trophy /> المتصدرين</button></div>{error && <p className="online-error">{error}</p>}<small className="online-credit">صناعة كريم · كورة كده</small></section>);
-
-  if (screen === "username") return shell(<section className="online-panel online-username-panel"><img className="online-mini-logo" src={ONLINE_LOGO_URL} alt="" /><p className="online-eyebrow">هوية اللاعب · كورة كده</p><h1>اختار Username ثابت</h1><p className="online-lead">الاسم ده هيظهر في الغرف والمتصدرين ودعوات أصحابك.</p><input className="online-input online-username-input" autoFocus value={usernameDraft} maxLength={24} onChange={(event) => { setUsernameDraft(event.target.value.replace(/[^a-zA-Z0-9_]/g, "")); setError(""); }} onKeyDown={(event) => event.key === "Enter" && void submitUsername()} placeholder="مثال: karim_10" />{error && <p className="online-error">{error}</p>}<button type="button" className="online-primary" onClick={() => void submitUsername()} disabled={settingUsername}>{settingUsername ? <LoaderCircle className="online-spinner" /> : <Check />} {settingUsername ? "جاري الحفظ…" : "حفظ Username"}</button><small className="online-auth-note">الاسم ثابت لحسابك، ويمكن تغييره لاحقاً من إعدادات الأونلاين.</small></section>);
-
-  if (screen === "auth") return shell(<section className="online-panel online-auth-panel"><img className="online-mini-logo" src={ONLINE_LOGO_URL} alt="" /><p className="online-eyebrow">الأونلاين فقط · حسابك محفوظ</p><h1>سجّل دخولك</h1><p className="online-lead">بدل ما تكتب اسمك كل مرة، استخدم حسابك وادخل تلعب مع أصحابك بسهولة.</p><div className="online-auth-provider-grid"><button type="button" className="online-auth-provider online-google" onClick={() => startLogin()}><b>G</b><span>تسجيل سريع عبر Google</span></button><button type="button" className="online-auth-provider online-apple" onClick={() => startLogin()}><b>●</b><span>تسجيل سريع عبر Apple</span></button></div><small className="online-auth-note">سيتم فتح بوابة الدخول الآمنة لاختيار Google أو Apple. باقي الألعاب لا تحتاج تسجيل دخول.</small>{error && <p className="online-error">{error}</p>}<button type="button" className="online-text-button" onClick={() => setScreen("home")}>رجوع</button></section>);
+  if (screen === "home") return shell(<section className="online-hero"><img className="online-logo" src={ONLINE_LOGO_URL} alt="هتعرف تجاوب؟" /><p className="online-eyebrow">ONLINE FOOTBALL QUIZ · 1 VS 1</p><h1>هتعرف تجاوب؟</h1><p className="online-lead">اختبر معلوماتك… واتحدى صاحبك!<br />غرفة حقيقية، إجابات حقيقية، وفائز واحد.</p><div className="online-home-actions"><button type="button" className="online-primary" onClick={() => goName("create")}><Play /> اعمل لعبة</button><button type="button" className="online-secondary" onClick={() => goName("join")}><Link2 /> ادخل بكود</button><button type="button" className="online-ghost" onClick={showLeaderboard}><Trophy /> المتصدرين</button></div>{error && <p className="online-error">{error}</p>}<small className="online-credit">صناعة كريم · كورة كده</small></section>);
 
   if (screen === "leaderboard") return shell(<section className="online-panel online-leaderboard-panel"><Trophy className="online-trophy" /><p className="online-eyebrow">RATING · ONLINE</p><h1>المتصدرين</h1>{leaderboard.length ? <div className="online-leaderboard">{leaderboard.map((row) => <div className="online-leaderboard-row" key={row.nickname}><b>#{row.rank}</b><span>{row.nickname}<small>{row.wins} فوز · {row.draws} تعادل · {row.losses} خسارة</small></span><strong>{row.rating}</strong></div>)}</div> : <p className="online-lead">لسه مفيش مباريات مسجلة. اعمل أول تحدي وابدأ ترتيبك!</p>}<button type="button" className="online-text-button" onClick={() => setScreen("home")}>رجوع</button></section>);
 
