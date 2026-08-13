@@ -19,6 +19,9 @@ export default function AppSplash({ onDone }: Props) {
         <h1>كوره كده</h1>
         <p className="app-splash-tagline">اللعب يبدأ من هنا.</p>
         <span className="app-splash-loader" aria-hidden="true"><i /><i /><i /></span>
+        <button type="button" className="app-splash-skip" onClick={onDone}>
+          تخطي
+        </button>
       </div>
       <footer>صناعة كريم</footer>
     </main>
