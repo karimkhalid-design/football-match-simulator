@@ -15,7 +15,7 @@ describe("AppSplash", () => {
     expect(screen.getByAltText("شعار كوره كده")).toBeTruthy();
     expect(screen.getByText("صناعة كريم")).toBeTruthy();
     expect(onDone).not.toHaveBeenCalled();
-    act(() => { vi.advanceTimersByTime(899); });
+    act(() => { vi.advanceTimersByTime(2499); });
     expect(onDone).not.toHaveBeenCalled();
     act(() => { vi.advanceTimersByTime(1); });
     expect(onDone).toHaveBeenCalledOnce();
