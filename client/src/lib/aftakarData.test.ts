@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AFTAKAR_BANK_SIZE, aftakarQuestionBank, buildAftakarSession, freshAftakarSeed } from "./aftakarData";
+import { AFTAKAR_BANK_SIZE, aftakarQuestionBank, buildAftakarSession, freshAftakarSeed, isValidRealisticOptionSet } from "./aftakarData";
 import { playerCatalogue } from "./auctionData";
 
 describe("Aftakar question bank", () => {
@@ -19,11 +19,11 @@ describe("Aftakar question bank", () => {
 
     const factualQuestions = aftakarQuestionBank.filter((question) => ["record", "award", "competition"].includes(question.category) && question.clues.some((clue) => /هدفاً|الكرة الذهبية|الحذاء الذهبي|موسم 20|عام 20|يلعب مع/.test(clue)));
     expect(factualQuestions.length).toBeGreaterThanOrEqual(10);
-    expect(factualQuestions.every((question) => {
-      const target = playerCatalogue.find((player) => player.name === question.playerName);
-      const options = question.options.map((option) => playerCatalogue.find((player) => player.name === option));
-      return target && options.every((option) => option && option.position === target.position);
-    })).toBe(true);
+    const contextualQuestions = aftakarQuestionBank.filter((question) => question.optionGroup);
+    expect(contextualQuestions.length).toBeGreaterThanOrEqual(12);
+    expect(contextualQuestions.every((question) => question.optionGroup && isValidRealisticOptionSet(question.optionGroup, question.options))).toBe(true);
+    expect(contextualQuestions.every((question) => question.options.includes(question.playerName))).toBe(true);
+    expect(contextualQuestions.every((question) => question.options.every((option) => playerCatalogue.some((player) => player.name === option)))).toBe(true);
   });
 
   it("builds deterministic, no-repeat sessions while varying order and option placement by seed", () => {

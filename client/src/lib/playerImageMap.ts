@@ -121,5 +121,7 @@ export const PLAYER_IMAGE_URLS: Record<string, string> = {
   "Nuno Mendes": "/manus-storage/nuno-mendes_6702d02a.jpg",
   "Ronaldo Nazário": "/manus-storage/ronaldo-naz-rio_6e76a400.jpg",
   "Theo Hernández": "/manus-storage/theo-hern-ndez_63da028a.jpg",
-  "Xavi": "/manus-storage/xavi_c7df3a71.jpg"
+  "Xavi": "/manus-storage/xavi_c7df3a71.jpg",
+  "Robin van Persie": "https://commons.wikimedia.org/wiki/Special:FilePath/Robin%20van%20Persie%202014.jpg?width=256",
+  "Pierre-Emerick Aubameyang": "https://commons.wikimedia.org/wiki/Special:FilePath/Pierre-Emerick%20Aubameyang%202019.jpg?width=256"
 };

@@ -1,9 +1,23 @@
 import { CataloguePlayer, playerCatalogue, positionLabels } from "./auctionData";
 
 type AftakarCategory = "trivia" | "career" | "record" | "tactical" | "era" | "transfer" | "competition" | "award" | "match-event";
-type CuratedQuestion = { playerName: string; clues: [string, string, string]; options?: string[] };
-export type AftakarQuestion = { playerName: string; clues: [string, string, string]; options: string[]; category: AftakarCategory };
+type RealisticOptionGroup = "premier-league-golden-boot" | "champions-league-top-scorers" | "ballon-dor-winners" | "la-liga-pichichi-winners" | "bundesliga-top-scorers";
+type CuratedQuestion = { playerName: string; clues: [string, string, string]; options?: string[]; optionGroup?: RealisticOptionGroup };
+export type AftakarQuestion = { playerName: string; clues: [string, string, string]; options: string[]; category: AftakarCategory; optionGroup?: RealisticOptionGroup };
 type TriviaMetadata = { nationality: string; clubs: string; achievement: string; alias: string };
+
+const realisticOptionGroups: Record<RealisticOptionGroup, string[]> = {
+  "premier-league-golden-boot": ["Alan Shearer", "Thierry Henry", "Cristiano Ronaldo", "Didier Drogba", "Robin van Persie", "Luis Suárez", "Sergio Agüero", "Harry Kane", "Mohamed Salah", "Erling Haaland", "Son Heung-min", "Sadio Mané", "Pierre-Emerick Aubameyang", "Jamie Vardy"],
+  "champions-league-top-scorers": ["Cristiano Ronaldo", "Lionel Messi", "Robert Lewandowski", "Karim Benzema", "Raúl", "Ruud van Nistelrooy", "Thomas Müller", "Kylian Mbappé", "Mohamed Salah", "Neymar", "Thierry Henry"],
+  "ballon-dor-winners": ["Lionel Messi", "Cristiano Ronaldo", "Zinedine Zidane", "Ronaldo Nazário", "Ronaldinho", "Kaká", "Luka Modrić", "Karim Benzema", "Luis Figo", "Fabio Cannavaro", "Toni Kroos", "Andrés Iniesta"],
+  "la-liga-pichichi-winners": ["Lionel Messi", "Cristiano Ronaldo", "Luis Suárez", "Ronaldo Nazário", "Karim Benzema", "Robert Lewandowski", "Diego Forlán", "Samuel Eto'o", "Hugo Sánchez"],
+  "bundesliga-top-scorers": ["Robert Lewandowski", "Erling Haaland", "Harry Kane", "Pierre-Emerick Aubameyang", "Thomas Müller", "Gerd Müller", "Jadon Sancho", "Timo Werner"]
+};
+
+export const isValidRealisticOptionSet = (group: RealisticOptionGroup, options: string[]) => {
+  const validNames = new Set(realisticOptionGroups[group]);
+  return options.length === 4 && new Set(options).size === 4 && options.every((name) => validNames.has(name));
+};
 
 const triviaMetadata: Record<string, TriviaMetadata> = {
   "Lionel Messi": { nationality: "أرجنتيني", clubs: "برشلونة وباريس سان جيرمان وإنتر ميامي", achievement: "كأس العالم 2022 وسبع كرات ذهبية", alias: "البرغوث" },
@@ -55,18 +69,18 @@ const curatedQuestions: CuratedQuestion[] = [
 ];
 
 const factualQuestions: AftakarQuestion[] = [
-  { playerName: "Cristiano Ronaldo", clues: ["من اللاعب الذي سجل 17 هدفاً في دوري أبطال أوروبا موسم 2013/14؟", "كان يلعب وقتها مع ريال مدريد، وحقق لقب هداف البطولة في مواسم أخرى أيضاً", "الاختيارات من أجنحة هجومية حققوا أرقاماً كبيرة في أوروبا"], options: ["Cristiano Ronaldo", "Thierry Henry", "Kylian Mbappé", "Neymar"], category: "record" },
-  { playerName: "Erling Haaland", clues: ["من سجل 36 هدفاً في الدوري الإنجليزي الممتاز موسم 2022/23؟", "كان هذا أول موسم كامل له في الدوري مع مانشستر سيتي", "قارن بينه وبين ليفاندوفسكي وكين وأجويرو في اختيارات السؤال"], options: ["Erling Haaland", "Robert Lewandowski", "Harry Kane", "Sergio Agüero"], category: "record" },
-  { playerName: "Mohamed Salah", clues: ["من فاز بالحذاء الذهبي للدوري الإنجليزي موسم 2017/18 بعد تسجيل 32 هدفاً؟", "كان أول موسم كامل له مع ليفربول في الدوري الإنجليزي", "الاختيارات أجنحة ومهاجمون من نفس جيل الدوري"], options: ["Mohamed Salah", "Lionel Messi", "Luis Figo", "Arjen Robben"], category: "award" },
-  { playerName: "Thierry Henry", clues: ["من سجل 30 هدفاً في الدوري الإنجليزي موسم 2003/04؟", "كان هداف الدوري وقتها مع آرسنال، في موسم لم يخسر فيه الفريق مباراة", "الاختيارات تضم مهاجمين فازوا بالحذاء الذهبي أيضاً"], options: ["Thierry Henry", "Cristiano Ronaldo", "Neymar", "Kylian Mbappé"], category: "competition" },
-  { playerName: "Luis Suárez", clues: ["من سجل 40 هدفاً في الدوري الإسباني موسم 2015/16؟", "كان يلعب مع برشلونة وتفوق في سباق الهدافين على زميله ميسي", "اختياراتك من مهاجمين كبار في الدوري الإسباني وأوروبا"], options: ["Luis Suárez", "Robert Lewandowski", "Ronaldo Nazário", "Karim Benzema"], category: "record" },
-  { playerName: "Robert Lewandowski", clues: ["من سجل 41 هدفاً في الدوري الألماني موسم 2020/21؟", "كسر وقتها الرقم السابق المسجل باسم غيرد مولر", "الاختيارات مهاجمون معروفون بأرقامهم التهديفية"], options: ["Robert Lewandowski", "Erling Haaland", "Harry Kane", "Sergio Agüero"], category: "record" },
-  { playerName: "Zinedine Zidane", clues: ["من فاز بالكرة الذهبية عام 1998 وهو يلعب مع يوفنتوس؟", "جاءت الجائزة في عام فاز فيه أيضاً بكأس العالم مع منتخب بلاده", "الاختيارات صانعو لعب ومهاجمون فازوا بالجائزة في فترات قريبة"], options: ["Zinedine Zidane", "Kaká", "Ronaldinho", "Kevin De Bruyne"], category: "award" },
-  { playerName: "Kaká", clues: ["من فاز بالكرة الذهبية عام 2007 وهو لاعب في ميلان؟", "سبق الجائزة تتويج فريقه بدوري أبطال أوروبا في العام نفسه", "الاختيارات تضم صانعي لعب فازوا أو نافسوا على الجائزة في فترات قريبة"], options: ["Kaká", "Zinedine Zidane", "Ronaldinho", "Kevin De Bruyne"], category: "award" },
-  { playerName: "Luka Modrić", clues: ["من فاز بالكرة الذهبية عام 2018 وهو يلعب مع ريال مدريد؟", "وصل في العام نفسه إلى نهائي كأس العالم مع منتخب بلاده", "الاختيارات لاعبو وسط من جيل الجوائز نفسه"], options: ["Luka Modrić", "Toni Kroos", "Xavi", "Andrés Iniesta"], category: "award" },
-  { playerName: "Lionel Messi", clues: ["من فاز بالكرة الذهبية عام 2019 وهو لاعب في برشلونة؟", "كان ينافسه في القائمة لاعبون من ليفربول ويوفنتوس", "السؤال عن الجائزة في ذلك العام وليس عن عدد مرات الفوز الكلي"], options: ["Lionel Messi", "Mohamed Salah", "Luis Figo", "Arjen Robben"], category: "award" },
-  { playerName: "Karim Benzema", clues: ["من فاز بالكرة الذهبية عام 2022 وهو لاعب في ريال مدريد؟", "جاءت الجائزة بعد موسم تهديفي حاسم في دوري أبطال أوروبا", "الاختيارات مهاجمون من أندية أوروبية كبيرة"], options: ["Karim Benzema", "Robert Lewandowski", "Erling Haaland", "Harry Kane"], category: "award" },
-  { playerName: "Cristiano Ronaldo", clues: ["من كان هداف دوري أبطال أوروبا موسم 2017/18 برصيد 15 هدفاً؟", "سجل الأهداف مع ريال مدريد قبل انتقاله إلى يوفنتوس", "اختيارات السؤال من أبرز هدافي البطولة في تلك الحقبة"], options: ["Cristiano Ronaldo", "Thierry Henry", "Kylian Mbappé", "Neymar"], category: "competition" },
+  { playerName: "Cristiano Ronaldo", clues: ["من اللاعب الذي سجل 17 هدفاً في دوري أبطال أوروبا موسم 2013/14؟", "كان يلعب وقتها مع ريال مدريد، وحقق لقب هداف البطولة في مواسم أخرى أيضاً", "الاختيارات من أجنحة هجومية حققوا أرقاماً كبيرة في أوروبا"], options: ["Cristiano Ronaldo", "Lionel Messi", "Robert Lewandowski", "Karim Benzema"], category: "record", optionGroup: "champions-league-top-scorers" },
+  { playerName: "Erling Haaland", clues: ["من سجل 36 هدفاً في الدوري الإنجليزي الممتاز موسم 2022/23؟", "كان هذا أول موسم كامل له في الدوري مع مانشستر سيتي", "قارن بينه وبين ليفاندوفسكي وكين وأجويرو في اختيارات السؤال"], options: ["Erling Haaland", "Mohamed Salah", "Harry Kane", "Robin van Persie"], category: "record", optionGroup: "premier-league-golden-boot" },
+  { playerName: "Mohamed Salah", clues: ["من فاز بالحذاء الذهبي للدوري الإنجليزي موسم 2017/18 بعد تسجيل 32 هدفاً؟", "كان أول موسم كامل له مع ليفربول في الدوري الإنجليزي", "الاختيارات أجنحة ومهاجمون من نفس جيل الدوري"], options: ["Mohamed Salah", "Harry Kane", "Erling Haaland", "Robin van Persie"], category: "award", optionGroup: "premier-league-golden-boot" },
+  { playerName: "Thierry Henry", clues: ["من سجل 30 هدفاً في الدوري الإنجليزي موسم 2003/04؟", "كان هداف الدوري وقتها مع آرسنال، في موسم لم يخسر فيه الفريق مباراة", "الاختيارات تضم مهاجمين فازوا بالحذاء الذهبي أيضاً"], options: ["Thierry Henry", "Robin van Persie", "Mohamed Salah", "Erling Haaland"], category: "competition", optionGroup: "premier-league-golden-boot" },
+  { playerName: "Luis Suárez", clues: ["من سجل 40 هدفاً في الدوري الإسباني موسم 2015/16؟", "كان يلعب مع برشلونة وتفوق في سباق الهدافين على زميله ميسي", "اختياراتك من مهاجمين كبار في الدوري الإسباني وأوروبا"], options: ["Luis Suárez", "Lionel Messi", "Cristiano Ronaldo", "Karim Benzema"], category: "record", optionGroup: "la-liga-pichichi-winners" },
+  { playerName: "Robert Lewandowski", clues: ["من سجل 41 هدفاً في الدوري الألماني موسم 2020/21؟", "كسر وقتها الرقم السابق المسجل باسم غيرد مولر", "الاختيارات مهاجمون معروفون بأرقامهم التهديفية"], options: ["Robert Lewandowski", "Erling Haaland", "Harry Kane", "Pierre-Emerick Aubameyang"], category: "record", optionGroup: "bundesliga-top-scorers" },
+  { playerName: "Zinedine Zidane", clues: ["من فاز بالكرة الذهبية عام 1998 وهو يلعب مع يوفنتوس؟", "جاءت الجائزة في عام فاز فيه أيضاً بكأس العالم مع منتخب بلاده", "الاختيارات صانعو لعب ومهاجمون فازوا بالجائزة في فترات قريبة"], options: ["Zinedine Zidane", "Ronaldo Nazário", "Ronaldinho", "Luis Figo"], category: "award", optionGroup: "ballon-dor-winners" },
+  { playerName: "Kaká", clues: ["من فاز بالكرة الذهبية عام 2007 وهو لاعب في ميلان؟", "سبق الجائزة تتويج فريقه بدوري أبطال أوروبا في العام نفسه", "الاختيارات تضم صانعي لعب فازوا أو نافسوا على الجائزة في فترات قريبة"], options: ["Kaká", "Zinedine Zidane", "Ronaldinho", "Luka Modrić"], category: "award", optionGroup: "ballon-dor-winners" },
+  { playerName: "Luka Modrić", clues: ["من فاز بالكرة الذهبية عام 2018 وهو يلعب مع ريال مدريد؟", "وصل في العام نفسه إلى نهائي كأس العالم مع منتخب بلاده", "الاختيارات لاعبو وسط من جيل الجوائز نفسه"], options: ["Luka Modrić", "Zinedine Zidane", "Kaká", "Ronaldinho"], category: "award", optionGroup: "ballon-dor-winners" },
+  { playerName: "Lionel Messi", clues: ["من فاز بالكرة الذهبية عام 2019 وهو لاعب في برشلونة؟", "كان ينافسه في القائمة لاعبون من ليفربول ويوفنتوس", "السؤال عن الجائزة في ذلك العام وليس عن عدد مرات الفوز الكلي"], options: ["Lionel Messi", "Cristiano Ronaldo", "Luka Modrić", "Karim Benzema"], category: "award", optionGroup: "ballon-dor-winners" },
+  { playerName: "Karim Benzema", clues: ["من فاز بالكرة الذهبية عام 2022 وهو لاعب في ريال مدريد؟", "جاءت الجائزة بعد موسم تهديفي حاسم في دوري أبطال أوروبا", "الاختيارات مهاجمون من أندية أوروبية كبيرة"], options: ["Karim Benzema", "Lionel Messi", "Cristiano Ronaldo", "Luka Modrić"], category: "award", optionGroup: "ballon-dor-winners" },
+  { playerName: "Cristiano Ronaldo", clues: ["من كان هداف دوري أبطال أوروبا موسم 2017/18 برصيد 15 هدفاً؟", "سجل الأهداف مع ريال مدريد قبل انتقاله إلى يوفنتوس", "اختيارات السؤال من أبرز هدافي البطولة في تلك الحقبة"], options: ["Cristiano Ronaldo", "Lionel Messi", "Robert Lewandowski", "Karim Benzema"], category: "competition", optionGroup: "champions-league-top-scorers" },
 ];
 
 const curatedNames = new Set(curatedQuestions.map((question) => question.playerName));
