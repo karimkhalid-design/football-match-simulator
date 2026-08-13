@@ -17,3 +17,13 @@ After the non-blocking change, the match lab loaded immediately and the history 
 The archived fixture now opens a standalone summary sourced from the saved record, including the scoreline, possession, shots, passes, timeline, and starting XIs. Selecting Thibaut Courtois from that summary opened the dedicated player dossier page with profile statistics, attributes, and career timeline.
 
 The direct URL `/players/real-madrid-thibaut-courtois` was tested from a fresh navigation and successfully loaded the player dossier after the standard catalogue initialization. The page presented the expanded five-stop career timeline and the complete player statistics without requiring a prior search or in-memory selection.
+
+The AL MZAD auction interface was tested with the expanded 122-player catalogue. The first goalkeeper round surfaced Manuel Neuer from the catalogue, and Ali Mokhtar's opening 11M bid correctly updated the active-leader state while keeping the opposing 12M counterbid available.
+
+After Hussein Ihab passed, the award action became available and correctly revealed Thibaut Courtois only at the settlement stage. Ali Mokhtar received Manuel Neuer for 11M with his budget updated to 89M, while Hussein Ihab received Courtois free of charge; both squad boards correctly recorded the goalkeeper assignment.
+
+The live interface automatically advanced to round two after the reveal. The remaining rounds were then exercised through the same UI controls, including a budget-constrained switch of bidder, and the game reached the final-results screen with both eleven-player squads completed.
+
+The final screen correctly listed both full squads, remaining budgets, auction-versus-hidden counts, and paid squad values. Selecting the match simulation then generated a final score, goal timeline with scorers and assists, man of the match, possession, shots, shots on target, and dangerous chances.
+
+The reset action was tested from an active bid state. It restored round 01/11, cleared both squads to 0/11, returned each team budget to 100M, removed the active leader, and restored the opening bidding prompt.

@@ -20,3 +20,11 @@
 - [x] Serve team records from the persistent teams table through the football data procedure after synchronization.
 - [x] Support direct player dossier URLs and routing from the database, builder, and summary screens.
 - [x] Complete the in-product career archive coverage for every player profile in the starter catalogue.
+- [x] Replace the current football simulator interface with the AL MZAD two-team auction game experience.
+- [x] Add editable in-browser auction round data for eleven positions, bid players, hidden players, starting prices, and ratings.
+- [x] Implement budget-safe bidding, per-round pass rules, automatic eligibility restrictions, winner assignment, and hidden-player reveal for the losing team.
+- [x] Render live 4-3-3 squad boards, spend totals, remaining budgets, round progress, and a short award/reveal transition without page reloads.
+- [x] Add an end-of-auction results view with squad values, purchased-versus-hidden counts, and a match simulation based on the drafted teams.
+- [x] Test the complete eleven-round auction lifecycle, reset behavior, and responsive design on desktop and mobile.
+- [x] Add a broad editable player catalogue with varied current players and legends across every required position, rating tier, and starting-price band.
+- [x] Test reset-game behavior from an in-progress auction and verify every visible game state returns to its initial values.

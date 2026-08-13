@@ -1,261 +1,158 @@
 import { useEffect, useMemo, useState } from "react";
-import { trpc } from "@/lib/trpc";
-import { filterPlayers } from "@/lib/playerFilters";
-import { useLocation, useRoute } from "wouter";
-import {
-  Activity,
-  ArrowLeft,
-  ArrowUpRight,
-  BadgeCheck,
-  CalendarDays,
-  ChevronLeft,
-  Clock3,
-  Goal,
-  ListFilter,
-  LoaderCircle,
-  Plus,
-  Search,
-  Shield,
-  Shirt,
-  SlidersHorizontal,
-  Sparkles,
-  Trophy,
-  UsersRound,
-  X,
-  Zap,
-} from "lucide-react";
+import { CircleDollarSign, Crown, Goal, Gavel, LockKeyhole, Medal, RefreshCw, Shield, Sparkles, Swords, Trophy, UsersRound } from "lucide-react";
+import { buildAuctionRounds, formationSlots, playerCatalogue, type AuctionRound, type PositionCode } from "@/lib/auctionData";
+import { canPlaceBid, createTeams, simulateDraftMatch, squadValue, teamStrength, totalSpent, type AuctionTeam } from "@/lib/auctionLogic";
 
-type View = "match" | "database" | "builder" | "history" | "summary" | "player";
-type Position = "GK" | "DF" | "MF" | "FW";
-type Status = "active" | "retired";
+type Award = { round: AuctionRound; winner: number; loser: number; price: number };
+type Screen = "auction" | "final" | "match";
 
-const positionNames: Record<string, string> = { GK: "حارس", DF: "دفاع", MF: "وسط", FW: "هجوم" };
-const eventLabels = { goal: "هدف", yellow: "بطاقة صفراء", red: "بطاقة حمراء", substitution: "تبديل", chance: "فرصة محققة" };
+const positionLabel: Record<PositionCode, string> = { GK: "GK", CB: "CB", RB: "RB", LB: "LB", CM: "CM", CAM: "CAM", RW: "RW", LW: "LW", ST: "ST" };
 
-function TeamMark({ team, size = "md" }: { team: any; size?: "sm" | "md" | "lg" }) {
-  return <span className={`team-mark ${size}`} style={{ "--team-colour": team.colour, "--team-accent": team.accent } as React.CSSProperties}>{team.shortName}</span>;
-}
-
-function EventGlyph({ type }: { type: keyof typeof eventLabels }) {
-  if (type === "goal") return <Goal />;
-  if (type === "yellow") return <span className="card-glyph yellow" />;
-  if (type === "red") return <span className="card-glyph red" />;
-  if (type === "substitution") return <ArrowLeft />;
-  return <Zap />;
-}
-
-function EmptyState({ icon: Icon, title, copy }: { icon: typeof Activity; title: string; copy: string }) {
-  return <div className="empty-state"><Icon /><strong>{title}</strong><span>{copy}</span></div>;
-}
+const money = (value: number) => `${value}M`;
 
 export default function Home() {
-  const [isPlayerRoute, routeParams] = useRoute("/players/:id");
-  const [, setLocation] = useLocation();
-  const [view, setView] = useState<View>("match");
-  const [homeId, setHomeId] = useState("real-madrid");
-  const [awayId, setAwayId] = useState("manchester-city");
-  const [playerSearch, setPlayerSearch] = useState("");
-  const [positionFilter, setPositionFilter] = useState<Position | "all">("all");
-  const [statusFilter, setStatusFilter] = useState<Status | "all">("all");
-  const [clubFilter, setClubFilter] = useState("all");
-  const [nationalityFilter, setNationalityFilter] = useState("all");
-  const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
-  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
-  const [homeLineup, setHomeLineup] = useState<string[]>([]);
-  const [awayLineup, setAwayLineup] = useState<string[]>([]);
-  const [builderSide, setBuilderSide] = useState<"home" | "away">("home");
-  const [matchData, setMatchData] = useState<any>(null);
-  const [liveIndex, setLiveIndex] = useState(0);
+  const [teams, setTeams] = useState<AuctionTeam[]>(createTeams);
+  const [rounds, setRounds] = useState<AuctionRound[]>(() => buildAuctionRounds());
+  const [roundIndex, setRoundIndex] = useState(0);
+  const [currentBid, setCurrentBid] = useState<number | null>(null);
+  const [leader, setLeader] = useState<number | null>(null);
+  const [passed, setPassed] = useState<[boolean, boolean]>([false, false]);
+  const [award, setAward] = useState<Award | null>(null);
+  const [screen, setScreen] = useState<Screen>("auction");
+  const [match, setMatch] = useState<ReturnType<typeof simulateDraftMatch> | null>(null);
 
-  const catalogueQuery = trpc.football.catalogue.useQuery();
-  const historyQuery = trpc.football.history.useQuery(undefined, { refetchInterval: 10_000 });
-  const routePlayerQuery = trpc.football.player.useQuery({ id: routeParams?.id ?? "" }, { enabled: isPlayerRoute && Boolean(routeParams?.id) });
-  const archivedMatchQuery = trpc.football.match.useQuery({ id: selectedMatchId ?? "" }, { enabled: Boolean(selectedMatchId) });
-  const simulate = trpc.football.simulate.useMutation({
-    onSuccess: (data) => {
-      setMatchData(data);
-      setSelectedMatchId(null);
-      setLiveIndex(0);
-      setView("match");
-      historyQuery.refetch();
-    },
-  });
+  const round = rounds[roundIndex];
+  const remainingRounds = rounds.length - roundIndex - 1;
+  const bidAmount = currentBid ?? round.startPrice;
+  const canAward = leader !== null && passed[1 - leader];
+  const roundProgress = ((roundIndex + 1) / rounds.length) * 100;
 
-  const catalogue = catalogueQuery.data;
-  const teams = catalogue?.teams ?? [];
-  const players = catalogue?.players ?? [];
-  const homeTeam = teams.find((team: any) => team.id === homeId) ?? teams[0];
-  const awayTeam = teams.find((team: any) => team.id === awayId) ?? teams[1];
-  const homeTeamPlayers = useMemo(() => players.filter((player: any) => player.teamId === homeId), [players, homeId]);
-  const awayTeamPlayers = useMemo(() => players.filter((player: any) => player.teamId === awayId), [players, awayId]);
-  const visibleHomeIds = homeLineup.length ? homeLineup : homeTeamPlayers.map((player: any) => player.id);
-  const visibleAwayIds = awayLineup.length ? awayLineup : awayTeamPlayers.map((player: any) => player.id);
-  const visibleHome = players.filter((player: any) => visibleHomeIds.includes(player.id));
-  const visibleAway = players.filter((player: any) => visibleAwayIds.includes(player.id));
-  const clubs = useMemo(() => Array.from(new Set(players.map((player: any) => player.club))).sort(), [players]);
-  const nationalities = useMemo(() => Array.from(new Set(players.map((player: any) => player.nationality))).sort(), [players]);
-  const filteredPlayers = useMemo(() => filterPlayers(players, {
-    search: playerSearch,
-    position: positionFilter,
-    status: statusFilter,
-    club: clubFilter,
-    nationality: nationalityFilter,
-  }), [players, playerSearch, positionFilter, statusFilter, clubFilter, nationalityFilter]);
-  const archivedSummary = useMemo(() => {
-    const record: any = archivedMatchQuery.data;
-    if (!record) return null;
-    const homeTeam = teams.find((team: any) => team.id === record.homeTeamId);
-    const awayTeam = teams.find((team: any) => team.id === record.awayTeamId);
-    if (!homeTeam || !awayTeam) return null;
-    const pick = (ids: unknown, teamId: string) => Array.isArray(ids) && ids.length ? players.filter((player: any) => ids.includes(player.id)) : players.filter((player: any) => player.teamId === teamId);
-    return { id: record.id, homeTeam, awayTeam, homeSelection: pick(record.homeLineupIds, record.homeTeamId), awaySelection: pick(record.awayLineupIds, record.awayTeamId), result: record.matchStats };
-  }, [archivedMatchQuery.data, teams, players]);
-  const activeSummary = selectedMatchId ? archivedSummary : matchData;
-
-  const events = matchData?.result.events ?? [];
-  const revealedEvents = events.slice(0, liveIndex);
-  const isComplete = matchData && liveIndex >= events.length;
-  const homeLiveScore = revealedEvents.filter((event: any) => event.team === "home" && event.type === "goal").length;
-  const awayLiveScore = revealedEvents.filter((event: any) => event.team === "away" && event.type === "goal").length;
-  const liveMinute = Math.min(90, revealedEvents.at(-1)?.minute ?? 0);
+  const teamAuctionCounts = useMemo(() => teams.map((team) => team.players.filter((player) => player.source === "auction").length), [teams]);
+  const teamHiddenCounts = useMemo(() => teams.map((team) => team.players.filter((player) => player.source === "hidden").length), [teams]);
 
   useEffect(() => {
-    if (!matchData || liveIndex >= events.length) return;
-    const timer = window.setTimeout(() => setLiveIndex((index) => index + 1), 880);
+    if (!award) return;
+    const timer = window.setTimeout(() => {
+      if (roundIndex === rounds.length - 1) {
+        setScreen("final");
+      } else {
+        setRoundIndex((index) => index + 1);
+        setCurrentBid(null);
+        setLeader(null);
+        setPassed([false, false]);
+      }
+      setAward(null);
+    }, 2700);
     return () => window.clearTimeout(timer);
-  }, [matchData, liveIndex, events.length]);
+  }, [award, roundIndex, rounds.length]);
 
-  useEffect(() => {
-    if (!teams.length) return;
-    if (!teams.some((team: any) => team.id === homeId)) setHomeId(teams[0].id);
-    if (!teams.some((team: any) => team.id === awayId)) setAwayId(teams[1]?.id ?? teams[0].id);
-  }, [teams, homeId, awayId]);
-
-  useEffect(() => {
-    if (isPlayerRoute && routePlayerQuery.data) {
-      setSelectedPlayer(routePlayerQuery.data);
-      setView("player");
-    }
-  }, [isPlayerRoute, routePlayerQuery.data]);
-
-  const startSimulation = () => {
-    if (homeId === awayId) return;
-    simulate.mutate({ homeTeamId: homeId, awayTeamId: awayId, homePlayerIds: homeLineup.length ? homeLineup : undefined, awayPlayerIds: awayLineup.length ? awayLineup : undefined });
+  const placeBid = (teamIndex: number) => {
+    if (award || passed[teamIndex] || leader === teamIndex) return;
+    const next = currentBid === null ? round.startPrice : currentBid + 1;
+    if (!canPlaceBid(teams[teamIndex], next, remainingRounds)) return;
+    setCurrentBid(next);
+    setLeader(teamIndex);
   };
 
-  const openPlayer = (player: any) => {
-    setSelectedPlayer(player);
-    setView("player");
-    setLocation(`/players/${player.id}`);
-  };
-
-  const openArchivedSummary = (id: string) => {
-    setSelectedMatchId(id);
-    setView("summary");
-  };
-
-  const chooseTeam = (side: "home" | "away", id: string) => {
-    if (side === "home") {
-      setHomeId(id);
-      setHomeLineup([]);
-    } else {
-      setAwayId(id);
-      setAwayLineup([]);
+  const pass = (teamIndex: number) => {
+    if (award || passed[teamIndex] || leader === teamIndex) return;
+    const other = teamIndex === 0 ? 1 : 0;
+    setPassed((state) => teamIndex === 0 ? [true, state[1]] : [state[0], true]);
+    if (leader === null && canPlaceBid(teams[other], round.startPrice, remainingRounds)) {
+      setLeader(other);
+      setCurrentBid(round.startPrice);
     }
   };
 
-  const toggleBuilderPlayer = (id: string) => {
-    const setter = builderSide === "home" ? setHomeLineup : setAwayLineup;
-    const current = builderSide === "home" ? visibleHomeIds : visibleAwayIds;
-    const isSelected = current.includes(id);
-    if (isSelected) setter(current.filter((playerId) => playerId !== id));
-    else if (current.length < 11) setter([...current, id]);
+  const awardRound = () => {
+    if (leader === null || !canAward) return;
+    const loser = leader === 0 ? 1 : 0;
+    const paid = currentBid ?? round.startPrice;
+    setTeams((state) => state.map((team, index) => {
+      if (index === leader) return { ...team, budget: team.budget - paid, players: [...team.players, { ...round.auction, position: round.position, paid, source: "auction" }] };
+      return { ...team, players: [...team.players, { ...round.hidden, position: round.position, paid: 0, source: "hidden" }] };
+    }));
+    setAward({ round, winner: leader, loser, price: paid });
   };
 
-  if (catalogueQuery.isLoading) {
-    return <main className="loading-screen"><div><LoaderCircle className="spin" /><span>جارٍ تجهيز غرفة المحاكاة</span></div></main>;
-  }
+  const resetGame = () => {
+    setTeams(createTeams());
+    setRounds(buildAuctionRounds(Date.now()));
+    setRoundIndex(0);
+    setCurrentBid(null);
+    setLeader(null);
+    setPassed([false, false]);
+    setAward(null);
+    setMatch(null);
+    setScreen("auction");
+  };
 
-  return (
-    <main className="app-shell" dir="rtl">
-      <div className="ambient ambient-a" /><div className="ambient ambient-b" />
-      <header className="topbar">
-        <button className="brand" onClick={() => setView("match")} aria-label="العودة إلى المحاكاة">
-          <span className="brand-mark"><Sparkles /></span><span><b>ELEVEN</b><em>SIMULATOR</em></span>
-        </button>
-        <nav className="nav-tabs" aria-label="التنقل الرئيسي">
-          {[
-            ["match", "المباراة", Activity], ["database", "اللاعبون", UsersRound], ["builder", "بناء التشكيلة", Shirt], ["history", "السجل", Clock3],
-          ].map(([id, label, Icon]: any) => <button key={id} className={view === id ? "nav-tab active" : "nav-tab"} onClick={() => setView(id)}><Icon />{label}</button>)}
-        </nav>
-        <div className="season-note"><span>SEASON 26</span><i /><span>LIVE ENGINE</span></div>
-      </header>
+  const simulateFinal = () => {
+    setMatch(simulateDraftMatch(teams[0], teams[1]));
+    setScreen("match");
+  };
 
-      <section className="masthead">
-        <div><p className="eyebrow"><span /> FOOTBALL, REIMAGINED</p><h1>المباراة ليست نتيجة.<br /><i>إنها قصة تُبنى لحظةً بلحظة.</i></h1></div>
-        <div className="catalogue-stat"><div className="catalogue-icon"><UsersRound /></div><div><b>{players.length}</b><span>ملف لاعب في الكتالوج</span></div><small>نشط + أساطير</small></div>
-      </section>
+  if (screen === "final") return <FinalResults teams={teams} auctionCounts={teamAuctionCounts} hiddenCounts={teamHiddenCounts} onSimulate={simulateFinal} onReset={resetGame} />;
+  if (screen === "match" && match) return <MatchResults teams={teams} match={match} onReset={resetGame} />;
 
-      {view === "match" && <>
-        <section className="match-console panel-surface">
-          <div className="console-header"><div><span className="overline">MATCH LAB</span><h2>اضبط المواجهة التالية</h2></div><div className="formation-pill"><SlidersHorizontal /> 4–3–3 افتراضي</div></div>
-          <div className="team-picker-grid">
-            <TeamSelector label="المضيف" team={homeTeam} teams={teams} selected={homeId} onChoose={(id) => chooseTeam("home", id)} />
-            <div className="versus"><span>VS</span><i>SIMULATION</i></div>
-            <TeamSelector label="الضيف" team={awayTeam} teams={teams} selected={awayId} onChoose={(id) => chooseTeam("away", id)} />
-          </div>
-          {homeId === awayId && <p className="inline-error">اختر فريقين مختلفين لبدء المحاكاة.</p>}
-          <div className="console-actions"><div className="lineup-status"><Shield /> <span>{homeLineup.length || 11} لاعباً للمضيف</span><i /> <span>{awayLineup.length || 11} لاعباً للضيف</span></div><button className="primary-action" onClick={startSimulation} disabled={simulate.isPending || homeId === awayId}>{simulate.isPending ? <LoaderCircle className="spin" /> : <PlayMark />}<span>{simulate.isPending ? "جارٍ توليد سيناريو المباراة" : "ابدأ المحاكاة"}</span><ArrowUpRight /></button></div>
-        </section>
+  return <main className="auction-app" dir="rtl">
+    <div className="noise" /><div className="spotlight spotlight-one" /><div className="spotlight spotlight-two" />
+    <header className="auction-header">
+      <div className="brand-lockup"><span className="brand-icon"><Gavel /></span><div><b>المزاد</b><small>AL MZAD · FOOTBALL DRAFT</small></div></div>
+      <div className="header-rule"><span>LIVE AUCTION</span><i /><span>SEASON ONE</span></div>
+      <button className="reset-button" onClick={resetGame}><RefreshCw /> إعادة اللعبة</button>
+    </header>
 
-        <section className="live-grid">
-          <article className="live-card panel-surface">
-            <div className="live-head"><div><span className="overline">LIVE MATCH FEED</span><b>{matchData ? (isComplete ? "انتهت المباراة" : "المباراة جارية الآن") : "بانتظار صافرة البداية"}</b></div><div className={`live-badge ${matchData && !isComplete ? "pulsing" : ""}`}><i /> {matchData && !isComplete ? `${liveMinute}'` : isComplete ? "FT" : "READY"}</div></div>
-            {matchData ? <LiveMatchBoard home={matchData.homeTeam} away={matchData.awayTeam} homeScore={homeLiveScore} awayScore={awayLiveScore} complete={isComplete} homeStrength={matchData.homeTeam.strength} awayStrength={matchData.awayTeam.strength} onSummary={() => setView("summary")} /> : <PreviewBoard home={homeTeam} away={awayTeam} />}
-            <div className="timeline">
-              {matchData ? revealedEvents.length ? revealedEvents.map((event: any, index: number) => <div className={`timeline-event ${event.team}`} key={`${event.minute}-${index}`}><span className="event-minute">{event.minute}'</span><span className="event-icon"><EventGlyph type={event.type} /></span><div><b>{event.player}</b><small>{eventLabels[event.type as keyof typeof eventLabels]} · {event.detail}</small></div></div>) : <EmptyState icon={Zap} title="جاهزون للانطلاق" copy="سيبدأ ظهور أحداث المباراة تدريجياً فور إطلاق المحاكاة." /> : <EmptyState icon={Activity} title="لوحة الأحداث الحية" copy="اختر الفريقين ثم ابدأ محاكاة لعرض الأهداف والبطاقات والتبديلات لحظة بلحظة." />}
-            </div>
-          </article>
-          <aside className="side-column">
-            <article className="form-card panel-surface"><div className="mini-head"><span>FORM GUIDE</span><ChevronLeft /></div><h3>نبض الفرق</h3>{[homeTeam, awayTeam].filter(Boolean).map((team: any) => <div className="form-team" key={team.id}><TeamMark team={team} size="sm" /><div><b>{team.name}</b><span>{team.status === "retired" ? "Legends archive" : "Active squad"}</span></div><strong>{team.strength}</strong></div>)}</article>
-            <article className="insight-card"><Sparkles /><span>محرك الاحتمالات يحلل قوة التشكيلة وخصائص اللاعبين لصناعة سيناريو فريد في كل مباراة.</span><button onClick={() => setView("builder")}>خصص تشكيلتك <ArrowLeft /></button></article>
-          </aside>
-        </section>
-      </>}
+    <section className="auction-intro">
+      <div><p className="micro-title"><Sparkles /> DRAFT ROOM 01</p><h1>ارفع السعر.<br /><em>واكسب المخاطرة.</em></h1><p className="catalogue-note"><UsersRound /> كتالوج اللعبة: <b>{playerCatalogue.length}</b> لاعباً · حاليون وأساطير · 9 مراكز</p></div>
+      <div className="round-tracker"><div><span>الجولة الحالية</span><b>{String(roundIndex + 1).padStart(2, "0")} <i>/ {rounds.length}</i></b></div><div className="progress-line"><i style={{ width: `${roundProgress}%` }} /></div><small>{round.label} · {round.position}</small></div>
+    </section>
 
-      {view === "database" && <section className="content-page"><PageHeader eyebrow="PLAYER VAULT" title="قاعدة بيانات اللاعبين" copy="ابحث داخل كتالوج اللاعبين النشطين والأساطير. افتح الملف للحصول على مؤشر الأداء ومحطات المسيرة." action={<span className="count-chip">{filteredPlayers.length} نتيجة</span>} />
-        <div className="filters panel-surface"><div className="search-field"><Search /><input value={playerSearch} onChange={(event) => setPlayerSearch(event.target.value)} placeholder="ابحث بالاسم أو النادي أو الجنسية" /></div><select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as Status | "all")}><option value="all">كل الحالات</option><option value="active">نشط</option><option value="retired">معتزل</option></select><select value={positionFilter} onChange={(event) => setPositionFilter(event.target.value as Position | "all")}><option value="all">كل المراكز</option>{Object.entries(positionNames).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select><select value={nationalityFilter} onChange={(event) => setNationalityFilter(event.target.value)}><option value="all">كل الجنسيات</option>{nationalities.map((nationality) => <option key={nationality} value={nationality}>{nationality}</option>)}</select><select value={clubFilter} onChange={(event) => setClubFilter(event.target.value)}><option value="all">كل الأندية</option>{clubs.map((club) => <option key={club} value={club}>{club}</option>)}</select><button className="filter-reset" onClick={() => { setPlayerSearch(""); setPositionFilter("all"); setStatusFilter("all"); setClubFilter("all"); setNationalityFilter("all"); }}><ListFilter /> مسح المرشحات</button></div>
-        <div className="player-grid">{filteredPlayers.map((player: any) => <PlayerCard key={player.id} player={player} onOpen={() => openPlayer(player)} onAdd={() => { setBuilderSide("home"); setView("builder"); }} />)}</div>
-      </section>}
+    <section className="budget-board">
+      {teams.map((team, index) => <TeamBudget key={team.id} team={team} accent={index === 0 ? "lime" : "sky"} />)}
+    </section>
 
-      {view === "builder" && <section className="content-page"><PageHeader eyebrow="TACTICAL STUDIO" title="ابنِ تشكيلتك يدوياً" copy="اختر أحد الفريقين ثم انتقِ أحد عشر لاعباً من الكتالوج. ستُستخدم قوة التشكيلة في المحاكاة التالية." action={<button className="outline-action" onClick={() => setView("match")}>إلى المباراة <ArrowLeft /></button>} />
-        <div className="builder-layout"><article className="builder-pitch panel-surface"><div className="builder-toolbar"><div><span className="overline">LINEUP CONTROL</span><h3>{builderSide === "home" ? homeTeam?.name : awayTeam?.name}</h3></div><div className="side-toggle"><button className={builderSide === "home" ? "active" : ""} onClick={() => setBuilderSide("home")}>المضيف</button><button className={builderSide === "away" ? "active" : ""} onClick={() => setBuilderSide("away")}>الضيف</button></div></div><div className="pitch"><span className="center-circle" /><span className="half-line" />{(builderSide === "home" ? visibleHome : visibleAway).slice(0, 11).map((player: any, index: number) => <button className={`pitch-player p-${index}`} key={player.id} onClick={() => openPlayer(player)}><i>{player.overall}</i><b>{player.name.split(" ").at(-1)}</b><small>{positionNames[player.position]}</small></button>)}</div><div className="builder-footer"><span><b>{(builderSide === "home" ? visibleHome : visibleAway).length}</b> / 11 لاعباً</span><button onClick={() => builderSide === "home" ? setHomeLineup(homeTeamPlayers.map((player: any) => player.id)) : setAwayLineup(awayTeamPlayers.map((player: any) => player.id))}>استعادة التشكيلة الأساسية</button></div></article>
-          <article className="builder-picker panel-surface"><div className="picker-head"><div><span className="overline">PLAYER POOL</span><h3>اختر من الكتالوج</h3></div><span>{(builderSide === "home" ? visibleHome : visibleAway).length}/11</span></div><div className="builder-search"><Search /><input placeholder="ابحث عن لاعب لإضافته" value={playerSearch} onChange={(event) => setPlayerSearch(event.target.value)} /></div><div className="builder-list">{players.filter((player: any) => !playerSearch || player.name.toLowerCase().includes(playerSearch.toLowerCase())).slice(0, 38).map((player: any) => { const current = builderSide === "home" ? visibleHomeIds : visibleAwayIds; const selected = current.includes(player.id); return <button key={player.id} className={selected ? "builder-row selected" : "builder-row"} onClick={() => toggleBuilderPlayer(player.id)}><span className="player-overall">{player.overall}</span><span><b>{player.name}</b><small>{player.club} · {positionNames[player.position]}</small></span><i>{selected ? <X /> : <Plus />}</i></button>; })}</div></article>
+    <section className="auction-layout">
+      <SquadBoard team={teams[0]} accent="lime" />
+      <article className="auction-stage">
+        <div className="stage-topline"><span className="position-chip">{round.position} <i>{round.label}</i></span><span className="live-status"><i /> المزاد مفتوح</span></div>
+        <div className="player-hero"><div className={`tier-ring ${round.auction.tier.toLowerCase()}`}><span>{round.auction.rating}</span><small>OVR</small></div><p className="tier-label">{round.auction.tier}</p><h2>{round.auction.name}</h2><span>{round.auction.note}</span></div>
+        <div className="price-panel"><span>السعر الحالي</span><strong>{money(bidAmount)}</strong><small>سعر البداية: {money(round.startPrice)}</small></div>
+        <div className="hidden-player"><span className="lock-orb"><LockKeyhole /></span><div><b>اللاعب الخفي</b><small>سيتم الكشف عنه بعد حسم المزاد</small></div><i>?</i></div>
+        <div className="bidding-grid">
+          {teams.map((team, index) => {
+            const nextBid = currentBid === null ? round.startPrice : currentBid + 1;
+            const eligible = !award && !passed[index] && leader !== index && canPlaceBid(team, nextBid, remainingRounds);
+            return <button key={team.id} className={`bid-button ${index === 0 ? "lime" : "sky"} ${leader === index ? "leading" : ""}`} disabled={!eligible} onClick={() => placeBid(index)}><span>{leader === index ? "أنت متصدر المزاد" : currentBid === null ? `ابدأ بـ ${money(round.startPrice)}` : `ارفع إلى ${money(nextBid)}`}</span><b>{team.name}</b></button>;
+          })}
         </div>
-      </section>}
-
-      {view === "player" && selectedPlayer && <section className="content-page"><PageHeader eyebrow="PLAYER DOSSIER" title={selectedPlayer.name} copy="ملف لاعب مستقل يضم مؤشرات الأداء وسجل المسيرة ضمن كتالوج المحاكاة." action={<button className="outline-action" onClick={() => { setLocation("/"); setView("database"); }}>العودة إلى القاعدة <ArrowLeft /></button>} /><PlayerModal player={selectedPlayer} onClose={() => { setLocation("/"); setView("database"); }} onAdd={() => { setLocation("/"); setBuilderSide("home"); setView("builder"); }} /></section>}
-
-      {view === "summary" && <section className="content-page"><PageHeader eyebrow={selectedMatchId ? "ARCHIVED RESULT" : "FINAL WHISTLE"} title="ملخص المباراة" copy={activeSummary ? "تفاصيل النتيجة والإحصاءات وتسلسل الأحداث محفوظة في سجل المباراة." : selectedMatchId ? "جارٍ تحميل الملخص المؤرشف." : "أطلق محاكاة أولاً للحصول على ملخص تفصيلي."} action={activeSummary ? <button className="outline-action" onClick={() => setView("match")}>العودة للبث <ArrowLeft /></button> : undefined} />
-        {activeSummary ? <MatchSummary data={activeSummary} onOpenPlayer={openPlayer} /> : <article className="panel-surface summary-empty"><EmptyState icon={selectedMatchId ? LoaderCircle : Trophy} title={selectedMatchId ? "جارٍ تحميل الملخص" : "لا يوجد ملخص بعد"} copy={selectedMatchId ? "يتم استرجاع الإحصاءات والأحداث المحفوظة." : "انتقل إلى صفحة المباراة، اختر فريقين، ثم ابدأ المحاكاة."} /><button className="primary-action" onClick={() => setView("match")}>إلى غرفة المباراة</button></article>}
-      </section>}
-
-      {view === "history" && <section className="content-page"><PageHeader eyebrow="ARCHIVE" title="سجل المباريات" copy="كل المحاكاة المنفذة تُحفظ في السجل لتستطيع الرجوع إلى نتائجها ومقارنتها." action={<span className="count-chip">{historyQuery.data?.length ?? 0} مباراة</span>} />
-        <div className="history-list panel-surface">{historyQuery.isLoading ? <EmptyState icon={LoaderCircle} title="جارٍ قراءة الأرشيف" copy="لحظة واحدة." /> : historyQuery.data?.length ? historyQuery.data.map((record: any) => <button className="history-row" key={record.id} onClick={() => openArchivedSummary(record.id)}><span className="history-date"><CalendarDays />{new Date(record.playedAt).toLocaleDateString("ar-EG", { day: "numeric", month: "short", year: "numeric" })}</span><div className="history-score"><b>{record.homeTeamName}</b><strong>{record.homeScore}<i>—</i>{record.awayScore}</strong><b>{record.awayTeamName}</b></div><ArrowLeft /></button>) : <EmptyState icon={Clock3} title="الأرشيف فارغ" copy="ستظهر هنا كل المباريات بعد تشغيل أول محاكاة." />}</div>
-      </section>}
-
-    </main>
-  );
+        <div className="auction-actions"><button className="pass-button" disabled={Boolean(award) || passed[0] || leader === 0} onClick={() => pass(0)}>علي مختار · انسحاب</button><button className="award-button" disabled={!canAward || Boolean(award)} onClick={awardRound}><Trophy /> حسم المزاد</button><button className="pass-button" disabled={Boolean(award) || passed[1] || leader === 1} onClick={() => pass(1)}>حسين إيهاب · انسحاب</button></div>
+        <p className="auction-hint">{leader === null ? "ابدأ المزايدة — القرار الأول يغيّر شكل التشكيلة." : canAward ? "انسحب المنافس. يمكنك الآن حسم المزاد." : `المتصدر: ${teams[leader].name} · انتظر رد المنافس.`}</p>
+        {award && <AwardReveal award={award} teams={teams} />}
+      </article>
+      <SquadBoard team={teams[1]} accent="sky" />
+    </section>
+  </main>;
 }
 
-function TeamSelector({ label, team, teams, selected, onChoose }: { label: string; team: any; teams: any[]; selected: string; onChoose: (id: string) => void }) {
-  return <div className="team-selector"><span className="selector-label">{label}</span><div className="selected-team">{team && <TeamMark team={team} size="lg" />}<div><b>{team?.name ?? "اختَر فريقاً"}</b><span>{team?.country} · {team?.strength} OVR</span></div></div><select value={selected} onChange={(event) => onChoose(event.target.value)}>{teams.map((option) => <option value={option.id} key={option.id}>{option.name} — {option.status === "retired" ? "Icons" : "Active"}</option>)}</select></div>;
+function TeamBudget({ team, accent }: { team: AuctionTeam; accent: "lime" | "sky" }) {
+  return <article className={`team-budget ${accent}`}><div className="team-avatar">{team.name.split(" ").map((part) => part[0]).join("")}</div><div className="team-meta"><small>{team.id === "ali" ? "الفريق الأول" : "الفريق الثاني"}</small><h3>{team.name}</h3><span>{team.players.length} / 11 لاعباً</span></div><div className="budget-number"><small>الميزانية</small><strong>{money(team.budget)}</strong></div><div className="team-spent"><span>تم صرف {money(totalSpent(team))}</span><i style={{ width: `${totalSpent(team)}%` }} /></div></article>;
 }
 
-function PreviewBoard({ home, away }: { home: any; away: any }) { return <div className="score-board preview"><div><TeamMark team={home} size="lg" /><b>{home?.shortName}</b></div><span className="score-ghost">— <i>VS</i> —</span><div><TeamMark team={away} size="lg" /><b>{away?.shortName}</b></div></div>; }
-function LiveMatchBoard({ home, away, homeScore, awayScore, complete, homeStrength, awayStrength, onSummary }: any) { return <><div className="score-board"><div><TeamMark team={home} size="lg" /><b>{home.shortName}</b><small>{home.name}</small></div><strong>{homeScore}<i>:</i>{awayScore}</strong><div><TeamMark team={away} size="lg" /><b>{away.shortName}</b><small>{away.name}</small></div></div><div className="strength-bar"><span style={{ width: `${Math.round((homeStrength / (homeStrength + awayStrength)) * 100)}%` }} /><i>OVR {homeStrength} · {awayStrength}</i></div>{complete && <button className="summary-link" onClick={onSummary}>شاهد الملخص التفصيلي <ArrowLeft /></button>}</>; }
-function PlayMark() { return <span className="play-mark">▶</span>; }
-function PageHeader({ eyebrow, title, copy, action }: { eyebrow: string; title: string; copy: string; action?: React.ReactNode }) { return <header className="page-header"><div><p className="eyebrow"><span /> {eyebrow}</p><h2>{title}</h2><p>{copy}</p></div>{action}</header>; }
-function PlayerCard({ player, onOpen, onAdd }: any) { return <article className="player-card"><div className="player-card-top"><span className={`status-dot ${player.status}`} /><span>{player.status === "active" ? "ACTIVE" : "ICON"}</span><strong>{player.overall}</strong></div><div className="player-avatar">{player.name.split(" ").map((part: string) => part[0]).slice(0, 2).join("")}</div><h3>{player.name}</h3><p>{player.nationality} <i /> {positionNames[player.position]} <i /> {player.age} سنة</p><div className="mini-stats"><span><b>{player.goals}</b> أهداف</span><span><b>{player.assists}</b> تمريرات</span><span><b>{player.appearances}</b> مباريات</span></div><div className="player-card-actions"><button onClick={onOpen}>عرض الملف <ArrowLeft /></button><button aria-label="أضف إلى التشكيلة" onClick={onAdd}><Plus /></button></div></article>; }
-function PlayerModal({ player, onClose, onAdd }: any) { return <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={`ملف ${player.name}`}><article className="player-modal"><button className="modal-close" onClick={onClose}><X /></button><div className="modal-hero"><div className="modal-avatar">{player.name.split(" ").map((part: string) => part[0]).slice(0, 2).join("")}</div><div><span className="overline">{player.status === "active" ? "ACTIVE PLAYER PROFILE" : "LEGACY PLAYER PROFILE"}</span><h2>{player.name}</h2><p>{player.nationality} · {player.club} · {positionNames[player.position]}</p></div><strong>{player.overall}<small>OVR</small></strong></div><div className="profile-stat-row">{[["المباريات", player.appearances], ["الأهداف", player.goals], ["التمريرات", player.assists], ["التمريرات الكلية", player.passes], ["الافتكاكات", player.tackles]].map(([label, value]) => <span key={label as string}><b>{value as number}</b><small>{label as string}</small></span>)}</div><section className="attribute-section"><h3>مؤشرات الأداء</h3>{[["السرعة", player.pace], ["التسديد", player.shooting], ["التمرير", player.passing], ["الدفاع", player.defence], ["القوة", player.physical]].map(([label, value]) => <div className="attribute" key={label as string}><span>{label as string}</span><div><i style={{ width: `${value}%` }} /></div><b>{value as number}</b></div>)}</section><section className="career-section"><div className="section-title"><div><span className="overline">CAREER TIMELINE</span><h3>محطات المسيرة</h3></div><BadgeCheck /></div><div className="career-list">{player.career.map((stop: any) => <div className="career-stop" key={stop.period}><span>{stop.period}</span><div><b>{stop.club}</b><small>{stop.note} · {stop.appearances} مباراة · {stop.goals} هدف</small></div></div>)}</div></section><button className="primary-action full" onClick={onAdd}>إضافة إلى بناء التشكيلة <Plus /></button></article></div>; }
-function MatchSummary({ data, onOpenPlayer }: any) { const { homeTeam, awayTeam, result, homeSelection, awaySelection } = data; const summaryStats = [["الاستحواذ", `${result.homeStats.possession}%`, `${result.awayStats.possession}%`], ["التسديدات", result.homeStats.shots, result.awayStats.shots], ["على المرمى", result.homeStats.shotsOnTarget, result.awayStats.shotsOnTarget], ["التمريرات", result.homeStats.passes, result.awayStats.passes], ["دقة التمرير", `${result.homeStats.passAccuracy}%`, `${result.awayStats.passAccuracy}%`], ["الركنيات", result.homeStats.corners, result.awayStats.corners]]; return <><article className="summary-hero panel-surface"><div><TeamMark team={homeTeam} size="lg" /><b>{homeTeam.name}</b></div><strong>{result.homeScore}<i>—</i>{result.awayScore}</strong><div><TeamMark team={awayTeam} size="lg" /><b>{awayTeam.name}</b></div><span>FULL TIME</span></article><div className="summary-layout"><article className="stats-table panel-surface"><div className="table-head"><b>{homeTeam.shortName}</b><span>إحصاءات المباراة</span><b>{awayTeam.shortName}</b></div>{summaryStats.map(([label, home, away]) => <div className="stat-row" key={label as string}><b>{home as string}</b><div><span>{label as string}</span><i><em style={{ width: `${label === "الاستحواذ" ? home : 50}%` }} /></i></div><b>{away as string}</b></div>)}</article><article className="final-events panel-surface"><div className="mini-head"><span>EVENTS</span><b>أحداث اللقاء</b></div>{result.events.map((event: any, index: number) => <div className={`timeline-event ${event.team}`} key={`${event.minute}-${index}`}><span className="event-minute">{event.minute}'</span><span className="event-icon"><EventGlyph type={event.type} /></span><div><b>{event.player}</b><small>{eventLabels[event.type as keyof typeof eventLabels]} · {event.detail}</small></div></div>)}</article></div><section className="lineup-review"><div><span className="overline">STARTING XIs</span><h3>تشكيلات المباراة</h3></div><div className="lineup-columns"><div>{homeSelection.map((player: any) => <button key={player.id} onClick={() => onOpenPlayer(player)}><span>{player.overall}</span>{player.name}<small>{positionNames[player.position]}</small></button>)}</div><div>{awaySelection.map((player: any) => <button key={player.id} onClick={() => onOpenPlayer(player)}><span>{player.overall}</span>{player.name}<small>{positionNames[player.position]}</small></button>)}</div></div></section></>; }
+function SquadBoard({ team, accent }: { team: AuctionTeam; accent: "lime" | "sky" }) {
+  return <aside className={`squad-board ${accent}`}><div className="squad-header"><div><span className="micro-title">4–3–3 SQUAD</span><h3>{team.name}</h3></div><strong>{teamStrength(team) || "—"}<small>OVR</small></strong></div><div className="squad-list">{formationSlots.map((slot, index) => { const player = team.players[index]; return <div className={`squad-row ${player ? "filled" : ""}`} key={`${slot}-${index}`}><span>{positionLabel[slot]}</span><div>{player ? <><b>{player.name}</b><small>{player.source === "hidden" ? "هدية خفية" : `${money(player.paid)} · مزاد`}</small></> : <small>في انتظار الجولة</small>}</div>{player && <i>{player.rating}</i>}</div>; })}</div><div className="squad-footer"><span><CircleDollarSign /> المتبقي</span><b>{money(team.budget)}</b></div></aside>;
+}
+
+function AwardReveal({ award, teams }: { award: Award; teams: AuctionTeam[] }) {
+  return <div className="award-reveal"><div className="award-glow" /><div className="award-grid"><div><span className="reveal-kicker"><Crown /> الفائز بالمزاد</span><h3>{teams[award.winner].name}</h3><p>حصل على <b>{award.round.auction.name}</b> مقابل <strong>{money(award.price)}</strong></p></div><div className="versus-reveal">VS</div><div><span className="reveal-kicker gift"><Sparkles /> تم كشف اللاعب الخفي</span><h3>{teams[award.loser].name}</h3><p>حصل على <b>{award.round.hidden.name}</b> <strong>مجاناً</strong></p></div></div></div>;
+}
+
+function FinalResults({ teams, auctionCounts, hiddenCounts, onSimulate, onReset }: { teams: AuctionTeam[]; auctionCounts: number[]; hiddenCounts: number[]; onSimulate: () => void; onReset: () => void }) {
+  return <main className="auction-app final-screen" dir="rtl"><div className="noise" /><header className="auction-header"><div className="brand-lockup"><span className="brand-icon"><Gavel /></span><div><b>المزاد</b><small>FINAL DRAFT</small></div></div><button className="reset-button" onClick={onReset}><RefreshCw /> لعبة جديدة</button></header><section className="final-hero"><p className="micro-title"><Trophy /> ALL ROUNDS COMPLETE</p><h1>اكتملت التشكيلتان.<br /><em>حان وقت الحسم.</em></h1><p>تم توزيع 22 لاعباً بين المزاد والهدية الخفية. راجع التشكيلتين قبل محاكاة المباراة.</p></section><section className="final-squads">{teams.map((team, index) => <article className={`final-team ${index === 0 ? "lime" : "sky"}`} key={team.id}><div className="final-team-head"><div><span>{team.name}</span><b>{money(team.budget)} متبقي</b></div><strong>{teamStrength(team)}<small>TEAM OVR</small></strong></div><div className="final-team-stats"><span><b>{auctionCounts[index]}</b> من المزاد</span><span><b>{hiddenCounts[index]}</b> لاعب خفي</span><span><b>{money(squadValue(team))}</b> قيمة مدفوعة</span></div><div className="final-list">{team.players.map((player) => <div key={player.name}><span>{player.position}</span><b>{player.name}</b><small>{player.source === "hidden" ? "مجاناً" : money(player.paid)}</small><i>{player.rating}</i></div>)}</div></article>)}</section><button className="simulate-button" onClick={onSimulate}><Swords /><span>محاكاة المباراة النهائية</span><small>قوة اللاعبين · توازن التشكيلة · عامل مفاجأة</small></button></main>;
+}
+
+function MatchResults({ teams, match, onReset }: { teams: AuctionTeam[]; match: ReturnType<typeof simulateDraftMatch>; onReset: () => void }) {
+  return <main className="auction-app final-screen" dir="rtl"><div className="noise" /><header className="auction-header"><div className="brand-lockup"><span className="brand-icon"><Gavel /></span><div><b>المزاد</b><small>FINAL MATCH</small></div></div><button className="reset-button" onClick={onReset}><RefreshCw /> ابدأ لعبة جديدة</button></header><section className="match-hero"><p className="micro-title"><Goal /> SIMULATION COMPLETE</p><div className="final-score"><div><span>{teams[0].name}</span><b>{teamStrength(teams[0])} OVR</b></div><strong>{match.homeGoals}<i>—</i>{match.awayGoals}</strong><div><span>{teams[1].name}</span><b>{teamStrength(teams[1])} OVR</b></div></div><div className="motm"><Medal /><div><small>رجل المباراة</small><b>{match.manOfTheMatch}</b></div></div></section><section className="match-report"><article className="goal-feed"><div className="report-head"><span>GOAL TIMELINE</span><h2>أهداف اللقاء</h2></div>{match.events.length ? match.events.map((event, index) => <div className={`goal-event ${event.team === 0 ? "home" : "away"}`} key={`${event.minute}-${index}`}><span>{event.minute}'</span><Goal /><div><b>{event.scorer}</b><small>{event.assist ? `تمريرة حاسمة: ${event.assist}` : "هدف من اللعب"}</small></div></div>) : <div className="no-goals">مباراة تكتيكية بلا أهداف — الحراس تفوقوا.</div>}</article><article className="match-stats"><div className="report-head"><span>DATA ROOM</span><h2>إحصاءات المباراة</h2></div><Stat label="الاستحواذ" home={`${match.homeStats.possession}%`} away={`${match.awayStats.possession}%`} ratio={match.homeStats.possession} /><Stat label="التسديدات" home={match.homeStats.shots} away={match.awayStats.shots} ratio={(match.homeStats.shots / (match.homeStats.shots + match.awayStats.shots)) * 100} /><Stat label="على المرمى" home={match.homeStats.onTarget} away={match.awayStats.onTarget} ratio={(match.homeStats.onTarget / (match.homeStats.onTarget + match.awayStats.onTarget)) * 100} /><Stat label="الفرص الخطيرة" home={match.homeStats.chances} away={match.awayStats.chances} ratio={(match.homeStats.chances / (match.homeStats.chances + match.awayStats.chances)) * 100} /></article></section></main>;
+}
+
+function Stat({ label, home, away, ratio }: { label: string; home: string | number; away: string | number; ratio: number }) { return <div className="match-stat"><b>{home}</b><div><span>{label}</span><i><em style={{ width: `${ratio}%` }} /></i></div><b>{away}</b></div>; }
