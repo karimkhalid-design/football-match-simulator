@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, CircleDollarSign, Crown, Goal, Gavel, LockKeyhole, Medal, RefreshCw, Sparkles, Swords, Trophy, UsersRound } from "lucide-react";
 import { buildAuctionRounds, formationSlots, playerCatalogue, type AuctionRound, type PositionCode } from "@/lib/auctionData";
+import { PLAYER_IMAGE_URLS } from "@/lib/playerImageMap";
 import { canPlaceBid, createTeams, simulateDraftMatch, squadValue, teamStrength, totalSpent, type AuctionTeam, type TeamNames } from "@/lib/auctionLogic";
 
 type Award = { round: AuctionRound; winner: number; loser: number; price: number };
@@ -12,7 +13,7 @@ const LOGO_URL = "/manus-storage/e3mal-elsah-logo_b8d9ae3f.png";
 const money = (value: number) => `${value}M`;
 
 export default function Home() {
-  const [teamNames, setTeamNames] = useState<TeamNames>({ ali: "علي مختار", hussein: "حسين إيهاب" });
+  const [teamNames, setTeamNames] = useState<TeamNames>({ ali: "لاعب رقم ١", hussein: "لاعب رقم ٢" });
   const [landing, setLanding] = useState(true);
   const [teams, setTeams] = useState<AuctionTeam[]>(() => createTeams(teamNames));
   const [rounds, setRounds] = useState<AuctionRound[]>(() => buildAuctionRounds());
@@ -92,7 +93,7 @@ export default function Home() {
   };
 
   const startAuction = () => {
-    const names = { ali: teamNames.ali.trim() || "الفريق الأول", hussein: teamNames.hussein.trim() || "الفريق الثاني" };
+    const names = { ali: teamNames.ali.trim() || "لاعب رقم ١", hussein: teamNames.hussein.trim() || "لاعب رقم ٢" };
     setTeamNames(names);
     setTeams(createTeams(names));
     setRounds(buildAuctionRounds(Date.now()));
@@ -136,7 +137,7 @@ export default function Home() {
       <SquadBoard team={teams[0]} accent="lime" />
       <article className="auction-stage">
         <div className="stage-topline"><span className="position-chip">{round.position} <i>{round.label}</i></span><span className="live-status"><i /> المزاد مفتوح</span></div>
-        <div className="player-hero"><div className={`tier-ring ${round.auction.tier.toLowerCase()}`}><span>{round.auction.rating}</span><small>OVR</small></div><p className="tier-label">{round.auction.tier}</p><h2>{round.auction.name}</h2><span>{round.auction.note}</span></div>
+        <div className="player-hero"><PlayerPhoto name={round.auction.name} className="hero-player-photo" /><div className={`tier-ring ${round.auction.tier.toLowerCase()}`}><span>{round.auction.rating}</span><small>OVR</small></div><p className="tier-label">{round.auction.tier}</p><h2>{round.auction.name}</h2><span>{round.auction.note}</span></div>
         <div className="price-panel"><span>السعر الحالي</span><strong>{money(bidAmount)}</strong><small>سعر البداية: {money(round.startPrice)}</small></div>
         <div className="hidden-player"><span className="lock-orb"><LockKeyhole /></span><div><b>اللاعب الخفي</b><small>سيتم الكشف عنه بعد حسم المزاد</small></div><i>?</i></div>
         <div className="bidding-grid">
@@ -173,12 +174,19 @@ function Landing({ teamNames, onNamesChange, onStart }: { teamNames: TeamNames; 
   </main>;
 }
 
+function PlayerPhoto({ name, className = "" }: { name: string; className?: string }) {
+  const mappedSource = PLAYER_IMAGE_URLS[name] ?? null;
+  const [source, setSource] = useState<string | null>(mappedSource);
+  useEffect(() => setSource(mappedSource), [mappedSource]);
+  return source ? <img className={`player-photo ${className}`} src={source} alt={`صورة ${name}`} loading="eager" fetchPriority="high" onError={() => setSource(null)} /> : <span className={`player-photo player-photo-fallback ${className}`} aria-label={`صورة ${name}`}><Goal /></span>;
+}
+
 function TeamBudget({ team, accent }: { team: AuctionTeam; accent: "lime" | "sky" }) {
   return <article className={`team-budget ${accent}`}><div className="team-avatar">{team.name.split(" ").map((part) => part[0]).join("")}</div><div className="team-meta"><small>{team.id === "ali" ? "الفريق الأول" : "الفريق الثاني"}</small><h3>{team.name}</h3><span>{team.players.length} / 11 لاعباً</span></div><div className="budget-number"><small>الميزانية</small><strong>{money(team.budget)}</strong></div><div className="team-spent"><span>تم صرف {money(totalSpent(team))}</span><i style={{ width: `${totalSpent(team)}%` }} /></div></article>;
 }
 
 function SquadBoard({ team, accent }: { team: AuctionTeam; accent: "lime" | "sky" }) {
-  return <aside className={`squad-board ${accent}`}><div className="squad-header"><div><span className="micro-title">4–3–3 SQUAD</span><h3>{team.name}</h3></div><strong>{teamStrength(team) || "—"}<small>OVR</small></strong></div><div className="squad-list">{formationSlots.map((slot, index) => { const player = team.players[index]; return <div className={`squad-row ${player ? "filled" : ""}`} key={`${slot}-${index}`}><span>{positionLabel[slot]}</span><div>{player ? <><b>{player.name}</b><small>{player.source === "hidden" ? "هدية خفية" : `${money(player.paid)} · مزاد`}</small></> : <small>في انتظار الجولة</small>}</div>{player && <i>{player.rating}</i>}</div>; })}</div><div className="squad-footer"><span><CircleDollarSign /> المتبقي</span><b>{money(team.budget)}</b></div></aside>;
+  return <aside className={`squad-board ${accent}`}><div className="squad-header"><div><span className="micro-title">4–3–3 SQUAD</span><h3>{team.name}</h3></div><strong>{teamStrength(team) || "—"}<small>OVR</small></strong></div><div className="squad-list">{formationSlots.map((slot, index) => { const player = team.players[index]; return <div className={`squad-row ${player ? "filled" : ""}`} key={`${slot}-${index}`}><span>{positionLabel[slot]}</span>{player && <PlayerPhoto name={player.name} className="squad-player-photo" />}<div>{player ? <><b>{player.name}</b><small>{player.source === "hidden" ? "هدية خفية" : `${money(player.paid)} · مزاد`}</small></> : <small>في انتظار الجولة</small>}</div>{player && <i>{player.rating}</i>}</div>; })}</div><div className="squad-footer"><span><CircleDollarSign /> المتبقي</span><b>{money(team.budget)}</b></div></aside>;
 }
 
 function AwardReveal({ award, teams }: { award: Award; teams: AuctionTeam[] }) {
@@ -186,7 +194,7 @@ function AwardReveal({ award, teams }: { award: Award; teams: AuctionTeam[] }) {
 }
 
 function FinalResults({ teams, auctionCounts, hiddenCounts, onSimulate, onReset }: { teams: AuctionTeam[]; auctionCounts: number[]; hiddenCounts: number[]; onSimulate: () => void; onReset: () => void }) {
-  return <main className="auction-app final-screen" dir="rtl"><div className="noise" /><header className="auction-header"><BrandLockup /><button className="reset-button" onClick={onReset}><RefreshCw /> لعبة جديدة</button></header><section className="final-hero"><p className="micro-title"><Trophy /> ALL ROUNDS COMPLETE</p><h1>اكتملت التشكيلتان.<br /><em>حان وقت الحسم.</em></h1><p>تم توزيع 22 لاعباً بين المزاد والهدية الخفية. راجع التشكيلتين قبل محاكاة المباراة.</p></section><section className="final-squads">{teams.map((team, index) => <article className={`final-team ${index === 0 ? "lime" : "sky"}`} key={team.id}><div className="final-team-head"><div><span>{team.name}</span><b>{money(team.budget)} متبقي</b></div><strong>{teamStrength(team)}<small>TEAM OVR</small></strong></div><div className="final-team-stats"><span><b>{auctionCounts[index]}</b> من المزاد</span><span><b>{hiddenCounts[index]}</b> لاعب خفي</span><span><b>{money(squadValue(team))}</b> قيمة مدفوعة</span></div><div className="final-list">{team.players.map((player) => <div key={player.name}><span>{player.position}</span><b>{player.name}</b><small>{player.source === "hidden" ? "مجاناً" : money(player.paid)}</small><i>{player.rating}</i></div>)}</div></article>)}</section><button className="simulate-button" onClick={onSimulate}><Swords /><span>محاكاة المباراة النهائية</span><small>قوة اللاعبين · توازن التشكيلة · عامل مفاجأة</small></button></main>;
+  return <main className="auction-app final-screen" dir="rtl"><div className="noise" /><header className="auction-header"><BrandLockup /><button className="reset-button" onClick={onReset}><RefreshCw /> لعبة جديدة</button></header><section className="final-hero"><p className="micro-title"><Trophy /> ALL ROUNDS COMPLETE</p><h1>اكتملت التشكيلتان.<br /><em>حان وقت الحسم.</em></h1><p>تم توزيع 22 لاعباً بين المزاد والهدية الخفية. راجع التشكيلتين قبل محاكاة المباراة.</p></section><section className="final-squads">{teams.map((team, index) => <article className={`final-team ${index === 0 ? "lime" : "sky"}`} key={team.id}><div className="final-team-head"><div><span>{team.name}</span><b>{money(team.budget)} متبقي</b></div><strong>{teamStrength(team)}<small>TEAM OVR</small></strong></div><div className="final-team-stats"><span><b>{auctionCounts[index]}</b> من المزاد</span><span><b>{hiddenCounts[index]}</b> لاعب خفي</span><span><b>{money(squadValue(team))}</b> قيمة مدفوعة</span></div><div className="final-list">{team.players.map((player) => <div key={player.name}><span>{player.position}</span><PlayerPhoto name={player.name} className="final-player-photo" /><b>{player.name}</b><small>{player.source === "hidden" ? "مجاناً" : money(player.paid)}</small><i>{player.rating}</i></div>)}</div></article>)}</section><button className="simulate-button" onClick={onSimulate}><Swords /><span>محاكاة المباراة النهائية</span><small>قوة اللاعبين · توازن التشكيلة · عامل مفاجأة</small></button></main>;
 }
 
 function MatchResults({ teams, match, onReset }: { teams: AuctionTeam[]; match: ReturnType<typeof simulateDraftMatch>; onReset: () => void }) {

@@ -45,3 +45,11 @@
 - [x] Verify the gold-and-black styling on the final results and final match screens at desktop size.
 - [x] Verify the gold-and-black styling on the live auction and final match screens at a mobile breakpoint.
 - [x] Verify the gold-and-black styling of auction cards, controls, squad boards, and progress UI at a mobile breakpoint.
+
+- [x] Add real football-player images to player cards and squad rows, mapped to the auction catalogue.
+- [x] Change landing-page team-name defaults to «لاعب رقم ١» and «لاعب رقم ٢» while preserving custom editing.
+- [x] Verify player images load correctly in the auction and final squad views on desktop and mobile.
+
+- [x] Add a deterministic validated image URL mapping for the auction catalogue instead of relying only on best-effort title lookup.
+- [x] Verify player photos render in the final squad/results view after a completed auction on desktop.
+- [ ] Verify player photos render successfully in the live auction and final squad views at a mobile breakpoint (external Wikimedia download remains network-dependent in the isolated mobile iframe).

@@ -47,3 +47,19 @@ The completed-squad screen and the final match simulation were inspected at desk
 The final match was also exercised inside a 375px-wide mobile frame. The gold-and-black branded background remained active, the simulated result was visible, and the match report collapsed to a single-column layout.
 
 The live auction was separately checked in a 375px-wide mobile frame. The auction stage, bid control, round tracker, and both squad boards were present with the gold border treatment, while the auction layout collapsed into a single column.
+
+The landing page now opens with «لاعب رقم ١» and «لاعب رقم ٢». After entering the auction, the first live player card loaded a real football-player thumbnail (Petr Čech from Wikipedia), and the custom labels carried into the budget cards, bid controls, and squad headers.
+
+The mobile auction flow is visible at 375px and the player image component falls back cleanly while a remote thumbnail is unavailable in the isolated mobile frame; desktop confirmed the live thumbnail loads successfully.
+
+The deterministic image map was generated for 112 of 122 catalogue names. In the desktop auction preview, the first player card loaded Lev Yashin's real Wikipedia thumbnail successfully, while «لاعب رقم ١» and «لاعب رقم ٢» remained visible across the auction controls and squad headers.
+
+The 375px mobile flow kept both default labels and the auction visible, but the external thumbnail was not complete within the isolated mobile test window. The component intentionally renders a branded football fallback until the static image completes; desktop network verification loaded the mapped image successfully.
+
+A longer 7-second mobile check confirmed the auction remains visible and the selected football player name renders, but the isolated preview still did not complete the external thumbnail. The branded fallback remains intentional for slow or blocked image requests.
+
+The actual desktop preview after switching to eager image loading shows Lev Yashin's mapped thumbnail in the live player card and preserves «لاعب رقم ١» and «لاعب رقم ٢» in all visible team controls.
+
+The completed auction results screen was verified on desktop. Both final squad lists displayed mapped football-player thumbnails beside their names, including Lev Yashin, Carles Puyol, Thiago Silva, Roberto Carlos, Toni Kroos, Mohamed Salah, Eden Hazard, and Harry Kane.
+
+The 375px mobile full-auction check reached the final results screen and rendered all 22 player-photo elements in the final squad lists. The isolated offscreen iframe reported zero completed external thumbnails because the network images are outside that iframe's viewport/cache, while the same mapped URLs rendered in the actual desktop preview; the branded fallback remains available for delayed requests.
