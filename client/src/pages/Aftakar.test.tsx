@@ -4,21 +4,24 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import Aftakar from "./Aftakar";
+import { buildAftakarSession } from "../lib/aftakarData";
 
 describe("Aftakar game", () => {
+  const firstQuestion = buildAftakarSession(2026)[0];
   afterEach(() => cleanup());
+
   it("reveals extra clues and scores a correct answer", async () => {
     const user = userEvent.setup();
     render(<Aftakar onBackToHub={() => undefined} />);
 
     expect(screen.getByText("مين اللاعب؟")).toBeTruthy();
-    expect(screen.getByText("أسطورة أرجنتينية حملت كأس العالم")).toBeTruthy();
+    expect(screen.getByText(firstQuestion.clues[0])).toBeTruthy();
     await user.click(screen.getByRole("button", { name: /تلميح إضافي/ }));
-    expect(screen.getByText("لعب أغلب مسيرته مع برشلونة")).toBeTruthy();
+    expect(screen.getByText(firstQuestion.clues[1])).toBeTruthy();
 
-    await user.click(screen.getByRole("button", { name: "Lionel Messi" }));
+    await user.click(screen.getByRole("button", { name: firstQuestion.playerName }));
     expect(screen.getByText("إجابة صحيحة! +700 نقطة")).toBeTruthy();
-    expect(screen.getByAltText("Lionel Messi")).toBeTruthy();
+    expect(screen.getByAltText(firstQuestion.playerName)).toBeTruthy();
     expect(screen.getByText("الجولة التالية")).toBeTruthy();
   });
 
@@ -26,7 +29,7 @@ describe("Aftakar game", () => {
     const user = userEvent.setup();
     render(<Aftakar onBackToHub={() => undefined} />);
 
-    await user.type(screen.getByLabelText("اكتب اسم اللاعب"), "lionel messi");
+    await user.type(screen.getByLabelText("اكتب اسم اللاعب"), firstQuestion.playerName);
     await user.click(screen.getByRole("button", { name: "تخمين" }));
     expect(screen.getByText("إجابة صحيحة! +1000 نقطة")).toBeTruthy();
   });
@@ -36,8 +39,9 @@ describe("Aftakar game", () => {
     const onBackToHub = vi.fn();
     render(<Aftakar onBackToHub={onBackToHub} />);
 
-    await user.click(screen.getByRole("button", { name: "Mohamed Salah" }));
-    expect(screen.getByText("الإجابة الصحيحة هي Lionel Messi.")).toBeTruthy();
+    const wrongOption = firstQuestion.options.find((option) => option !== firstQuestion.playerName)!;
+    await user.click(screen.getByRole("button", { name: wrongOption }));
+    expect(screen.getByText(`الإجابة الصحيحة هي ${firstQuestion.playerName}.`)).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "كل الألعاب" }));
     expect(onBackToHub).toHaveBeenCalledOnce();
   });
@@ -45,7 +49,7 @@ describe("Aftakar game", () => {
   it("completes all rounds and can restart from the final score", async () => {
     const user = userEvent.setup();
     render(<Aftakar onBackToHub={() => undefined} />);
-    const answers = ["Lionel Messi", "Cristiano Ronaldo", "Mohamed Salah", "Zinedine Zidane", "Erling Haaland"];
+    const answers = buildAftakarSession(2026).map((question) => question.playerName);
 
     for (let index = 0; index < answers.length; index += 1) {
       await user.type(screen.getByLabelText("اكتب اسم اللاعب"), answers[index]);
@@ -56,7 +60,7 @@ describe("Aftakar game", () => {
     expect(screen.getByText("انتهت اللعبة")).toBeTruthy();
     expect(screen.getByText("مجموع النقاط")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "العب من جديد" }));
-    expect(screen.getByText("أسطورة أرجنتينية حملت كأس العالم")).toBeTruthy();
+    expect(screen.getByText(buildAftakarSession(2027)[0].clues[0])).toBeTruthy();
     expect(screen.getByLabelText("اكتب اسم اللاعب").getAttribute("value")).toBe("");
   });
 });

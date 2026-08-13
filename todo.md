@@ -111,3 +111,14 @@
 - [x] Add a text answer field and guess submission flow to «أفتكر» alongside the multiple-choice options.
 - [x] Add Aftakar tests for replay/reset behavior and completing all rounds through the final results screen.
 - [x] Visually verify the Aftakar game screen on mobile and desktop breakpoints.
+
+- [x] Expand «أفتكر» into a much larger difficult question bank with many football trivia prompts and player-identification clues.
+- [x] Generate closely confusing distractor choices from the same era, position, nationality, club, or competition while keeping one verified correct answer.
+- [x] Randomize hard rounds without repeating questions or players within a session, and add regression tests for the expanded bank.
+
+- [x] Add rich trivia metadata for nationality, clubs, achievements, and aliases, and test diverse clue categories across the expanded bank.
+
+- [x] Prefer trivia-rich questions in normal sessions and add assertions for nationality, clubs, achievements, and aliases in the verified metadata subset.
+
+- [x] Guarantee and test a minimum number of unique trivia-rich questions across multiple seeds and session sizes.
+- [x] Strengthen tests to verify nationality, clubs, achievements, and aliases are directly surfaced in supported metadata clues.

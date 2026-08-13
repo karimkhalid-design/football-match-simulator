@@ -1,29 +1,18 @@
 import React, { useMemo, useState } from "react";
 import { ArrowRight, Check, ChevronLeft, RotateCcw, Sparkles, Trophy, X } from "lucide-react";
 import { playerCatalogue, positionLabels } from "../lib/auctionData";
+import { AFTAKAR_BANK_SIZE, buildAftakarSession } from "../lib/aftakarData";
 import { PLAYER_IMAGE_URLS } from "../lib/playerImageMap";
 
 const AFTAKAR_LOGO_URL = "/manus-storage/aftakar-logo_c6bb6361.png";
 
 const normalize = (value: string) => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "");
 
-type AftakarRound = {
-  playerName: string;
-  clues: [string, string, string];
-  options: string[];
-};
-
-const rounds: AftakarRound[] = [
-  { playerName: "Lionel Messi", clues: ["أسطورة أرجنتينية حملت كأس العالم", "لعب أغلب مسيرته مع برشلونة", "اشتهر بالقدم اليسرى والرقم 10"], options: ["Lionel Messi", "Mohamed Salah", "Luis Figo", "Diego Maradona"] },
-  { playerName: "Cristiano Ronaldo", clues: ["نجم برتغالي حقق دوري أبطال أوروبا مرات عديدة", "لعب لريال مدريد ومانشستر يونايتد", "اشتهر بالارتقاء والإنهاء والرقم 7"], options: ["Kylian Mbappé", "Cristiano Ronaldo", "Thierry Henry", "Zlatan Ibrahimović"] },
-  { playerName: "Mohamed Salah", clues: ["جناح مصري من نجوم الكرة العربية", "تألق مع ليفربول في الدوري الإنجليزي", "اشتهر بالسرعة والقدم اليسرى والاحتفال الشهير"], options: ["Riyad Mahrez", "Mohamed Salah", "Sadio Mané", "Bernardo Silva"] },
-  { playerName: "Zinedine Zidane", clues: ["صانع ألعاب فرنسي فاز بكأس العالم 1998", "ارتدى قميص يوفنتوس وريال مدريد", "اشتهر باللمسة الهادئة والكرة الذهبية"], options: ["Zinedine Zidane", "Andrea Pirlo", "Kaká", "Ronaldinho"] },
-  { playerName: "Erling Haaland", clues: ["مهاجم نرويجي طويل القامة", "تألق تهديفياً مع مانشستر سيتي", "اشتهر بالقوة والسرعة داخل منطقة الجزاء"], options: ["Harry Kane", "Victor Osimhen", "Erling Haaland", "Robert Lewandowski"] },
-];
-
 const getPlayer = (name: string) => playerCatalogue.find((player) => player.name === name);
 
 export default function Aftakar({ onBackToHub }: { onBackToHub: () => void }) {
+  const [rounds, setRounds] = useState(() => buildAftakarSession(2026));
+  const [sessionSeed, setSessionSeed] = useState(2026);
   const [roundIndex, setRoundIndex] = useState(0);
   const [clueIndex, setClueIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -65,6 +54,9 @@ export default function Aftakar({ onBackToHub }: { onBackToHub: () => void }) {
   };
 
   const restart = () => {
+    const nextSeed = sessionSeed + 1;
+    setSessionSeed(nextSeed);
+    setRounds(buildAftakarSession(nextSeed));
     setRoundIndex(0);
     setClueIndex(0);
     setSelectedAnswer(null);
@@ -96,7 +88,7 @@ export default function Aftakar({ onBackToHub }: { onBackToHub: () => void }) {
       <div className="aftakar-noise" /><div className="aftakar-glow aftakar-glow-one" /><div className="aftakar-glow aftakar-glow-two" />
       <header className="aftakar-header"><button className="aftakar-back" onClick={onBackToHub}><ArrowRight /> كل الألعاب</button><div className="aftakar-header-brand"><span>FOOTBALL MEMORY GAME</span><img src={AFTAKAR_LOGO_URL} alt="شعار أفتكر" /></div><div className="aftakar-score-pill"><Trophy /> {score.toLocaleString("ar-EG")}</div></header>
 
-      <section className="aftakar-intro"><div><p className="aftakar-eyebrow"><Sparkles /> افتكر اللاعب</p><h1>مين <em>ده؟</em></h1><p>اقرأ التلميحات، اختار اللاعب الصح، واجمع أكبر عدد من النقاط.</p></div><div className="aftakar-progress"><span>الجولة {roundIndex + 1} من {rounds.length}</span><div><i style={{ width: `${((roundIndex + 1) / rounds.length) * 100}%` }} /></div></div></section>
+      <section className="aftakar-intro"><div><p className="aftakar-eyebrow"><Sparkles /> افتكر اللاعب</p><h1>مين <em>ده؟</em></h1><p>اقرأ التلميحات الصعبة، اختار اللاعب الصح، واجمع أكبر عدد من النقاط.</p><small className="aftakar-bank-note">بنك الأسئلة: {AFTAKAR_BANK_SIZE} لاعباً وسؤالاً متنوعاً</small></div><div className="aftakar-progress"><span>الجولة {roundIndex + 1} من {rounds.length}</span><div><i style={{ width: `${((roundIndex + 1) / rounds.length) * 100}%` }} /></div></div></section>
 
       <section className="aftakar-game-layout">
         <div className="aftakar-player-card">
