@@ -20,6 +20,16 @@ describe("ShareResult", () => {
     expect(screen.getByRole("button", { name: /نسخ الرابط/ })).toBeTruthy();
   });
 
+  it("keeps save image available and triggers a download fallback", async () => {
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
+    render(<ShareResult gameName="أفتكر" winnerName="أنت" winnerScore="1000" rows={[{ label: "النقاط", score: "1000" }]} />);
+    fireEvent.click(screen.getByRole("button", { name: /شارك النتيجة/ }));
+    const saveButton = screen.getByRole("button", { name: /حفظ الصورة/ });
+    expect(saveButton.hasAttribute("disabled")).toBe(false);
+    fireEvent.click(saveButton);
+    await waitFor(() => expect(click).toHaveBeenCalled());
+  });
+
   it("supports closing the popup and copying the result link", async () => {
     const writeText = vi.spyOn(navigator.clipboard, "writeText").mockResolvedValue(undefined);
     render(<ShareResult gameName="أفتكر" winnerName="أنت" winnerScore="1000" rows={[{ label: "النقاط", score: "1000" }]} />);

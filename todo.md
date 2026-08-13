@@ -252,3 +252,7 @@
 - [x] Fix disabled Save as photo button when the logo image does not complete loading
 - [x] Add regression coverage for image readiness and save action availability
 - [x] Verify the popup on mobile and save a checkpoint for the fix
+
+- [x] إبقاء زر حفظ الصورة متاحاً دائماً مع حالات تجهيز واحتياط واضحة
+- [x] إضافة fallback مضمون لصورة النتيجة عند فشل توليد Blob
+- [x] اختبار الضغط على الحفظ والتحقق على الهاتف ثم حفظ checkpoint
