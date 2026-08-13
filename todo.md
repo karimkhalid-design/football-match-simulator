@@ -101,3 +101,13 @@
 - [x] Finalize the Game Hub with the provided «اعمل الصح» logo and exact website name «كوره كده» across visible branding and logo alt text.
 
 - [x] Use the same existing in-game «اعمل الصح» logo on the active Game Hub card instead of the current hub logo.
+
+- [x] Build the first playable «أفتكر» football-player guessing game with clues, answer input, scoring, and round progression.
+- [x] Enable the «أفتكر» Game Hub card and add navigation into the new game with a return-to-games control.
+- [x] Add responsive UI and automated tests for guessing, scoring, reset, and round completion.
+
+- [x] Build «أفتكر» with a logo-led visual identity derived from the Aftakar logo, separate from «اعمل الصح» styling while preserving the «كوره كده» portal identity.
+
+- [x] Add a text answer field and guess submission flow to «أفتكر» alongside the multiple-choice options.
+- [x] Add Aftakar tests for replay/reset behavior and completing all rounds through the final results screen.
+- [x] Visually verify the Aftakar game screen on mobile and desktop breakpoints.

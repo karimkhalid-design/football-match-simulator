@@ -5,9 +5,9 @@ const HUB_LOGO_URL = "/manus-storage/kora-e3mal-elsah-logo_85537310.png";
 const IN_GAME_LOGO_URL = "/manus-storage/e3mal-elsah-logo_b8d9ae3f.png";
 const AFTAKAR_LOGO_URL = "/manus-storage/aftakar-logo_c6bb6361.png";
 
-type GameHubProps = { onSelectAuction: () => void };
+type GameHubProps = { onSelectAuction: () => void; onSelectAftakar?: () => void };
 
-export default function GameHub({ onSelectAuction }: GameHubProps) {
+export default function GameHub({ onSelectAuction, onSelectAftakar }: GameHubProps) {
   return (
     <main className="game-hub" dir="rtl">
       <div className="hub-noise" />
@@ -23,7 +23,7 @@ export default function GameHub({ onSelectAuction }: GameHubProps) {
           <p className="hub-kicker"><Sparkles /> اختار لعبتك</p>
           <h1>الكرة تبدأ<br /><em>من هنا.</em></h1>
           <p className="hub-description">ادخل عالم ألعاب كرة القدم من بوابة واحدة. كوّن فريقك، خاطر في المزاد، واستعد لألعاب جديدة قادمة.</p>
-          <div className="hub-stats"><span><b>02</b> ألعاب</span><i /><span><b>122</b> لاعباً</span><i /><span><b>01</b> متاح الآن</span></div>
+          <div className="hub-stats"><span><b>02</b> ألعاب</span><i /><span><b>122</b> لاعباً</span><i /><span><b>02</b> متاحة الآن</span></div>
         </div>
         <div className="hub-mark"><img src={HUB_LOGO_URL} alt="شعار كوره كده واعمل الصح" /></div>
       </section>
@@ -36,12 +36,12 @@ export default function GameHub({ onSelectAuction }: GameHubProps) {
           <div className="game-card-cta">ابدأ اللعبة <ArrowLeft /></div>
         </button>
 
-        <article className="game-card game-card-locked" aria-disabled="true">
-          <div className="game-card-topline"><span className="game-number">02</span><span className="game-status soon"><LockKeyhole /> قريباً</span></div>
+        <button className="game-card game-card-aftakar" onClick={onSelectAftakar} type="button">
+          <div className="game-card-topline"><span className="game-number">02</span><span className="game-status available aftakar-status"><i /> متاحة الآن</span></div>
           <div className="game-card-art"><img src={AFTAKAR_LOGO_URL} alt="شعار أفتكر" /></div>
           <div className="game-card-content"><p>خمن · اكتشف · نافس</p><h2>أفتكر</h2><span>اختبر ذاكرتك الكروية وخمّن اللاعب من تاريخه وأرقامه.</span></div>
-          <div className="game-card-cta disabled-cta">اللعبة غير متاحة حالياً <LockKeyhole /></div>
-        </article>
+          <div className="game-card-cta aftakar-cta">ابدأ التحدي <ArrowLeft /></div>
+        </button>
       </section>
 
       <footer className="hub-footer"><span>كوره كده · صناعة كريم</span><span className="hub-footer-line" /><span><Swords /> ألعاب كرة القدم بطريقتنا</span></footer>
