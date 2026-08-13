@@ -16,6 +16,7 @@ export type ShareResultProps = {
 
 const CANVAS_WIDTH = 1080;
 const CANVAS_HEIGHT = 1350;
+const KORA_LOGO_URL = "/manus-storage/kora-keda-app-icon_9f5a2e2f.png";
 
 const roundedRect = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) => {
   const r = Math.min(radius, width / 2, height / 2);
@@ -34,6 +35,13 @@ const fitText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number) 
   return value;
 };
 
+const loadLogo = () => new Promise<HTMLImageElement | null>((resolve) => {
+  const image = new Image();
+  image.onload = () => resolve(image);
+  image.onerror = () => resolve(null);
+  image.src = KORA_LOGO_URL;
+});
+
 const generateScoreImage = async (data: ShareResultProps) => {
   const canvas = document.createElement("canvas");
   canvas.width = CANVAS_WIDTH;
@@ -41,6 +49,7 @@ const generateScoreImage = async (data: ShareResultProps) => {
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
   const accent = data.accent ?? "#c4fb61";
+  const logo = await loadLogo();
   const background = ctx.createLinearGradient(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   background.addColorStop(0, "#07120d");
   background.addColorStop(0.52, "#102b1d");
@@ -54,6 +63,23 @@ const generateScoreImage = async (data: ShareResultProps) => {
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
+  if (logo) {
+    ctx.save();
+    ctx.shadowColor = `${accent}88`;
+    ctx.shadowBlur = 35;
+    ctx.beginPath();
+    ctx.arc(145, 145, 82, 0, Math.PI * 2);
+    ctx.fillStyle = "#09130d";
+    ctx.fill();
+    ctx.clip();
+    ctx.drawImage(logo, 63, 63, 164, 164);
+    ctx.restore();
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(145, 145, 88, 0, Math.PI * 2);
+    ctx.stroke();
+  }
   ctx.direction = "rtl";
   ctx.textAlign = "right";
   ctx.fillStyle = "#c4fb61";
@@ -179,7 +205,7 @@ export default function ShareResult({ triggerLabel = "شارك النتيجة", 
     {open && <div className="share-result-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }}>
       <section className="share-result-modal" role="dialog" aria-modal="true" aria-labelledby="share-result-title" dir="rtl">
         <button type="button" className="share-result-close" aria-label="إغلاق نافذة المشاركة" onClick={() => setOpen(false)}><X /></button>
-        <div className="share-result-heading"><span className="share-result-icon"><Trophy /></span><div><p>نتيجتك جاهزة للمشاركة</p><h2 id="share-result-title">خلي أصحابك يعرفوا مين كسب</h2></div></div>
+        <div className="share-result-heading"><img className="share-result-logo" src={KORA_LOGO_URL} alt="شعار كورة كده" /><span className="share-result-icon"><Trophy /></span><div><p>نتيجتك جاهزة للمشاركة</p><h2 id="share-result-title">خلي أصحابك يعرفوا مين كسب</h2></div></div>
         <div className="share-result-card"><span>{data.eyebrow ?? "النتيجة النهائية"}</span><h3>{data.gameName}</h3><small>الفائز</small><strong>{data.winnerName}</strong><b>{data.winnerScore}</b><div className="share-result-mini-grid">{data.rows.slice(0, 4).map((row) => <div key={row.label}><small>{row.label}</small><b>{row.score}</b></div>)}</div></div>
         <p className="share-result-copy">شارك كارت النتيجة كصورة أو ابعت رابط الجولة لأصحابك.</p>
         <div className="share-result-actions"><button type="button" className="share-result-primary" onClick={share} disabled={sharing}>{sharing ? "جاري التجهيز…" : <><Share2 /> مشاركة</>}</button><button type="button" className="share-result-secondary" onClick={download} disabled={!imageUrl}><ImageIcon /> حفظ الصورة</button><button type="button" className="share-result-secondary" onClick={copyLink}>{copied ? <><Check /> تم النسخ</> : <><Copy /> نسخ الرابط</>}</button></div>

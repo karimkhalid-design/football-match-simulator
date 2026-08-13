@@ -12,6 +12,7 @@ describe("ShareResult", () => {
     fireEvent.click(screen.getByRole("button", { name: /شارك النتيجة/ }));
     expect(screen.getByRole("dialog")).toBeTruthy();
     expect(screen.getByText("VAR و لا لأ؟")).toBeTruthy();
+    expect(screen.getByRole("img", { name: "شعار كورة كده" })).toBeTruthy();
     expect(screen.getAllByText("كريم").length).toBeGreaterThan(0);
     expect(screen.getByText("850 نقطة")).toBeTruthy();
     expect(screen.getByRole("button", { name: /^مشاركة$/ })).toBeTruthy();

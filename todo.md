@@ -244,3 +244,7 @@
 - [x] Add native share, copy-link, download-image, and share-image actions with graceful fallbacks
 - [x] Integrate the share popup into Auction, Aftakar, VAR, and Men Byhbad finish screens
 - [x] Add tests and mobile visual verification for the cross-game sharing flow
+
+- [x] Add the approved كورة كده logo to every generated share score card with a stylish branded composition
+- [x] Verify logo loading and score-card generation across the sharing popup
+- [x] Run tests, verify mobile presentation, and save the branded share-card checkpoint
