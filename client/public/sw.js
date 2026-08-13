@@ -1,4 +1,4 @@
-const CACHE_NAME = "kora-keda-pwa-v2";
+const CACHE_NAME = "kora-keda-pwa-v3";
 const APP_SHELL = ["/", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {

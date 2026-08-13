@@ -80,9 +80,11 @@ createRoot(document.getElementById("root")!).render(
   </trpc.Provider>
 );
 
+window.dispatchEvent(new Event("kora-app-ready"));
+
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?version=2").then((registration) => {
+    navigator.serviceWorker.register("/sw.js?version=3").then((registration) => {
       registration.update().catch(() => undefined);
     }).catch(() => undefined);
   });

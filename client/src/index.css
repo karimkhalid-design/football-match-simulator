@@ -201,3 +201,6 @@ button { font:inherit; border:0; cursor:pointer; } button:disabled { cursor:not-
 .app-splash-skip { margin-top:1.25rem; min-width:8rem; min-height:2.75rem; padding:.55rem 1.25rem; border:1px solid rgba(246,195,63,.55); border-radius:999px; background:rgba(246,195,63,.1); color:#f6c33f; font-family:"IBM Plex Sans Arabic",sans-serif; font-size:.9rem; font-weight:700; transition:background .18s ease,transform .18s ease,box-shadow .18s ease; }
 .app-splash-skip:hover { background:rgba(246,195,63,.2); box-shadow:0 0 1.5rem rgba(246,195,63,.16); transform:translateY(-1px); }
 .app-splash-skip:active { transform:scale(.97); }
+
+/* Safari / iOS WebKit fallback for the splash action */
+.app-splash-skip { -webkit-appearance:none; appearance:none; position:relative; z-index:10; display:inline-flex; align-items:center; justify-content:center; visibility:visible; opacity:1; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }

@@ -17,6 +17,14 @@
   </head>
   <body>
     <div id="root"></div>
+    <button id="safari-skip-fallback" type="button" aria-label="تخطي شاشة التحميل" style="position:fixed;z-index:9999;left:50%;bottom:12%;transform:translateX(-50%);min-width:8rem;min-height:2.75rem;padding:.55rem 1.25rem;border:1px solid #d5a82f;border-radius:999px;background:#172015;color:#f6c33f;font:700 16px/1.2 sans-serif;direction:rtl;cursor:pointer;">تخطي</button>
+    <script>
+      (() => {
+        const fallback = document.getElementById("safari-skip-fallback");
+        window.addEventListener("kora-app-ready", () => { fallback.hidden = true; });
+        fallback.addEventListener("click", () => { window.location.hash = "#hub"; window.location.reload(); });
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
     <script defer src="%VITE_ANALYTICS_ENDPOINT%/umami" data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
   </body>

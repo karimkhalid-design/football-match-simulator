@@ -18,7 +18,13 @@ describe("Kora Keda iPhone PWA prototype", () => {
   it("ships a service worker for the installed prototype", () => {
     expect(existsSync(serviceWorkerPath)).toBe(true);
     const serviceWorker = readFileSync(serviceWorkerPath, "utf8");
-    expect(serviceWorker).toContain("kora-keda-pwa-v2");
+    expect(serviceWorker).toContain("kora-keda-pwa-v3");
     expect(serviceWorker).toContain('event.request.mode === "navigate"');
+  });
+
+  it("ships a Safari fallback skip button in the HTML shell", () => {
+    const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+    expect(html).toContain('id="safari-skip-fallback"');
+    expect(html).toContain('window.location.hash = "#hub"');
   });
 });
