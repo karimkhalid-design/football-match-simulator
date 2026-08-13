@@ -67,3 +67,5 @@ The 375px mobile full-auction check reached the final results screen and rendere
 After caching the thumbnails in project storage, the true 375px mobile full-auction check reached the final screen with 22 final-player-photo elements. It found 20 unique hosted image resources across the live card and final list, and all 20 loaded successfully with non-zero naturalWidth through same-origin Image objects. The previously flaky Wikimedia network dependency is no longer used by the app.
 
 The mobile winner-reveal check at 375px now reports one grid column, two stacked reveal cards in increasing top order, 306px card width, 195px card height, and a 25px team-name heading. The winning player and hidden player details are separated into readable vertical cards instead of the previous cramped horizontal layout.
+
+The duplicate regression was tested through the complete browser flow. After all 11 rounds, the final results contained 22 player photos, 22 unique player names, and no duplicates; the final match simulation then opened successfully.

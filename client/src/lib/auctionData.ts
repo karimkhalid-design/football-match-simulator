@@ -51,14 +51,34 @@ const find = (name: string) => playerCatalogue.find((player) => player.name === 
 const asAuctionPlayer = (player: CataloguePlayer): AuctionPlayer => ({ name: player.name, rating: player.rating, tier: player.tier, note: player.note });
 const preferredPairs: [string, string][] = [["Manuel Neuer", "Thibaut Courtois"], ["Fabio Cannavaro", "William Saliba"], ["Rio Ferdinand", "Virgil van Dijk"], ["Cafu", "Achraf Hakimi"], ["Roberto Carlos", "Theo Hernández"], ["Andrea Pirlo", "Rodri"], ["Luka Modrić", "Jude Bellingham"], ["Zinedine Zidane", "Jamal Musiala"], ["Lionel Messi", "Mohamed Salah"], ["Ronaldinho", "Vinícius Júnior"], ["Ronaldo Nazário", "Erling Haaland"]];
 
+const pickUnused = (pool: CataloguePlayer[], startIndex: number, usedNames: Set<string>) => {
+  for (let step = 0; step < pool.length; step += 1) {
+    const candidate = pool[(startIndex + step) % pool.length];
+    if (!usedNames.has(candidate.name)) return candidate;
+  }
+  throw new Error(`No unused player remains for ${pool[0]?.position ?? "auction"}`);
+};
+
 export function buildAuctionRounds(seed = 0): AuctionRound[] {
+  const usedNames = new Set<string>();
+
   return formationSlots.map((position, slot) => {
     const preferred = preferredPairs[slot];
     const pool = playerCatalogue.filter((player) => player.position === position);
-    const offset = seed % pool.length;
-    const auction = seed ? pool[(slot * 3 + offset) % pool.length] : find(preferred[0]);
-    const hidden = seed ? pool[(slot * 5 + offset + 1) % pool.length] : find(preferred[1]);
-    return { slot: slot + 1, position, label: positionLabels[position], startPrice: auction.startPrice, auction: asAuctionPlayer(auction), hidden: asAuctionPlayer(hidden.name === auction.name ? pool[(slot + 2) % pool.length] : hidden) };
+    const offset = Math.abs(seed) % pool.length;
+    const preferredAuction = seed === 0 ? find(preferred[0]) : null;
+    const auction = preferredAuction && !usedNames.has(preferredAuction.name)
+      ? preferredAuction
+      : pickUnused(pool, seed === 0 ? 0 : slot * 3 + offset, usedNames);
+    usedNames.add(auction.name);
+
+    const preferredHidden = seed === 0 ? find(preferred[1]) : null;
+    const hidden = preferredHidden && !usedNames.has(preferredHidden.name)
+      ? preferredHidden
+      : pickUnused(pool, seed === 0 ? 0 : slot * 5 + offset + 1, usedNames);
+    usedNames.add(hidden.name);
+
+    return { slot: slot + 1, position, label: positionLabels[position], startPrice: auction.startPrice, auction: asAuctionPlayer(auction), hidden: asAuctionPlayer(hidden) };
   });
 }
 

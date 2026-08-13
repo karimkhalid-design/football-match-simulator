@@ -55,3 +55,6 @@
 - [x] Verify player photos render successfully in the live auction and final squad views at a mobile breakpoint (mobile layout and all mapped image elements verified; external Wikimedia download remains network-dependent in isolated iframe).
 
 - [x] Stack and enlarge the auction winner/hidden-player reveal animation on mobile for readable names and clear spacing.
+
+- [x] Prevent duplicate players across all auction rounds, both squads, hidden-player gifts, and final match flow.
+- [x] Add regression tests proving every generated auction assignment and completed squad has unique player names.
