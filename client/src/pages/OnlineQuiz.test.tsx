@@ -5,11 +5,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import OnlineQuiz from "./OnlineQuiz";
 
 const socketMock = { on: vi.fn(), emit: vi.fn(), disconnect: vi.fn() };
-const authMock = vi.hoisted(() => ({ user: null as any, loading: false, isAuthenticated: false, logout: vi.fn() }));
+const authMock = vi.hoisted(() => ({ user: null as any, loading: false, isAuthenticated: false, logout: vi.fn(), setUsername: vi.fn().mockResolvedValue({}), settingUsername: false }));
 vi.mock("socket.io-client", () => ({ io: () => socketMock }));
 vi.mock("../_core/hooks/useAuth", () => ({ useAuth: () => authMock }));
 
-afterEach(() => { document.body.innerHTML = ""; sessionStorage.clear(); socketMock.on.mockReset(); authMock.user = null; authMock.loading = false; authMock.isAuthenticated = false; vi.clearAllMocks(); });
+afterEach(() => { document.body.innerHTML = ""; sessionStorage.clear(); socketMock.on.mockReset(); authMock.user = null; authMock.loading = false; authMock.isAuthenticated = false; authMock.settingUsername = false; authMock.setUsername.mockReset().mockResolvedValue({}); vi.clearAllMocks(); });
 
 describe("online quiz entry flow", () => {
   it("shows the real game identity and opens nickname entry", () => {
@@ -29,6 +29,17 @@ describe("online quiz entry flow", () => {
     expect(screen.getByText("100%")).toBeTruthy();
     expect(screen.getByRole("button", { name: /احذف إجابتين غلط/ })).toBeTruthy();
     expect(screen.getAllByText("اختيار محذوف")).toHaveLength(2);
+  });
+
+  it("requires a permanent username after first authentication", () => {
+    authMock.user = { name: "Karim" };
+    authMock.isAuthenticated = true;
+    sessionStorage.setItem("kora-online-auth-intent", "create");
+    render(<OnlineQuiz onBack={vi.fn()} />);
+    expect(screen.getByRole("heading", { name: /اختار Username ثابت/ })).toBeTruthy();
+    fireEvent.change(screen.getByPlaceholderText("مثال: karim_10"), { target: { value: "karim_10" } });
+    fireEvent.click(screen.getByRole("button", { name: /حفظ Username/ }));
+    expect(authMock.setUsername).toHaveBeenCalledWith({ username: "karim_10" });
   });
 
   it("opens room settings with the account name after authentication", () => {

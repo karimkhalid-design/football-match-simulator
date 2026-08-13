@@ -43,6 +43,20 @@ export async function getUserByOpenId(openId: string) {
   return result[0];
 }
 
+export async function getUserByUsername(username: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
+  return result[0];
+}
+
+export async function updateUserUsername(openId: string, username: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  await db.update(users).set({ username, updatedAt: new Date() }).where(eq(users.openId, openId));
+  return getUserByOpenId(openId);
+}
+
 export async function persistMatch(input: {
   id: string;
   ownerOpenId?: string;
