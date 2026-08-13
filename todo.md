@@ -81,3 +81,6 @@
 
 - [x] Keep the settlement button enabled after a valid bid and opponent withdrawal, while preserving invalid-bid protection.
 - [x] Add rendered-flow regression coverage for bid, opponent withdrawal, and successful settlement.
+
+- [x] Add an automatic temporary-pass state after a valid bid, without permanently marking the opponent as passed.
+- [x] Allow the temporarily passed opponent to re-enter by entering a higher total price, and cover settlement after no re-entry.

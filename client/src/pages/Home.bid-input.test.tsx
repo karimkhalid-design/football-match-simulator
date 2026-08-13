@@ -58,10 +58,13 @@ describe("total bid price control", () => {
     expect(input.value).toBe("6");
     expect((screen.getByRole("button", { name: "ارفع إلى 6M لاعب رقم ٢" }) as HTMLButtonElement).disabled).toBe(true);
 
-    await user.clear(input);
+        await user.clear(input);
     await user.type(input, "25");
-    expect((screen.getByRole("button", { name: "ارفع إلى 25M لاعب رقم ٢" }) as HTMLButtonElement).disabled).toBe(false);
-
+    const reentryBid = screen.getByRole("button", { name: "ارفع إلى 25M لاعب رقم ٢" }) as HTMLButtonElement;
+    expect(reentryBid.disabled).toBe(false);
+    await user.click(reentryBid);
+    const secondTeamLeadingButton = screen.getAllByRole("button").find((button) => button.textContent?.includes("أنت متصدر المزاد") && button.textContent?.includes("لاعب رقم ٢"));
+    expect(secondTeamLeadingButton).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "10M" }));
     expect(input.value).toBe("10");
     await user.click(screen.getByRole("button", { name: "20M" }));

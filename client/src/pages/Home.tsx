@@ -22,6 +22,7 @@ export default function Home() {
   const [bidAmountText, setBidAmountText] = useState("");
   const [leader, setLeader] = useState<number | null>(null);
   const [passed, setPassed] = useState<[boolean, boolean]>([false, false]);
+  const [temporaryPassed, setTemporaryPassed] = useState<[boolean, boolean]>([false, false]);
   const [award, setAward] = useState<Award | null>(null);
   const [screen, setScreen] = useState<Screen>("auction");
   const [match, setMatch] = useState<ReturnType<typeof simulateDraftMatch> | null>(null);
@@ -31,7 +32,7 @@ export default function Home() {
   const enteredBidAmount = parseBidAmount(bidAmountText);
   const proposedBid = totalBidAmount(currentBid, round.startPrice, enteredBidAmount);
   const bidAmount = currentBid ?? (enteredBidAmount ?? round.startPrice);
-  const canAward = leader !== null && passed[1 - leader];
+  const canAward = leader !== null && (passed[1 - leader] || temporaryPassed[1 - leader]);
   const roundProgress = ((roundIndex + 1) / rounds.length) * 100;
 
   const teamAuctionCounts = useMemo(() => teams.map((team) => team.players.filter((player) => player.source === "auction").length), [teams]);
@@ -48,6 +49,7 @@ export default function Home() {
         setBidAmountText("");
         setLeader(null);
         setPassed([false, false]);
+        setTemporaryPassed([false, false]);
       }
       setAward(null);
     }, 2700);
@@ -60,6 +62,7 @@ export default function Home() {
     if (!canOutbid(currentBid, next, round.startPrice) || !canPlaceBid(teams[teamIndex], next, remainingRounds)) return;
     setCurrentBid(next);
     setLeader(teamIndex);
+    setTemporaryPassed(teamIndex === 0 ? [false, true] : [true, false]);
   };
 
   const canTeamWithdraw = (teamIndex: number) => {
@@ -73,6 +76,7 @@ export default function Home() {
     if (!canTeamWithdraw(teamIndex)) return;
     const other = teamIndex === 0 ? 1 : 0;
     setPassed((state) => teamIndex === 0 ? [true, state[1]] : [state[0], true]);
+    setTemporaryPassed((state) => teamIndex === 0 ? [false, state[1]] : [state[0], false]);
     if (leader === null && canPlaceBid(teams[other], round.startPrice, remainingRounds)) {
       setLeader(other);
       setCurrentBid(round.startPrice);
@@ -98,6 +102,7 @@ export default function Home() {
     setBidAmountText("");
     setLeader(null);
     setPassed([false, false]);
+    setTemporaryPassed([false, false]);
     setAward(null);
     setMatch(null);
     setScreen("auction");
@@ -114,6 +119,7 @@ export default function Home() {
     setBidAmountText("");
     setLeader(null);
     setPassed([false, false]);
+    setTemporaryPassed([false, false]);
     setAward(null);
     setMatch(null);
     setScreen("auction");
@@ -162,7 +168,7 @@ export default function Home() {
           })}
         </div>
         <div className="auction-actions"><button className="pass-button" disabled={!canTeamWithdraw(0)} onClick={() => pass(0)}>{teams[0].name} · انسحاب</button><button className="award-button" disabled={!canAward || Boolean(award)} onClick={awardRound}><Trophy /> حسم المزاد</button><button className="pass-button" disabled={!canTeamWithdraw(1)} onClick={() => pass(1)}>{teams[1].name} · انسحاب</button></div>
-        <p className="auction-hint">{enteredBidAmount !== null && !canOutbid(currentBid, proposedBid, round.startPrice) ? `السعر غير صالح — اكتب ${money(currentBid === null ? round.startPrice : (currentBid + 1))} أو أكثر، ثم تابع.` : leader === null ? `اكتب سعراً لا يقل عن ${money(round.startPrice)} — الرقم هو السعر الإجمالي.` : canAward ? "انسحب المنافس. يمكنك الآن حسم المزاد." : `المتصدر: ${teams[leader].name} · يجب أن يكون عرضك أعلى من ${money(currentBid ?? round.startPrice)}.`}</p>
+        <p className="auction-hint">{enteredBidAmount !== null && !canOutbid(currentBid, proposedBid, round.startPrice) ? `السعر غير صالح — اكتب ${money(currentBid === null ? round.startPrice : (currentBid + 1))} أو أكثر، ثم تابع.` : leader === null ? `اكتب سعراً لا يقل عن ${money(round.startPrice)} — الرقم هو السعر الإجمالي.` : canAward ? "المنافس في انسحاب مؤقت — يمكنك الحسم الآن، أو اكتب سعراً أعلى للعودة للمزايدة." : `المتصدر: ${teams[leader].name} · يجب أن يكون عرضك أعلى من ${money(currentBid ?? round.startPrice)}.`}</p>
         {award && <AwardReveal award={award} teams={teams} />}
       </article>
       <SquadBoard team={teams[1]} accent="sky" />
