@@ -80,6 +80,10 @@ describe("مين بيهبد؟", () => {
       if (round < 9) fireEvent.click(screen.getByRole("button", { name: /فهمت، ابدأ الجولة/ }));
     }
     expect(screen.getByText("انتهت اللعبة")).toBeTruthy();
+    expect(screen.getByText("تفاصيل الاسكور")).toBeTruthy();
+    expect(screen.getAllByText("لاعب أ").length).toBeGreaterThan(1);
+    expect(screen.getAllByText(/النقاط الأساسية/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/تأثير المساعدات/).length).toBeGreaterThan(0);
     expect(screen.getByText(/كاشف الهبد/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /لعبة جديدة/ }));
     expect(screen.getByRole("button", { name: /ابدأ اللعبة/ })).toBeTruthy();

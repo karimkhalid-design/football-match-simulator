@@ -25,9 +25,11 @@ describe("مين بيهبد؟ data", () => {
 
   it("applies the aid only to its owner and keeps ordinary players at 100 points", () => {
     const aid = drawMenByehbadAid(["كريم", "محمد"], () => 0);
-    expect(getMenByehbadAidPoints(aid, aid.owner, "كريم", true)).toBeGreaterThanOrEqual(100);
-    expect(getMenByehbadAidPoints(aid, aid.owner, "محمد", true)).toBe(100);
+    expect(getMenByehbadAidPoints({ ...aid, kind: "bonus" }, aid.owner, "كريم", true)).toBe(150);
+    expect(getMenByehbadAidPoints({ ...aid, kind: "double" }, aid.owner, "كريم", true)).toBe(200);
+    expect(getMenByehbadAidPoints({ ...aid, kind: "risk" }, aid.owner, "كريم", false)).toBe(-50);
     expect(getMenByehbadAidPoints({ ...aid, kind: "shield" }, aid.owner, "كريم", false)).toBe(0);
+    expect(getMenByehbadAidPoints({ ...aid, kind: "bonus" }, aid.owner, "محمد", true)).toBe(100);
   });
 
   it("shuffles rounds without changing the pool or introducing duplicates", () => {
