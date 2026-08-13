@@ -16,9 +16,16 @@ describe("online quiz question bank", () => {
     expect(new Set(onlineQuestions.map((question) => question.difficulty)).size).toBe(3);
   });
 
-  it("keeps at least ten football questions for every selected difficulty", () => {
-    expect(onlineQuestions.filter((question) => question.category === "football" && question.difficulty === "easy").length).toBeGreaterThanOrEqual(10);
-    expect(onlineQuestions.filter((question) => question.category === "football" && question.difficulty === "medium").length).toBeGreaterThanOrEqual(10);
-    expect(onlineQuestions.filter((question) => question.category === "football" && question.difficulty === "hard").length).toBeGreaterThanOrEqual(10);
+  it("keeps a large football bank for every selected difficulty", () => {
+    expect(onlineQuestions.filter((question) => question.category === "football" && question.difficulty === "easy").length).toBeGreaterThanOrEqual(20);
+    expect(onlineQuestions.filter((question) => question.category === "football" && question.difficulty === "medium").length).toBeGreaterThanOrEqual(20);
+    expect(onlineQuestions.filter((question) => question.category === "football" && question.difficulty === "hard").length).toBeGreaterThanOrEqual(20);
+  });
+
+  it("offers enough unique football questions for ten-round sessions", () => {
+    const football = onlineQuestions.filter((question) => question.category === "football");
+    expect(football.length).toBeGreaterThanOrEqual(60);
+    expect(new Set(football.map((question) => question.id)).size).toBe(football.length);
+    expect(new Set(football.map((question) => question.prompt)).size).toBe(football.length);
   });
 });

@@ -17,8 +17,8 @@ afterEach(() => vi.useRealTimers());
 
 describe("online bonus aid", () => {
   it("charges the faster correct player according to the response-time gap", () => {
-    expect(calculateSpeedBonusCharge(0)).toBe(10);
-    expect(calculateSpeedBonusCharge(10_000)).toBe(50);
+    expect(calculateSpeedBonusCharge(0)).toBe(20);
+    expect(calculateSpeedBonusCharge(10_000)).toBe(60);
     expect(calculateSpeedBonusCharge(40_000)).toBe(100);
   });
 

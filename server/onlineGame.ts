@@ -12,7 +12,7 @@ const TIMER_MS = 20_000;
 const RESULT_MS = 1_000;
 
 const shuffle = <T,>(items: T[]) => [...items].sort(() => Math.random() - 0.5);
-export const calculateSpeedBonusCharge = (gapMs: number) => Math.min(100, Math.max(10, Math.round((Math.max(0, gapMs) / TIMER_MS) * 100)));
+export const calculateSpeedBonusCharge = (gapMs: number) => Math.min(100, Math.max(20, 20 + Math.round((Math.max(0, gapMs) / TIMER_MS) * 80)));
 export const chooseWrongOptions = (optionCount: number, correctIndex: number, random = Math.random) => shuffle(Array.from({ length: optionCount }, (_, index) => index).filter((index) => index !== correctIndex)).slice(0, 2);
 
 const createCode = () => { let code = ""; do code = nanoid(5).toUpperCase().replace(/[^A-Z0-9]/g, "A"); while (rooms.has(code)); return code; };
