@@ -20,6 +20,9 @@ describe("category hub", () => {
     expect(screen.getByRole("img", { name: "شعار الألعاب الجماعية" })).toBeTruthy();
     expect(screen.getByRole("img", { name: "شعار الألعاب الفردية" })).toBeTruthy();
     expect(screen.getByRole("img", { name: "شعار هتعرف تجاوب؟" })).toBeTruthy();
+    expect(document.querySelectorAll(".category-card-art")).toHaveLength(3);
+    expect(document.querySelectorAll(".category-card-art img")).toHaveLength(3);
+    expect(document.querySelectorAll(".category-card")).toHaveLength(3);
     fireEvent.click(screen.getByRole("button", { name: /ادخل الألعاب/ }));
     fireEvent.click(screen.getByRole("button", { name: /استكشف القسم/ }));
     expect(onSelectGroup).toHaveBeenCalledOnce();

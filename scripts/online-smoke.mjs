@@ -15,8 +15,8 @@ try {
   await Promise.all([new Promise((resolve, reject) => { first.once("connect", resolve); first.once("connect_error", reject); }), new Promise((resolve, reject) => { second.once("connect", resolve); second.once("connect_error", reject); })]);
   const created = await emit(first, "create_room", { nickname: "Karim", category: "football", difficulty: "medium" });
   const joined = await emit(second, "join_room", { code: created.state.roomCode, nickname: "Ahmed" });
-  await emit(first, "set_ready", { token: created.token });
-  await emit(second, "set_ready", { token: joined.token });
+  first.emit("set_ready", { token: created.token });
+  second.emit("set_ready", { token: joined.token });
   const [questionOne, questionTwo] = await Promise.all([waitFor(first, (state) => state.status === "question"), waitFor(second, (state) => state.status === "question")]);
   if (questionOne.question.id !== questionTwo.question.id) throw new Error("Question IDs are not synchronized");
   await Promise.all([emit(first, "answer", { token: created.token, optionIndex: 0 }), emit(second, "answer", { token: joined.token, optionIndex: 0 })]);
