@@ -34,10 +34,10 @@ describe("online room readiness", () => {
     expect(second.events.some((event) => event.event === "room_state" && event.payload.status === "question")).toBe(true);
     call(first, "answer", { token: created.token, optionIndex: 0 });
     call(second, "answer", { token: joined.token, optionIndex: 0 });
-    expect(first.events.some((event) => event.event === "room_state" && event.payload.status === "round_result")).toBe(false);
-    vi.advanceTimersByTime(19_999);
-    expect(first.events.some((event) => event.event === "room_state" && event.payload.status === "round_result")).toBe(false);
-    vi.advanceTimersByTime(1);
     expect(first.events.some((event) => event.event === "room_state" && event.payload.status === "round_result")).toBe(true);
+    vi.advanceTimersByTime(999);
+    expect(first.events.some((event) => event.event === "room_state" && event.payload.status === "question" && event.payload.round === 2)).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(first.events.some((event) => event.event === "room_state" && event.payload.status === "question" && event.payload.round === 2)).toBe(true);
   });
 });
