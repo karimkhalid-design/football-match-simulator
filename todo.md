@@ -89,3 +89,13 @@
 - [x] Upload and use the provided Aftakar logo from project static storage.
 - [x] Route the active card into the auction game and provide a return-to-games control.
 - [x] Verify desktop and 375px mobile layouts plus Game Hub interaction tests.
+
+- [x] Rename the first-entry website/Game Hub identity to «كورة» and use the newly provided «اعمل الصح» logo.
+
+- [x] Correct the hub/site name spelling from «كورة» to the exact requested «كوره» everywhere on the first page.
+
+- [x] Use the exact full website name «كوره كده» everywhere on the first-entry Game Hub.
+
+- [x] Replace residual Game Hub alt text and branding references with the exact final name «كوره كده» and test that «كورة» is absent.
+
+- [x] Finalize the Game Hub with the provided «اعمل الصح» logo and exact website name «كوره كده» across visible branding and logo alt text.

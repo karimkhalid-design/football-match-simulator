@@ -1,7 +1,7 @@
 import React from "react";
 import { ArrowLeft, LockKeyhole, Sparkles, Swords } from "lucide-react";
 
-const E3MAL_LOGO_URL = "/manus-storage/e3mal-elsah-logo_b8d9ae3f.png";
+const E3MAL_LOGO_URL = "/manus-storage/kora-e3mal-elsah-logo_85537310.png";
 const AFTAKAR_LOGO_URL = "/manus-storage/aftakar-logo_c6bb6361.png";
 
 type GameHubProps = { onSelectAuction: () => void };
@@ -13,7 +13,7 @@ export default function GameHub({ onSelectAuction }: GameHubProps) {
       <div className="hub-orb hub-orb-one" />
       <div className="hub-orb hub-orb-two" />
       <header className="hub-header">
-        <div className="hub-wordmark"><span>FOOTBALL GAME ROOM</span><b>ملعب واحد. ألعاب كتير.</b></div>
+        <div className="hub-wordmark"><span>FOOTBALL GAME ROOM</span><b>كوره كده · ألعاب كتير.</b></div>
         <span className="hub-season">SEASON ONE · 2026</span>
       </header>
 
@@ -24,7 +24,7 @@ export default function GameHub({ onSelectAuction }: GameHubProps) {
           <p className="hub-description">ادخل عالم ألعاب كرة القدم من بوابة واحدة. كوّن فريقك، خاطر في المزاد، واستعد لألعاب جديدة قادمة.</p>
           <div className="hub-stats"><span><b>02</b> ألعاب</span><i /><span><b>122</b> لاعباً</span><i /><span><b>01</b> متاح الآن</span></div>
         </div>
-        <div className="hub-mark"><div className="hub-mark-ring" /><span>THE<br />GAME<br />ROOM</span></div>
+        <div className="hub-mark"><img src={E3MAL_LOGO_URL} alt="شعار كوره كده واعمل الصح" /></div>
       </section>
 
       <section className="game-cards" aria-label="الألعاب المتاحة">
@@ -43,7 +43,7 @@ export default function GameHub({ onSelectAuction }: GameHubProps) {
         </article>
       </section>
 
-      <footer className="hub-footer"><span>صناعة كريم</span><span className="hub-footer-line" /><span><Swords /> ألعاب كرة القدم بطريقتنا</span></footer>
+      <footer className="hub-footer"><span>كوره كده · صناعة كريم</span><span className="hub-footer-line" /><span><Swords /> ألعاب كرة القدم بطريقتنا</span></footer>
     </main>
   );
 }
