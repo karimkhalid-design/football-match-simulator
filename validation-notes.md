@@ -69,3 +69,5 @@ After caching the thumbnails in project storage, the true 375px mobile full-auct
 The mobile winner-reveal check at 375px now reports one grid column, two stacked reveal cards in increasing top order, 306px card width, 195px card height, and a 25px team-name heading. The winning player and hidden player details are separated into readable vertical cards instead of the previous cramped horizontal layout.
 
 The duplicate regression was tested through the complete browser flow. After all 11 rounds, the final results contained 22 player photos, 22 unique player names, and no duplicates; the final match simulation then opened successfully.
+
+Flexible-bid mobile validation passed at 375px: the +1/+5/+10 presets were present, selecting +5 set the increment to 5, and after the opening bid the opposing button displayed an actual “ارفع بـ 5M إلى 14M” raise.

@@ -13,6 +13,14 @@ export function createTeams(names: Partial<TeamNames> = {}): AuctionTeam[] {
   ];
 }
 
+export function normalizeBidIncrement(value: number) {
+  return Number.isFinite(value) ? Math.max(1, Math.floor(value)) : 1;
+}
+
+export function nextBidAmount(currentBid: number | null, startPrice: number, increment: number) {
+  return currentBid === null ? startPrice : currentBid + normalizeBidIncrement(increment);
+}
+
 export function canPlaceBid(team: AuctionTeam, bid: number, remainingRounds: number) {
   return bid <= team.budget && team.budget - bid >= remainingRounds * MINIMUM_FUTURE_PRICE;
 }

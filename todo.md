@@ -58,3 +58,8 @@
 
 - [x] Prevent duplicate players across all auction rounds, both squads, hidden-player gifts, and final match flow.
 - [x] Add regression tests proving every generated auction assignment and completed squad has unique player names.
+
+- [x] Allow bids to increase by a user-selected amount greater than 1M while enforcing budget and future-round safety.
+- [x] Add regression tests for flexible bid validation and UI bid controls.
+
+- [x] Add an automated regression test for numeric bid input, +1/+5/+10 presets, next-bid label calculation, and oversized-bid blocking.

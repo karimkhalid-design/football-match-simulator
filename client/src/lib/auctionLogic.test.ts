@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canPlaceBid, createTeams, simulateDraftMatch, totalSpent } from "./auctionLogic";
+import { canPlaceBid, createTeams, nextBidAmount, normalizeBidIncrement, simulateDraftMatch, totalSpent } from "./auctionLogic";
 import { buildAuctionRounds } from "./auctionData";
 
 describe("auction budget rules", () => {
@@ -7,6 +7,27 @@ describe("auction budget rules", () => {
     const [team] = createTeams();
     expect(canPlaceBid(team, 70, 11)).toBe(false);
     expect(canPlaceBid(team, 8, 10)).toBe(true);
+  });
+
+  it("calculates the numeric input and preset bid increments used by the controls", () => {
+    expect(normalizeBidIncrement(1)).toBe(1);
+    expect(normalizeBidIncrement(5.9)).toBe(5);
+    expect(normalizeBidIncrement(0)).toBe(1);
+    expect(normalizeBidIncrement(Number.NaN)).toBe(1);
+    expect(nextBidAmount(null, 9, 10)).toBe(9);
+    expect(nextBidAmount(9, 9, 1)).toBe(10);
+    expect(nextBidAmount(9, 9, 5)).toBe(14);
+    expect(nextBidAmount(9, 9, 10)).toBe(19);
+  });
+
+  it("allows flexible multi-million bid increments when the budget is safe", () => {
+    const [team] = createTeams();
+    expect(canPlaceBid(team, 13, 10)).toBe(true);
+    expect(canPlaceBid(team, 18, 10)).toBe(true);
+    expect(canPlaceBid(team, 75, 10)).toBe(false);
+    team.budget = 19;
+    expect(canPlaceBid(team, 15, 1)).toBe(true);
+    expect(canPlaceBid(team, 17, 1)).toBe(false);
   });
 
   it("calculates money spent from the original team budget", () => {
