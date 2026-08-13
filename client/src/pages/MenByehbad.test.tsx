@@ -26,6 +26,17 @@ describe("مين بيهبد؟", () => {
     expect(screen.getAllByRole("textbox")).toHaveLength(4);
   });
 
+  it("keeps the same name input focused while typing multiple characters", () => {
+    render(<MenByehbad onBackToHub={() => undefined} />);
+    const input = screen.getAllByRole("textbox")[0] as HTMLInputElement;
+    input.focus();
+    ["ك", "كر", "كري", "كريم"].forEach((value) => {
+      fireEvent.change(input, { target: { value } });
+      expect(document.activeElement).toBe(input);
+    });
+    expect(input.value).toBe("كريم");
+  });
+
   it("requires complete unique names before starting", () => {
     render(<MenByehbad onBackToHub={() => undefined} />);
     fireEvent.click(screen.getByRole("button", { name: /ابدأ اللعبة/ }));
