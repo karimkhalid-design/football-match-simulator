@@ -50,3 +50,82 @@ button { font:inherit; border:0; cursor:pointer; } button:disabled { cursor:not-
   .final-list > div { grid-template-columns:28px 28px minmax(0,1fr) auto auto !important; }
   .final-player-photo { width:25px; height:25px; }
 }
+
+/* Mobile auction reveal: readable stacked winner and hidden-player cards */
+@media (max-width:720px) {
+  .auction-stage .award-reveal {
+    align-items:stretch;
+    padding:24px 16px;
+  }
+
+  .auction-stage .award-grid {
+    grid-template-columns:1fr;
+    grid-template-rows:auto 52px auto;
+    align-content:center;
+    gap:16px;
+    width:min(100%, 340px);
+    margin:auto;
+  }
+
+  .auction-stage .award-grid > div {
+    padding:18px 14px;
+    border:1px solid rgba(255,210,115,.22);
+    border-radius:18px;
+    background:linear-gradient(145deg,rgba(44,29,8,.92),rgba(14,10,5,.96));
+    box-shadow:0 14px 34px rgba(0,0,0,.28);
+  }
+
+  .auction-stage .award-grid > div:first-child { order:1; }
+  .auction-stage .award-grid > .versus-reveal {
+    order:2;
+    align-self:center;
+    width:52px;
+    height:52px;
+    margin:auto;
+    padding:0;
+    border-radius:50%;
+    background:rgba(255,205,110,.06);
+    box-shadow:none;
+  }
+  .auction-stage .award-grid > div:last-child { order:3; }
+
+  .auction-stage .reveal-kicker {
+    justify-content:center;
+    gap:7px;
+    font-size:11px;
+    letter-spacing:.04em;
+  }
+  .auction-stage .reveal-kicker svg { width:17px; height:17px; }
+  .auction-stage .award-grid h3 {
+    margin:10px 0 8px;
+    font-size:28px;
+    line-height:1.25;
+    letter-spacing:-.045em;
+  }
+  .auction-stage .award-grid p {
+    font-size:15px;
+    line-height:1.8;
+  }
+  .auction-stage .award-grid p b {
+    display:block;
+    margin-top:3px;
+    color:#fff8e8;
+    font-size:21px;
+    line-height:1.35;
+    direction:ltr;
+  }
+  .auction-stage .award-grid p strong {
+    display:inline-block;
+    margin-inline-start:4px;
+    font-size:19px;
+  }
+}
+
+@media (max-width:420px) {
+  .auction-stage .award-reveal { padding-inline:12px; }
+  .auction-stage .award-grid { width:min(100%, 310px); gap:13px; }
+  .auction-stage .award-grid > div { padding:16px 10px; }
+  .auction-stage .award-grid h3 { font-size:25px; }
+  .auction-stage .award-grid p { font-size:14px; }
+  .auction-stage .award-grid p b { font-size:19px; }
+}
