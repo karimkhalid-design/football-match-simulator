@@ -53,7 +53,7 @@ export default function OnlineQuiz({ onBack }: { onBack: () => void }) {
         setScreen("username");
       }
     }
-  }, [accountName, authLoading, isAuthenticated]);
+  }, [accountName, authLoading, isAuthenticated, user?.username]);
 
   useEffect(() => { if (state?.status !== "question") return; const interval = window.setInterval(() => setNow(Date.now()), 100); return () => window.clearInterval(interval); }, [state?.status, state?.round]);
   useEffect(() => { localStorage.setItem("kora-online-muted", muted ? "1" : "0"); }, [muted]);
@@ -62,7 +62,7 @@ export default function OnlineQuiz({ onBack }: { onBack: () => void }) {
   const self = state?.players?.find((player: any) => player.isYou);
   const opponent = state?.players?.find((player: any) => !player.isYou);
   const winner = state?.scores?.slice().sort((a: any, b: any) => b.score - a.score)?.[0];
-  const goName = (next: "create" | "join") => { setError(""); setCode(next === "join" ? code : ""); setName(accountName); setCategory("random"); setDifficulty("medium"); (window as any).__onlineIntent = next; sessionStorage.setItem("kora-online-auth-intent", next); setScreen(isAuthenticated ? next : "auth"); };
+  const goName = (next: "create" | "join") => { setError(""); setCode(next === "join" ? code : ""); setName(user?.username || accountName); setCategory("random"); setDifficulty("medium"); (window as any).__onlineIntent = next; sessionStorage.setItem("kora-online-auth-intent", next); if (!isAuthenticated) return setScreen("auth"); if (!user?.username) { setUsernameDraft(""); return setScreen("username"); } setScreen(next); };
   const emit = (event: string, payload: any, callback?: (response: any) => void) => { if (!socket) return; socket.emit(event, payload, callback); };
   const submitName = () => { if (!name.trim()) return setError("اكتب اسمك الأول"); setError(""); setScreen((window as any).__onlineIntent === "create" ? "create" : "join"); };
   const submitUsername = async () => {

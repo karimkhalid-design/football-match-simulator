@@ -43,7 +43,7 @@ describe("online quiz entry flow", () => {
   });
 
   it("opens room settings with the account name after authentication", () => {
-    authMock.user = { name: "Karim" };
+    authMock.user = { name: "Karim", username: "karim_10" };
     authMock.isAuthenticated = true;
     render(<OnlineQuiz onBack={vi.fn()} />);
     fireEvent.click(screen.getByRole("button", { name: /اعمل لعبة/ }));
