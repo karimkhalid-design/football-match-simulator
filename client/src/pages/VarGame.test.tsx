@@ -3,6 +3,7 @@ import React from "react";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import VarGame from "./VarGame";
+import { varRounds } from "../lib/varData";
 
 afterEach(() => cleanup());
 
@@ -15,6 +16,29 @@ describe("VAR و لا لأ؟", () => {
     expect(document.querySelector(".var-name-grid")).toBeTruthy();
     expect(document.querySelector(".var-count-picker")).toBeTruthy();
     expect(screen.getByRole("button", { name: "ابدأ اللعبة" })).toBeTruthy();
+  });
+
+  it("loads a real controversial clip and hides the verified decision until reveal", () => {
+    render(<VarGame onBackToHub={() => undefined} />);
+    fireEvent.click(screen.getByRole("button", { name: "ابدأ اللعبة" }));
+    expect(screen.getByText("هدف لويس دياز الملغي")).toBeTruthy();
+    expect(document.querySelector(".var-embed")).toBeTruthy();
+    expect(screen.queryByText(/القرار الصحيح/)).toBe(null);
+    expect(screen.queryByText(/قرار الحكم الأصلي/)).toBe(null);
+    expect(screen.queryByRole("link", { name: /Sky Sports/ })).toBe(null);
+    fireEvent.click(screen.getByRole("button", { name: /شاهد اللقطة/ }));
+    fireEvent.click(screen.getByRole("button", { name: /افتح الـVAR/ }));
+    fireEvent.click(screen.getByRole("button", { name: "انتقل للقرار" }));
+    fireEvent.click(screen.getByRole("button", { name: "هدف" }));
+    expect(screen.getByText(/القرار الصحيح: هدف/)).toBeTruthy();
+    expect(screen.getAllByText(/قرار الحكم الأصلي/).length).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: /Sky Sports/ })).toBeTruthy();
+  });
+
+  it("keeps the VAR session free of repeated incident ids", () => {
+    const ids = varRounds.map((round) => round.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(varRounds.filter((round) => round.isReal).length).toBeGreaterThan(1);
   });
 
   it("keeps critical gameplay controls available at 375px", () => {

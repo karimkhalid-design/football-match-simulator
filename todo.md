@@ -138,3 +138,8 @@
 - [x] Add deterministic DOM coverage for the mobile-first responsive structure and critical controls of the VAR setup/game screens.
 
 - [x] Add a 375px gameplay DOM test covering the discussion countdown, prediction grid, VAR button, decision controls, and result CTA.
+
+- [x] Add a verified library of difficult real controversial football incidents alongside clearly labeled expandable training scenarios.
+- [x] Keep the original referee decision hidden until the VAR reveal, then show the verified decision and explanation.
+- [x] Add source metadata and an embed/link-only rights-safe strategy for real incidents, without downloading or redistributing footage.
+- [x] Test incident uniqueness, hidden answers, reveal accuracy, source visibility, and mobile replay presentation.

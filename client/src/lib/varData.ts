@@ -15,11 +15,15 @@ export type VarRound = {
   changeAnswer?: "نعم" | "لا";
   explanation: string;
   comment: string;
+  isReal?: boolean;
+  mediaUrl?: string;
+  sourceUrl?: string;
+  sourceLabel?: string;
 };
 
 export const VAR_DECISIONS: VarDecision[] = ["هدف", "ضربة جزاء", "كارت أحمر", "استمرار اللعب"];
 
-export const varRounds: VarRound[] = [
+const fictionalVarRounds: VarRound[] = [
   { id: 1, type: "penalty", badge: "ضربة جزاء؟", title: "احتكاك في آخر لحظة", minute: "87:14", description: "المهاجم دخل المنطقة، والمدافع حاول قطع الكرة قبل أن يحدث احتكاك واضح وسقط المهاجم.", varInfo: "الزاوية الجانبية توضح أن قدم المدافع لمست قدم المهاجم قبل الكرة.", options: VAR_DECISIONS, correctAnswer: "ضربة جزاء", explanation: "الاحتكاك المؤثر حصل داخل منطقة الجزاء قبل الوصول للكرة، لذلك القرار الصحيح ضربة جزاء.", comment: "راجعها يا حكم! الـVAR أنقذك في آخر دقيقة." },
   { id: 2, type: "offside", badge: "تسلل؟", title: "قدم واحدة قلبت الهدف", minute: "32:08", description: "المهاجم استلم تمريرة بينية وسدد الكرة في الشباك، لكن المدافع رفع يده مطالباً بالتسلل.", varInfo: "خط التسلل يظهر أن كتف المهاجم متقدم قليلاً لحظة خروج الكرة.", options: VAR_DECISIONS, correctAnswer: "استمرار اللعب", explanation: "الكتف لا يُحتسب جزءاً مسموحاً بالتسجيل منه في هذه اللقطة، والقدم الأقرب للمرمى كانت خلف المدافع الأخير.", comment: "يا حكم إنت بتعمل إيه؟ القرار طلع أهدى من النقاش." },
   { id: 3, type: "goal", badge: "هدف ولا لأ؟", title: "لمسة اليد قبل الاحتفال", minute: "61:42", description: "الكرة ارتدت من المدافع إلى المهاجم، ثم لمست ذراعه قبل أن يضعها في المرمى.", varInfo: "الإعادة البطيئة تُظهر أن اللمسة سبقت التسديدة مباشرة.", options: VAR_DECISIONS, correctAnswer: "استمرار اللعب", explanation: "اللمسة العرضية غير المتعمدة لا تلغي الهدف وحدها إذا لم تكن هي التي سجلت الكرة مباشرة.", comment: "الـVAR قالك كمّل، والاحتفال لسه شغال." },
@@ -31,5 +35,12 @@ export const varRounds: VarRound[] = [
   { id: 9, type: "red-card", badge: "كارت أحمر؟", title: "منع فرصة محققة", minute: "66:11", description: "مهاجم انفرد بالمرمى، والمدافع أمسكه من الكتف قبل دخول المنطقة بقليل.", varInfo: "الإعادة تُظهر أن المخالفة خارج المنطقة وأن المهاجم لم يكن متجهاً مباشرة للمرمى.", options: VAR_DECISIONS, correctAnswer: "استمرار اللعب", explanation: "المخالفة تستحق بطاقة لكنها خارج منطقة الجزاء، واللقطة لا تحقق كل شروط الطرد الأحمر.", comment: "مش كل مسكة تبقى أحمر يا حكم، راجعها بهدوء." },
   { id: 10, type: "goal", badge: "هدف ولا لأ؟", title: "الحارس اتزق؟", minute: "78:36", description: "ركنية وصلت للحارس، مهاجم قفز بجواره واحتك به قبل أن تسقط الكرة في المرمى.", varInfo: "الإعادة من الخلف توضح أن المهاجم دفع الحارس بكلتا يديه قبل لمس الكرة.", options: VAR_DECISIONS, correctAnswer: "استمرار اللعب", explanation: "الدفع الواضح منع الحارس من لعب الكرة، لذلك لا يُحتسب الهدف ويستمر اللعب بعد إلغائه.", comment: "الحارس اتزق يا حكم، مش كل كرة ثابتة هدف." },
 ];
+
+const realVarRounds: VarRound[] = [
+  { id: 101, type: "goal", badge: "لقطة حقيقية · هدف ولا لأ؟", title: "هدف لويس دياز الملغي", minute: "26:00", description: "لويس دياز سجل لتوتنهام أمام ليفربول، لكن راية التسلل ظهرت والهدف لم يُحتسب. شوف التسجيل الأصلي وخد قرارك قبل ما تعرف الحقيقة.", varInfo: "الخطوط تُظهر أن دياز كان في موقف سليم. التسجيل الصوتي الرسمي كشف أن غرفة VAR أخطأت في فهم قرار الحكم الأصلي.", originalDecision: "استمرار اللعب", options: VAR_DECISIONS, correctAnswer: "هدف", explanation: "الهدف كان صحيحاً، لكن الحكم وVAR ظنا أن القرار الميداني كان باحتساب الهدف، ثم استؤنف اللعب قبل اكتشاف الخطأ.", comment: "دي مش لقطة جدلية بس… دي لقطة الـVAR نفسه قال بعدها: يا نهار أبيض.", isReal: true, mediaUrl: "https://www.youtube.com/embed/vlh7YYQxicA", sourceUrl: "https://www.skysports.com/football/news/11095/12975648/var-audio-released-from-liverpools-disallowed-goal-by-luis-diaz-in-defeat-at-spurs", sourceLabel: "Sky Sports · تسجيل PGMOL الصوتي" },
+  { id: 102, type: "goal", badge: "لقطة حقيقية · هدف ولا لأ؟", title: "كرة اليابان على الخط", minute: "51:00", description: "اليابان سجلت هدفاً ثانياً أمام إسبانيا بعد كرة بدت لكثيرين وكأنها خرجت بالكامل من الملعب. هل تلغيه أم تحتسبه؟", varInfo: "المراجعة اعتمدت على صورة خط المرمى/الخط الجانبي، والكرة لم تتجاوز الخط بالكامل رغم زاوية البث المربكة.", originalDecision: "هدف", options: VAR_DECISIONS, correctAnswer: "هدف", explanation: "FIFA أوضحت أن الكرة لم تعبر الخط بالكامل؛ بقاء جزء منها فوق الخط يعني استمرار اللعب واحتساب الهدف.", comment: "الصورة قالت الكرة برّه، والتكنولوجيا قالت لسه جوّه… VAR كسب النقاش.", isReal: true, mediaUrl: "https://www.youtube.com/embed/y2vGIXA-UVU", sourceUrl: "https://www.bbc.co.uk/sport/football/63829718", sourceLabel: "BBC · تفسير FIFA للهدف" },
+];
+
+export const varRounds: VarRound[] = [...realVarRounds, ...fictionalVarRounds].slice(0, 10);
 
 export const getRoundTypeLabel = (type: VarRoundType) => ({ penalty: "PENALTY REVIEW", offside: "OFFSIDE REVIEW", goal: "GOAL REVIEW", "red-card": "RED CARD REVIEW", foul: "FOUL REVIEW", change: "DECISION REVIEW" }[type]);
