@@ -125,3 +125,16 @@
 
 - [x] Remove nationality wording from all Aftakar clue templates and replace it with harder club, competition, record, award, style, and position clues.
 - [x] Add regression coverage proving generated clues do not reveal nationality while retaining hard trivia coverage.
+
+- [x] Build offline one-phone party game «VAR و لا لأ؟» with 2–10 players, player names, rotating judge, and 10 rounds.
+- [x] Add expandable VAR round data covering penalty, offside, goal, red card, foul, and decision-change scenarios.
+- [x] Implement one-phone phase flow: watch clip placeholder, 60-second discussion timer, VAR checking animation, final decision, explanation, Egyptian comments, and scoring.
+- [x] Add VAR logo asset and neon navy/green/yellow/red visual identity, then enable the Game Hub card and route.
+- [x] Add automated tests for setup, judge rotation, timer transition, scoring, final rankings, reset, and responsive rendering.
+
+- [x] Use the exact game title «VAR و لا لأ؟» consistently across the hub card, page metadata, setup screen, and in-game headings.
+
+- [x] Set and test the exact document title «VAR و لا لأ؟» while the VAR game is open.
+- [x] Add deterministic DOM coverage for the mobile-first responsive structure and critical controls of the VAR setup/game screens.
+
+- [x] Add a 375px gameplay DOM test covering the discussion countdown, prediction grid, VAR button, decision controls, and result CTA.
