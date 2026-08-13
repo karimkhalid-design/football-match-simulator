@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { setupOnlineGame } from "./onlineGame";
+import { calculateSpeedBonusCharge, chooseWrongOptions, setupOnlineGame } from "./onlineGame";
 
 type FakeSocket = { id: string; handlers: Map<string, Function>; events: Array<{ event: string; payload: any }>; on: (event: string, handler: Function) => void; join: () => void; leave: () => void };
 
@@ -14,6 +14,21 @@ function makeHarness() {
 }
 
 afterEach(() => vi.useRealTimers());
+
+describe("online bonus aid", () => {
+  it("charges the faster correct player according to the response-time gap", () => {
+    expect(calculateSpeedBonusCharge(0)).toBe(10);
+    expect(calculateSpeedBonusCharge(10_000)).toBe(50);
+    expect(calculateSpeedBonusCharge(40_000)).toBe(100);
+  });
+
+  it("removes exactly two wrong options and preserves the correct option", () => {
+    const eliminated = chooseWrongOptions(4, 2, () => 0.2);
+    expect(eliminated).toHaveLength(2);
+    expect(eliminated).not.toContain(2);
+    expect(new Set(eliminated).size).toBe(2);
+  });
+});
 
 describe("online room readiness", () => {
   it("starts when both clients use the UI-style event without callbacks", () => {

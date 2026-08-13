@@ -2,7 +2,7 @@ import type { Server, Socket } from "socket.io";
 import { nanoid } from "nanoid";
 import { categoryLabels, difficultyLabels, onlineQuestions, type OnlineCategory, type OnlineDifficulty, type OnlineQuestion } from "./onlineGameData";
 
-type Player = { token: string; nickname: string; connected: boolean; ready: boolean; score: number; combo: number; socketId?: string; disconnectedAt?: number; playAgain: boolean };
+type Player = { token: string; nickname: string; connected: boolean; ready: boolean; score: number; combo: number; bonusCharge: number; bonusAidAvailable: boolean; eliminatedOptions: number[]; socketId?: string; disconnectedAt?: number; playAgain: boolean };
 type Answer = { optionIndex: number; correct: boolean; points: number; elapsedMs: number; combo: number };
 type Room = { code: string; hostToken: string; players: Map<string, Player>; settings: { category: OnlineCategory | "random"; difficulty: OnlineDifficulty; totalRounds: number }; questions: OnlineQuestion[]; status: "lobby" | "countdown" | "question" | "round_result" | "finished"; currentRound: number; roundStartedAt: number; answers: Map<string, Answer>; roundResults: Array<{ token: string; correct: boolean; points: number; combo: number; elapsedMs: number }>; timer?: ReturnType<typeof setTimeout>; resultTimer?: ReturnType<typeof setTimeout> };
 
@@ -12,6 +12,9 @@ const TIMER_MS = 20_000;
 const RESULT_MS = 1_000;
 
 const shuffle = <T,>(items: T[]) => [...items].sort(() => Math.random() - 0.5);
+export const calculateSpeedBonusCharge = (gapMs: number) => Math.min(100, Math.max(10, Math.round((Math.max(0, gapMs) / TIMER_MS) * 100)));
+export const chooseWrongOptions = (optionCount: number, correctIndex: number, random = Math.random) => shuffle(Array.from({ length: optionCount }, (_, index) => index).filter((index) => index !== correctIndex)).slice(0, 2);
+
 const createCode = () => { let code = ""; do code = nanoid(5).toUpperCase().replace(/[^A-Z0-9]/g, "A"); while (rooms.has(code)); return code; };
 const chooseQuestions = (category: Room["settings"]["category"], difficulty: OnlineDifficulty) => {
   const pool = onlineQuestions.filter((item) => (category === "random" || item.category === category) && item.difficulty === difficulty);
@@ -35,12 +38,13 @@ function publicState(room: Room, token: string) {
     players: Array.from(room.players.values()).map(({ token: playerToken, socketId, ...player }) => ({ ...player, id: playerToken.slice(0, 8), isYou: playerToken === token })),
     round: room.currentRound + 1,
     totalRounds: room.settings.totalRounds,
-    question: room.status === "question" || room.status === "round_result" ? { id: question?.id, prompt: question?.prompt, options: question?.options, category: question ? categoryLabels[question.category] : "", difficulty: question ? difficultyLabels[question.difficulty] : "", startedAt: room.roundStartedAt, durationMs: TIMER_MS } : null,
+    question: room.status === "question" || room.status === "round_result" ? { id: question?.id, prompt: question?.prompt, options: question?.options, category: question ? categoryLabels[question.category] : "", difficulty: question ? difficultyLabels[question.difficulty] : "", startedAt: room.roundStartedAt, durationMs: TIMER_MS, eliminatedOptions: self?.eliminatedOptions ?? [] } : null,
     ownAnswer: room.answers.get(token) ?? null,
     answerCount: room.answers.size,
     roundResults: room.status === "round_result" ? room.roundResults.map((result) => ({ ...result, player: room.players.get(result.token)?.nickname ?? "لاعب" })) : [],
     winner: room.status === "finished" ? Array.from(room.players.values()).sort((a, b) => b.score - a.score).map((player) => ({ nickname: player.nickname, score: player.score, combo: player.combo }))[0] : null,
     scores: Array.from(room.players.values()).map((player) => ({ nickname: player.nickname, score: player.score, combo: player.combo })),
+    bonus: { charge: self?.bonusCharge ?? 0, aidAvailable: self?.bonusAidAvailable ?? false, eliminatedOptions: self?.eliminatedOptions ?? [] },
   };
   return state;
 }
@@ -55,10 +59,23 @@ function resolveRound(io: Server, room: Room) {
   const question = currentQuestion(room);
   room.status = "round_result";
   room.roundResults = Array.from(room.players.values()).map((player) => { const answer = room.answers.get(player.token); return { token: player.token, correct: Boolean(answer?.correct), points: answer?.points ?? 0, combo: answer?.combo ?? player.combo, elapsedMs: answer?.elapsedMs ?? TIMER_MS }; });
+  const answered = Array.from(room.answers.entries());
+  const correctAnswers = answered.filter(([, answer]) => answer.correct);
+  if (correctAnswers.length === 2) {
+    const [fastest, slower] = [...correctAnswers].sort(([, first], [, second]) => first.elapsedMs - second.elapsedMs);
+    const gap = Math.abs(slower[1].elapsedMs - fastest[1].elapsedMs);
+    if (gap > 0) {
+      const fastPlayer = room.players.get(fastest[0]);
+      if (fastPlayer) {
+        fastPlayer.bonusCharge = Math.min(100, fastPlayer.bonusCharge + calculateSpeedBonusCharge(gap));
+        if (fastPlayer.bonusCharge >= 100) fastPlayer.bonusAidAvailable = true;
+      }
+    }
+  }
   emitAll(io, room);
   room.resultTimer = setTimeout(() => {
     if (room.currentRound >= room.settings.totalRounds - 1) { room.status = "finished"; recordMatch(room); clearTimers(room); emitAll(io, room); return; }
-    room.currentRound += 1; room.answers.clear(); room.roundResults = []; room.status = "question"; room.roundStartedAt = Date.now(); emitAll(io, room);
+    room.currentRound += 1; room.answers.clear(); room.roundResults = []; for (const player of Array.from(room.players.values())) player.eliminatedOptions = []; room.status = "question"; room.roundStartedAt = Date.now(); emitAll(io, room);
     room.timer = setTimeout(() => resolveRound(io, room), TIMER_MS);
   }, RESULT_MS);
   void question;
@@ -69,14 +86,14 @@ function beginGame(io: Server, room: Room) {
   setTimeout(() => { if (room.status !== "countdown") return; room.status = "question"; room.currentRound = 0; room.answers.clear(); room.roundResults = []; room.roundStartedAt = Date.now(); emitAll(io, room); room.timer = setTimeout(() => resolveRound(io, room), TIMER_MS); }, 3000);
 }
 
-function resetRoom(room: Room) { clearTimers(room); room.status = "lobby"; room.currentRound = 0; room.questions = chooseQuestions(room.settings.category, room.settings.difficulty); room.answers.clear(); room.roundResults = []; for (const player of Array.from(room.players.values())) { player.ready = false; player.score = 0; player.combo = 0; player.playAgain = false; } }
+function resetRoom(room: Room) { clearTimers(room); room.status = "lobby"; room.currentRound = 0; room.questions = chooseQuestions(room.settings.category, room.settings.difficulty); room.answers.clear(); room.roundResults = []; for (const player of Array.from(room.players.values())) { player.ready = false; player.score = 0; player.combo = 0; player.bonusCharge = 0; player.bonusAidAvailable = false; player.eliminatedOptions = []; player.playAgain = false; } }
 
 export function setupOnlineGame(io: Server) {
   io.on("connection", (socket) => {
     socket.on("get_leaderboard", (callback) => callback({ ok: true, rows: leaderboardRows() }));
     socket.on("create_room", ({ nickname, category = "random", difficulty = "medium" }, callback) => {
       const token = nanoid(18); const footballCategory = "football" as const; const room: Room = { code: createCode(), hostToken: token, players: new Map(), settings: { category: footballCategory, difficulty, totalRounds: 10 }, questions: chooseQuestions(footballCategory, difficulty), status: "lobby", currentRound: 0, roundStartedAt: 0, answers: new Map(), roundResults: [] };
-      room.players.set(token, { token, nickname: String(nickname).trim().slice(0, 24) || "لاعب", connected: true, ready: false, score: 0, combo: 0, socketId: socket.id, playAgain: false }); rooms.set(room.code, room); socket.join(room.code); callback({ ok: true, token, state: publicState(room, token) });
+      room.players.set(token, { token, nickname: String(nickname).trim().slice(0, 24) || "لاعب", connected: true, ready: false, score: 0, combo: 0, bonusCharge: 0, bonusAidAvailable: false, eliminatedOptions: [], socketId: socket.id, playAgain: false }); rooms.set(room.code, room); socket.join(room.code); callback({ ok: true, token, state: publicState(room, token) });
     });
 
     socket.on("join_room", ({ code, nickname, token }, callback) => {
@@ -85,11 +102,12 @@ export function setupOnlineGame(io: Server) {
       if (existing) { existing.nickname = cleanName; existing.connected = true; existing.socketId = socket.id; existing.disconnectedAt = undefined; socket.join(room.code); return callback({ ok: true, token, state: publicState(room, token) }); }
       if (room.status !== "lobby") return callback({ ok: false, error: "المباراة بدأت بالفعل" });
       if (room.players.size >= 2) return callback({ ok: false, error: "الغرفة ممتلئة" });
-      const newToken = nanoid(18); room.players.set(newToken, { token: newToken, nickname: cleanName, connected: true, ready: false, score: 0, combo: 0, socketId: socket.id, playAgain: false }); socket.join(room.code); emitAll(io, room); callback({ ok: true, token: newToken, state: publicState(room, newToken) });
+      const newToken = nanoid(18); room.players.set(newToken, { token: newToken, nickname: cleanName, connected: true, ready: false, score: 0, combo: 0, bonusCharge: 0, bonusAidAvailable: false, eliminatedOptions: [], socketId: socket.id, playAgain: false }); socket.join(room.code); emitAll(io, room); callback({ ok: true, token: newToken, state: publicState(room, newToken) });
     });
 
     socket.on("set_ready", ({ token }, callback?: (response: { ok: boolean }) => void) => { const room = roomFor(socket, token); const player = room?.players.get(token); if (!room || !player || room.status !== "lobby") { callback?.({ ok: false }); return; } player.ready = !player.ready; emitAll(io, room); if (room.players.size === 2 && Array.from(room.players.values()).every((item) => item.ready && item.connected)) beginGame(io, room); callback?.({ ok: true }); });
-    socket.on("answer", ({ token, optionIndex }, callback?: (response: { ok: boolean; error?: string }) => void) => { const room = roomFor(socket, token); const player = room?.players.get(token); const question = room && currentQuestion(room); if (!room || !player || !question || room.status !== "question" || room.answers.has(token)) { callback?.({ ok: false, error: "الإجابة غير متاحة" }); return; } const elapsedMs = Math.min(TIMER_MS, Math.max(0, Date.now() - room.roundStartedAt)); const correct = Number(optionIndex) === question.correctIndex; const speedBonus = correct && elapsedMs < 2000 ? 2 : correct ? 1 : 0; const combo = correct ? player.combo + 1 : 0; const comboBonus = correct && combo >= 5 ? 1 : correct && combo >= 3 ? 1 : 0; const points = speedBonus + comboBonus; player.combo = combo; player.score += points; room.answers.set(token, { optionIndex: Number(optionIndex), correct, points, elapsedMs, combo }); emitAll(io, room); const connectedPlayers = Array.from(room.players.values()).filter((item) => item.connected); if (connectedPlayers.length === 2 && connectedPlayers.every((item) => room.answers.has(item.token))) resolveRound(io, room); callback?.({ ok: true }); });
+    socket.on("use_bonus_aid", ({ token }, callback?: (response: { ok: boolean; error?: string; eliminatedOptions?: number[] }) => void) => { const room = roomFor(socket, token); const player = room?.players.get(token); const question = room && currentQuestion(room); if (!room || !player || !question || room.status !== "question" || room.answers.has(token) || !player.bonusAidAvailable) { callback?.({ ok: false, error: "المساعدة غير متاحة" }); return; } player.eliminatedOptions = chooseWrongOptions(question.options.length, question.correctIndex); player.bonusAidAvailable = false; player.bonusCharge = 0; emitToPlayer(io, room, token); callback?.({ ok: true, eliminatedOptions: player.eliminatedOptions }); });
+    socket.on("answer", ({ token, optionIndex }, callback?: (response: { ok: boolean; error?: string }) => void) => { const room = roomFor(socket, token); const player = room?.players.get(token); const question = room && currentQuestion(room); const selectedIndex = Number(optionIndex); if (!room || !player || !question || room.status !== "question" || room.answers.has(token) || player.eliminatedOptions.includes(selectedIndex)) { callback?.({ ok: false, error: "الإجابة غير متاحة" }); return; } const elapsedMs = Math.min(TIMER_MS, Math.max(0, Date.now() - room.roundStartedAt)); const correct = selectedIndex === question.correctIndex; const speedBonus = correct && elapsedMs < 2000 ? 2 : correct ? 1 : 0; const combo = correct ? player.combo + 1 : 0; const comboBonus = correct && combo >= 5 ? 1 : correct && combo >= 3 ? 1 : 0; const points = speedBonus + comboBonus; player.combo = combo; player.score += points; room.answers.set(token, { optionIndex: selectedIndex, correct, points, elapsedMs, combo }); emitAll(io, room); const connectedPlayers = Array.from(room.players.values()).filter((item) => item.connected); if (connectedPlayers.length === 2 && connectedPlayers.every((item) => room.answers.has(item.token))) resolveRound(io, room); callback?.({ ok: true }); });
     socket.on("play_again", ({ token }, callback?: (response: { ok: boolean }) => void) => { const room = roomFor(socket, token); const player = room?.players.get(token); if (!room || !player || room.status !== "finished") { callback?.({ ok: false }); return; } player.playAgain = true; if (Array.from(room.players.values()).every((item) => item.playAgain && item.connected)) { resetRoom(room); emitAll(io, room); } else emitAll(io, room); callback?.({ ok: true }); });
     socket.on("leave_room", ({ token }) => { const room = roomFor(socket, token); if (!room) return; room.players.delete(token); socket.leave(room.code); if (room.players.size === 0) { clearTimers(room); rooms.delete(room.code); } else emitAll(io, room); });
     socket.on("disconnect", () => { for (const room of Array.from(rooms.values()) as Room[]) { const player: Player | undefined = Array.from(room.players.values()).find((item: Player) => item.socketId === socket.id); if (!player) continue; player.connected = false; player.socketId = undefined; player.disconnectedAt = Date.now(); emitAll(io, room); setTimeout(() => { if (player.disconnectedAt && Date.now() - player.disconnectedAt >= 30_000) { room.players.delete(player.token); emitAll(io, room); if (room.players.size === 0) { clearTimers(room); rooms.delete(room.code); } } }, 30_500); } });
