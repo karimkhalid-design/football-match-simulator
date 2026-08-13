@@ -3,7 +3,7 @@ import React from "react";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import VarGame from "./VarGame";
-import { shuffleVarRounds, varRounds } from "../lib/varData";
+import { getNeutralDiscussionText, shuffleVarRounds, varRounds } from "../lib/varData";
 
 afterEach(() => cleanup());
 
@@ -35,6 +35,20 @@ describe("VAR و لا لأ؟", () => {
     fireEvent.click(screen.getAllByRole("button").find((button) => button.className.includes("var-choice")) as HTMLElement);
     expect(screen.getByText(/القرار الصحيح:/)).toBeTruthy();
     expect(screen.getAllByText(/قرار الحكم الأصلي/).length).toBeGreaterThan(0);
+  });
+
+  it("uses neutral discussion copy and hides internal VAR evidence before reveal", () => {
+    expect(varRounds.every((round) => {
+      const neutral = getNeutralDiscussionText(round);
+      return neutral !== round.description && !neutral.includes(round.correctAnswer) && !neutral.includes(round.originalDecision ?? "__missing__") && !neutral.includes(round.varInfo);
+    })).toBe(true);
+
+    const realRound = varRounds[0];
+    render(<VarGame onBackToHub={() => undefined} roundPool={[realRound]} />);
+    fireEvent.click(screen.getByRole("button", { name: "ابدأ اللعبة" }));
+    expect(screen.getByText(getNeutralDiscussionText(realRound))).toBeTruthy();
+    expect(screen.queryByText(realRound.description)).toBe(null);
+    expect(screen.queryByText(realRound.varInfo)).toBe(null);
   });
 
   it("keeps the first version text-only and exposes real names before the hidden reveal", () => {
