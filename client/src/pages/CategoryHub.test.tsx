@@ -9,7 +9,8 @@ describe("category hub", () => {
   it("shows the three branded categories and routes the active cards", () => {
     const onSelectGroup = vi.fn();
     const onSelectSolo = vi.fn();
-    render(<CategoryHub onSelectGroup={onSelectGroup} onSelectSolo={onSelectSolo} />);
+    const onSelectLibrary = vi.fn();
+    render(<CategoryHub onSelectGroup={onSelectGroup} onSelectSolo={onSelectSolo} onSelectLibrary={onSelectLibrary} />);
     expect(screen.getByRole("heading", { name: "ألعاب جماعية" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "ألعاب فردية" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "العب أونلاين" })).toBeTruthy();
@@ -24,7 +25,7 @@ describe("category hub", () => {
   });
 
   it("does not make online play an interactive button", () => {
-    render(<CategoryHub onSelectGroup={vi.fn()} onSelectSolo={vi.fn()} />);
+    render(<CategoryHub onSelectGroup={vi.fn()} onSelectSolo={vi.fn()} onSelectLibrary={vi.fn()} />);
     const onlineCard = document.querySelector(".category-card-online");
     expect(onlineCard).toBeTruthy();
     expect(onlineCard?.tagName).toBe("DIV");

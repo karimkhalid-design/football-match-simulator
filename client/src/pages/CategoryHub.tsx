@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowLeft, LockKeyhole, Sparkles, Users, UserRound } from "lucide-react";
+import { ArrowLeft, BookOpen, LockKeyhole, Sparkles, Users, UserRound } from "lucide-react";
 
 const GROUP_LOGO_URL = "/manus-storage/group-games_4a9b56ea.png";
 const SOLO_LOGO_URL = "/manus-storage/solo-games_c4094958.png";
@@ -8,16 +8,17 @@ const ONLINE_LOGO_URL = "/manus-storage/online-games_1826cf60.png";
 type CategoryHubProps = {
   onSelectGroup: () => void;
   onSelectSolo: () => void;
+  onSelectLibrary: () => void;
 };
 
-export default function CategoryHub({ onSelectGroup, onSelectSolo }: CategoryHubProps) {
+export default function CategoryHub({ onSelectGroup, onSelectSolo, onSelectLibrary }: CategoryHubProps) {
   return (
     <main className="category-hub" dir="rtl">
       <div className="category-hub-glow category-hub-glow-one" />
       <div className="category-hub-glow category-hub-glow-two" />
       <header className="category-header">
         <div className="category-brand"><span>FOOTBALL GAME ROOM</span><b>كورة كده</b></div>
-        <span className="category-credit">صناعة كريم</span>
+        <div className="category-header-actions"><button type="button" className="category-library-link" onClick={onSelectLibrary}><BookOpen /> مكتبة اللاعبين</button><span className="category-credit">صناعة كريم</span></div>
       </header>
       <section className="category-intro">
         <p className="category-kicker"><Sparkles /> اختار طريقة اللعب</p>
