@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { ArrowRight, Check, ChevronLeft, RotateCcw, Sparkles, Trophy, X } from "lucide-react";
 import { playerCatalogue, positionLabels } from "../lib/auctionData";
-import { AFTAKAR_BANK_SIZE, buildAftakarSession } from "../lib/aftakarData";
+import { AFTAKAR_BANK_SIZE, buildAftakarSession, freshAftakarSeed } from "../lib/aftakarData";
 import { PLAYER_IMAGE_URLS } from "../lib/playerImageMap";
 
 const AFTAKAR_LOGO_URL = "/manus-storage/aftakar-logo_c6bb6361.png";
@@ -11,8 +11,8 @@ const normalize = (value: string) => value.toLowerCase().normalize("NFD").replac
 const getPlayer = (name: string) => playerCatalogue.find((player) => player.name === name);
 
 export default function Aftakar({ onBackToHub }: { onBackToHub: () => void }) {
-  const [rounds, setRounds] = useState(() => buildAftakarSession(2026));
-  const [sessionSeed, setSessionSeed] = useState(2026);
+  const [sessionSeed, setSessionSeed] = useState(() => freshAftakarSeed());
+  const [rounds, setRounds] = useState(() => buildAftakarSession(sessionSeed));
   const [roundIndex, setRoundIndex] = useState(0);
   const [clueIndex, setClueIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -54,7 +54,7 @@ export default function Aftakar({ onBackToHub }: { onBackToHub: () => void }) {
   };
 
   const restart = () => {
-    const nextSeed = sessionSeed + 1;
+    const nextSeed = freshAftakarSeed();
     setSessionSeed(nextSeed);
     setRounds(buildAftakarSession(nextSeed));
     setRoundIndex(0);

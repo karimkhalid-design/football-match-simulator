@@ -1,7 +1,8 @@
 import { CataloguePlayer, playerCatalogue, positionLabels } from "./auctionData";
 
+type AftakarCategory = "trivia" | "career" | "record" | "tactical" | "era" | "transfer" | "competition" | "award" | "match-event";
 type CuratedQuestion = { playerName: string; clues: [string, string, string]; options?: string[] };
-export type AftakarQuestion = { playerName: string; clues: [string, string, string]; options: string[]; category: "trivia" | "catalogue" };
+export type AftakarQuestion = { playerName: string; clues: [string, string, string]; options: string[]; category: AftakarCategory };
 type TriviaMetadata = { nationality: string; clubs: string; achievement: string; alias: string };
 
 const triviaMetadata: Record<string, TriviaMetadata> = {
@@ -38,19 +39,19 @@ const triviaMetadata: Record<string, TriviaMetadata> = {
 };
 
 const curatedQuestions: CuratedQuestion[] = [
-  { playerName: "Lionel Messi", clues: ["حمل كأس العالم، لكن الإجابة ليست مارادونا وارتبط اسمه بالرقم 10", "لعب أغلب مسيرته مع برشلونة قبل انتقاله إلى باريس ثم إنتر ميامي", "اشتهر بالقدم اليسرى والرقم 10، ومن أقرب المشتتين له جناحان أيمنان أسطوريان"], options: ["Lionel Messi", "Luis Figo", "Mohamed Salah", "Arjen Robben"] },
-  { playerName: "Cristiano Ronaldo", clues: ["نجم فاز بدوري الأبطال مع أكثر من فريق وترك أرقاماً أوروبية استثنائية", "لعب لريال مدريد ومانشستر يونايتد، لكن ليس هو الجناح السريع في الاختيارات", "اشتهر بالارتقاء والإنهاء والرقم 7"], options: ["Cristiano Ronaldo", "Kylian Mbappé", "Thierry Henry", "Zlatan Ibrahimović"] },
-  { playerName: "Mohamed Salah", clues: ["جناح وصل إلى قمة أوروبا مع فريق كبير بعد تجربة في نادٍ أوروبي", "لعب أيضاً في نادٍ أوروبي قبل أن يصبح أحد رموز ليفربول", "اشتهر بالسرعة والقدم اليسرى والاحتفال الشهير"], options: ["Mohamed Salah", "Riyad Mahrez", "Sadio Mané", "Bernardo Silva"] },
-  { playerName: "Zinedine Zidane", clues: ["صانع ألعاب فاز بكأس العالم 1998، لكن السؤال ليس عن هنري أو بلاتيني", "ارتدى قميص يوفنتوس وريال مدريد", "اشتهر باللمسة الهادئة والكرة الذهبية والرقم 5 في نهائي شهير"], options: ["Zinedine Zidane", "Andrea Pirlo", "Kaká", "Ronaldinho"] },
-  { playerName: "Erling Haaland", clues: ["مهاجم طويل من جيل جديد، وليس واحداً من المهاجمين الآخرين في الاختيارات", "تألق تهديفياً مع مانشستر سيتي بعد محطة أوروبية", "اشتهر بالقوة والسرعة داخل منطقة الجزاء"], options: ["Erling Haaland", "Harry Kane", "Victor Osimhen", "Robert Lewandowski"] },
-  { playerName: "Lev Yashin", clues: ["حارس وحيد فاز بالكرة الذهبية", "ارتبط اسمه بنادٍ موسكوفي وباللون الأسود", "لقبه الأشهر مرتبط بمخلوق زاحف، وليس بوفون أو تشيك"], options: ["Lev Yashin", "Gianluigi Buffon", "Petr Čech", "Iker Casillas"] },
-  { playerName: "Franz Beckenbauer", clues: ["مدافع قاد بلاده لاعباً ومدرباً إلى كأس العالم", "ارتبط اسمه بدور الليبيرو وببايرن ميونخ", "لقبه لا يتعلق بالقيصر الروماني الحقيقي، بل بشخصية كروية شهيرة"], options: ["Franz Beckenbauer", "Paolo Maldini", "Sergio Ramos", "Fabio Cannavaro"] },
-  { playerName: "Andrea Pirlo", clues: ["صانع ألعاب اشتهر بالتمريرات الطويلة والكرات الثابتة", "لعب لميلان ويوفنتوس، ولم يكن جناحاً أو مهاجماً", "لقبه مرتبط بالهدوء واللحية أكثر من السرعة"], options: ["Andrea Pirlo", "Toni Kroos", "Xavi", "Luka Modrić"] },
-  { playerName: "Ronaldinho", clues: ["صاحب مهارات فاز بالكرة الذهبية وترك بصمة في برشلونة", "اسمه مرتبط بالابتسامة والمهارات والركلات الحرة", "ليس رونالدو المهاجم ولا الجناح الآخر"], options: ["Ronaldinho", "Kaká", "Neymar", "Rivaldo"] },
-  { playerName: "Ronaldo Nazário", clues: ["مهاجم فاز بكأس العالم والكرة الذهبية وارتبط بلقب يميزه عن رونالدو الآخر", "لعب لإنتر ميلان وريال مدريد وبرشلونة، وليس كريستيانو", "ارتبط اسمه بالسرعة والتسديد واللقب الذي يميزه عن رونالدو الآخر"], options: ["Ronaldo Nazário", "Romário", "Cristiano Ronaldo", "Samuel Eto'o"] },
-  { playerName: "Cristiano Ronaldo", clues: ["بحسب سجل UEFA التاريخي، يتصدر قائمة المشاركة في دوري أبطال أوروبا", "الرقم القياسي المذكور في المصدر هو 187 مباراة", "مشتتاته في السؤال من نجوم يملكون سجلاً أوروبياً كبيراً أيضاً"], options: ["Cristiano Ronaldo", "Iker Casillas", "Lionel Messi", "Karim Benzema"] },
-  { playerName: "Iker Casillas", clues: ["حارس يأتي ثانياً في سجل UEFA التاريخي للمباريات بدوري الأبطال", "ارتبط بريال مدريد ثم بورتو، وليس ببايرن ميونخ", "الرقم التاريخي في المصدر هو 181 مباراة"], options: ["Iker Casillas", "Manuel Neuer", "Gianluigi Buffon", "Cristiano Ronaldo"] },
-  { playerName: "Lionel Messi", clues: ["في سجل UEFA التاريخي للمباريات، يتساوى مع حارس عند 163 مشاركة", "قضى أغلب مسيرته الأوروبية مع برشلونة ثم ظهر مع باريس", "المشتت الأصعب هنا هو Manuel Neuer وليس جناحاً أو مهاجماً"], options: ["Lionel Messi", "Manuel Neuer", "Xavi", "Luka Modrić"] },
+  { playerName: "Lionel Messi", clues: ["حسم جائزة فردية كبرى بعد عام شهد تتويجاً دولياً، لا بعد موسم أوروبي فقط", "يبدأ الهجمة من الطرف ثم يدخل إلى العمق ليصنع أو ينهي", "القدم اليسرى وتغيير الاتجاه أهم من الالتحام في أسلوبه"], options: ["Lionel Messi", "Luis Figo", "Mohamed Salah", "Arjen Robben"] },
+  { playerName: "Cristiano Ronaldo", clues: ["جمع بين لقب أوروبي مع أكثر من فريق وسجل تهديفي يصعب مجاراته", "تحول من جناح مباشر إلى مهاجم يحسم داخل الصندوق مع مرور السنوات", "الهواء والتمركز والضربة الأولى أقوى مفاتيح لعبه"], options: ["Cristiano Ronaldo", "Kylian Mbappé", "Thierry Henry", "Zlatan Ibrahimović"] },
+  { playerName: "Mohamed Salah", clues: ["احتاج إلى أكثر من محطة أوروبية قبل أن يصبح اسماً ثابتاً في سباق الهدافين", "يبدأ غالباً من الطرف ثم يهاجم المساحة خلف الظهير بلمسته الأولى", "القدم اليسرى والاحتفاظ بالكرة أثناء السرعة يميزان قراراته"], options: ["Mohamed Salah", "Riyad Mahrez", "Sadio Mané", "Bernardo Silva"] },
+  { playerName: "Zinedine Zidane", clues: ["ارتبط بأحد أكثر النهائيات العالمية شهرة قبل أن يحقق إنجازاً أوروبياً كمدرب", "لا يعتمد على السرعة؛ قوته في استقبال الكرة تحت الضغط", "توقيته في المباريات الكبيرة أهم من كثرة لمساته"], options: ["Zinedine Zidane", "Andrea Pirlo", "Kaká", "Ronaldinho"] },
+  { playerName: "Erling Haaland", clues: ["مهاجم من جيل جديد حوّل المساحات القصيرة إلى أرقام تهديفية ضخمة", "يحتاج إلى لمسات قليلة كي يغيّر نتيجة المباراة", "الانطلاق خلف الخط والدخول في المسار الأول للعرضية مفتاحه"], options: ["Erling Haaland", "Harry Kane", "Victor Osimhen", "Robert Lewandowski"] },
+  { playerName: "Lev Yashin", clues: ["في زمن كانت فيه حدود الحارس أقل اتساعاً، كان يتحرك كأنه لاعب إضافي", "اختياراته تحت الضغط صنعت صورة مختلفة للحارس التقليدي", "اللون الأسود والقرارات الجريئة جزء من صورته التاريخية"], options: ["Lev Yashin", "Gianluigi Buffon", "Petr Čech", "Iker Casillas"] },
+  { playerName: "Franz Beckenbauer", clues: ["حوّل قلب الدفاع إلى مركز يبدأ منه بناء اللعب لا مجرد إبعاد الكرة", "قاد فريقه من الخلف ثم عاد إلى الخط نفسه في حقبة مختلفة", "قراءته للمساحة كانت أهم من التدخلات القوية"], options: ["Franz Beckenbauer", "Paolo Maldini", "Sergio Ramos", "Fabio Cannavaro"] },
+  { playerName: "Andrea Pirlo", clues: ["كان يرى التمريرة قبل أن تتحرك بقية الأقدام", "يظهر تأثيره أكثر عندما تكون المباراة بطيئة والمساحات ضيقة", "الركلات الثابتة والكرات القطرية جزء من بصمته لا سرعته"], options: ["Andrea Pirlo", "Toni Kroos", "Xavi", "Luka Modrić"] },
+  { playerName: "Ronaldinho", clues: ["كان قادراً على تحويل لقطة غير متوقعة إلى فرصة من دون تغيير سرعته", "ابتسامته لا تعني أن قراره الفني عشوائي", "الركلة الحرة والمراوغة القصيرة أبرز من اللعب المباشر"], options: ["Ronaldinho", "Kaká", "Neymar", "Rivaldo"] },
+  { playerName: "Ronaldo Nazário", clues: ["جمع بين الانفجار في أول خطوة واللمسة الهادئة بعد تجاوز الحارس", "أثر على طريقة تقييم المهاجم الذي يصنع الفرصة لنفسه", "اللقب المرتبط به يميزه عن لاعب آخر يحمل الاسم نفسه"], options: ["Ronaldo Nazário", "Romário", "Cristiano Ronaldo", "Samuel Eto'o"] },
+  { playerName: "Cristiano Ronaldo", clues: ["استمر تأثيره بعد تغير مركزه، مدربه، وطريقة بناء الهجمة حوله", "يظهر في مباريات الحسم كلاعب يرفع حجم المخاطرة بدلاً من انتظار المساحة", "قارن بين من يصنع الفارق بالتحرك والارتقاء ومن يعتمد على اللمسة الأخيرة فقط"], options: ["Cristiano Ronaldo", "Iker Casillas", "Lionel Messi", "Karim Benzema"] },
+  { playerName: "Iker Casillas", clues: ["كان يتعامل مع اللحظة الأخيرة بسرعة قبل أن يكتمل شكل الهجمة", "في النهائيات كان هدوء القرار أهم من كثرة الخروج من المرمى", "القرار الصحيح هنا يخص حارساً قائداً لا مدافعاً متقدماً"], options: ["Iker Casillas", "Manuel Neuer", "Gianluigi Buffon", "Cristiano Ronaldo"] },
+  { playerName: "Lionel Messi", clues: ["يتحول من صانع أول للهجمة إلى منهيها من دون أن يعلن عن هذا التحول", "أثره يقاس بصناعة الفرصة بقدر قياسه باللمسة الأخيرة", "ابحث عن اللاعب الذي يغير شكل الدفاع بمجرد استلامه بين الخطوط"], options: ["Lionel Messi", "Manuel Neuer", "Xavi", "Luka Modrić"] },
 ];
 
 const curatedNames = new Set(curatedQuestions.map((question) => question.playerName));
@@ -65,25 +66,27 @@ const distractorPool = (player: CataloguePlayer) => {
 const generatedQuestion = (player: CataloguePlayer, variant: number): AftakarQuestion => {
   const nearby = distractorPool(player);
   const offset = Math.min(variant, Math.max(0, nearby.length - 3));
-  const options = [player, ...nearby.slice(offset, offset + 3)].sort((a, b) => a.name.localeCompare(b.name)).map((candidate) => candidate.name);
-  const statusClue = player.status === "legend" ? "من أساطير اللعبة المعتزلين" : "من نجوم الكرة الحاليين";
+  const options = [player, ...nearby.slice(offset, offset + 3)].map((candidate) => candidate.name);
   const neutralNote = player.note.replace("هدوء إيطالي", "هدوء محسوب");
-  const clueSets: [string, string, string][] = [
-    [`${statusClue}، ومركزه ${positionLabels[player.position]} دون ذكر الاسم مباشرة`, `تقييمه في الكتالوج ${player.rating}، والمشتتون من نفس المركز قريبون جداً في المستوى`, `وصفه الفني: ${neutralNote} — اختر اللاعب الذي تنطبق عليه المعلومة كاملة`],
-    [`يلعب في مركز ${positionLabels[player.position]}، لكن كل الاختيارات تنتمي للمركز نفسه`, `تصنيفه ${player.rating} ويشارك صفته ${player.status === "legend" ? "التاريخية" : "الحالية"} مع أكثر من مشتت`, `المعلومة الأخيرة: ${neutralNote} — لا تعتمد على الاسم الأشهر فقط`],
-    [`السؤال عن لاعب ${player.status === "legend" ? "ترك الملاعب وترك إرثاً كبيراً" : "ما زال اسمه حاضراً في كرة القدم"}`, `مركزه ${positionLabels[player.position]} وتقييمه ${player.rating}، والفارق بين الخيارات محسوب ليكون مضللاً`, `العلامة الفارقة في أسلوبه: ${neutralNote} — راجع كل التلميحات قبل الاختيار`],
-  ];
+  const era = player.status === "legend" ? "حقبة سبقت جيله الحالي" : "المشهد الحديث";
   const trivia = triviaMetadata[player.name];
-  const clues = trivia ? [
-    `يلعب في مركز ${positionLabels[player.position]} — لا تنخدع بتشابه المراكز والاختيارات`,
-    `من أنديته: ${trivia.clubs}، ومن إنجازاته: ${trivia.achievement}`,
-    `لقبه أو الاسم المرتبط به: «${trivia.alias}» — راجع المعلومة قبل اختيار المشتت`,
-  ] as [string, string, string] : clueSets[variant];
-  return { playerName: player.name, clues, options, category: trivia ? "trivia" : "catalogue" };
+  const categories: AftakarCategory[] = ["transfer", "competition", "award", "match-event", "tactical", "career", "era", "record"];
+  const clueSets: [string, string, string][] = [
+    [`انتقل بين مشروعين مختلفين، وكان السؤال الحقيقي: أي نسخة منه ظهرت بعد الانتقال؟`, `لا تقارن أسماء الأندية؛ قارن تغير دوره من لاعب طرف إلى لاعب يحسم من العمق`, `المعلومة الفنية الأخيرة: ${neutralNote}`],
+    [`ظهر في سياقات كروية مختلفة، لكن الاختيارات الأربعة تملك سجلاً كبيراً في المنافسات`, `اللحظة المهمة ليست اسم البطولة بل طريقة تعامله مع ضغط الأدوار الإقصائية`, `المفتاح التكتيكي: ${neutralNote}`],
+    [`حصل على تقدير فردي لأن تأثيره سبق أرقامه الظاهرة، لا لأن مركزه وحده يضمنه`, `قارنه بالمشتتين في الاستمرارية والقرار لا في الشهرة`, `الصفة التي تكمّل الصورة: ${neutralNote}`],
+    [`تتذكره من لقطة غيّرت إيقاع مباراة، لكن اللقطة ليست هدفاً محفوظاً بالاسم`, `في اللحظة الحاسمة اختار الحل الأقل وضوحاً مقارنة بالمشتتين`, `ابحث عن صاحب الوصف: ${neutralNote}`],
+    [`الموقف هنا تكتيكي: اللاعب يقرأ المساحة قبل أن تصل الكرة`, `كل الاختيارات تبدو معقولة إذا عرفت المركز فقط`, `اللمسة الفارقة هي ${neutralNote}`],
+    [`السؤال عن مسار لاعب ترك أثراً عبر أكثر من مرحلة، لا عن رقم منفرد`, `الفارق بين المرشحين يظهر في نوع القرار المتكرر تحت الضغط`, `أكمل الصورة من الوصف: ${neutralNote}`],
+    [`ينتمي اللاعب إلى حقبة لها إيقاعها وقواعدها التكتيكية المختلفة`, `لا تخلط بين تشابه الأسلوب واختلاف زمن المنافسة`, `الوصف الذي يعبر الحقب: ${neutralNote}`],
+    [`لا تبحث عن رقم قياسي جاهز؛ ابحث عن أثر تكرر عبر مباريات ومواسم مختلفة`, `الاختيارات متقاربة لأن المقارنة هنا في الاستمرارية لا في لقطة واحدة`, `العلامة الأهدأ في السجل: ${neutralNote}`],
+  ];
+  const categoryIndex = variant % categories.length;
+  return { playerName: player.name, clues: clueSets[categoryIndex], options, category: trivia ? "trivia" : categories[categoryIndex] };
 };
 
 const curated = curatedQuestions.map((question) => ({ ...question, options: question.options ?? [], category: "trivia" as const }));
-const generated = playerCatalogue.filter((player) => !curatedNames.has(player.name)).flatMap((player) => [0, 1, 2].map((variant) => generatedQuestion(player, variant)));
+const generated = playerCatalogue.filter((player) => !curatedNames.has(player.name)).flatMap((player) => [0, 1, 2, 3, 4, 5, 6, 7].map((variant) => generatedQuestion(player, variant)));
 export const aftakarQuestionBank: AftakarQuestion[] = [...curated, ...generated];
 
 const hashSeed = (value: number) => {
@@ -91,24 +94,34 @@ const hashSeed = (value: number) => {
   return () => { hash = (hash * 9301 + 49297) % 233280; return hash / 233280; };
 };
 
+let sessionCounter = 0;
+export const freshAftakarSeed = () => Date.now() + (++sessionCounter * 997);
+
 export function buildAftakarSession(seed = 2026, count = 5): AftakarQuestion[] {
   const random = hashSeed(seed);
-  const shuffle = (questions: AftakarQuestion[]) => [...questions].sort(() => random() - 0.5);
+  const shuffle = <T,>(items: T[]) => {
+    const result = [...items];
+    for (let index = result.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(random() * (index + 1));
+      [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+    }
+    return result;
+  };
   const triviaQuestions = shuffle(aftakarQuestionBank.filter((question) => question.category === "trivia"));
-  const catalogueQuestions = shuffle(aftakarQuestionBank.filter((question) => question.category === "catalogue"));
+  const otherQuestions = shuffle(aftakarQuestionBank.filter((question) => question.category !== "trivia"));
   const picked: AftakarQuestion[] = [];
   const seenPlayers = new Set<string>();
   const addQuestions = (questions: AftakarQuestion[], limit = count) => {
     for (const question of questions) {
       if (picked.length >= limit || picked.length >= count) return true;
       if (seenPlayers.has(question.playerName)) continue;
-      picked.push(question);
+      picked.push({ ...question, options: shuffle(question.options) });
       seenPlayers.add(question.playerName);
     }
     return picked.length >= limit;
   };
   addQuestions(triviaQuestions, Math.min(3, count));
-  addQuestions(catalogueQuestions);
+  addQuestions(otherQuestions);
   addQuestions(triviaQuestions);
   return picked.slice(0, count);
 }

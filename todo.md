@@ -160,3 +160,8 @@
 
 - [x] Add a verification reference to every real VAR incident, using official or trusted match/report sources, without exposing it during the hidden-decision phase.
 - [x] Add data validation proving every real incident has a non-empty verification reference.
+
+- [x] Rewrite Aftakar clues to be difficult and indirect, avoiding explicit answer-revealing hints such as direct club, nationality, or iconic-stat giveaways.
+- [x] Expand Aftakar with a large varied bank across competitions, records, careers, tactical details, transfers, awards, eras, and match events.
+- [x] Randomize the selected questions on every entry/restart while guaranteeing no repeated question or player within a session.
+- [x] Add tests for clue subtlety, category diversity, fresh ordering across sessions, and no repeats.
