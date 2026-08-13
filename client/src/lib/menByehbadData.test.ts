@@ -9,6 +9,13 @@ describe("مين بيهبد؟ data", () => {
     expect(menByehbadStatements.every((item) => item.statement && item.explanation && typeof item.correctAnswer === "boolean")).toBe(true);
   });
 
+  it("contains a substantial hard pool across all football categories", () => {
+    const hard = menByehbadStatements.filter((item) => item.difficulty === "hard");
+    expect(hard.length).toBeGreaterThanOrEqual(15);
+    expect(new Set(hard.map((item) => item.category))).toEqual(new Set(["players", "clubs", "competitions", "egypt"]));
+    expect(hard.every((item) => item.statement.length >= 25 && item.explanation.length >= 35)).toBe(true);
+  });
+
   it("shuffles rounds without changing the pool or introducing duplicates", () => {
     const first = shuffleMenByehbad(menByehbadStatements, () => 0.12);
     const second = shuffleMenByehbad(menByehbadStatements, () => 0.88);
