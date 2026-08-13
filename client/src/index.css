@@ -245,6 +245,3 @@ button { font:inherit; border:0; cursor:pointer; } button:disabled { cursor:not-
 @keyframes shareModalIn { from { opacity:0; transform:translateY(16px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
 @media (max-width:560px) { .share-result-backdrop { align-items:end; padding:10px; }.share-result-modal { max-height:90vh; padding:21px 16px 17px; border-radius:23px; }.share-result-heading h2 { font-size:20px; }.share-result-card { margin-top:18px; padding:17px; }.share-result-mini-grid { gap:5px; }.share-result-mini-grid > div { padding:8px 3px; }.share-result-actions { grid-template-columns:1fr 1fr; }.share-result-primary { grid-column:1/-1; }.share-result-trigger { width:100%; } }
 @media (prefers-reduced-motion:reduce) { .share-result-backdrop,.share-result-modal { animation:none; }.share-result-trigger,.share-result-actions button { transition:none; } }
-
-.share-result-logo { width:50px; height:50px; flex:0 0 auto; object-fit:contain; border:1px solid rgba(196,251,97,.55); border-radius:17px 17px 6px 17px; background:#08120c; box-shadow:0 0 24px rgba(196,251,97,.25); }
-@media (max-width:560px) { .share-result-logo { width:44px; height:44px; border-radius:14px 14px 5px 14px; } }

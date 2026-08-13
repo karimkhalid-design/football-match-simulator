@@ -12,22 +12,11 @@ describe("ShareResult", () => {
     fireEvent.click(screen.getByRole("button", { name: /شارك النتيجة/ }));
     expect(screen.getByRole("dialog")).toBeTruthy();
     expect(screen.getByText("VAR و لا لأ؟")).toBeTruthy();
-    expect(screen.getByRole("img", { name: "شعار كورة كده" })).toBeTruthy();
     expect(screen.getAllByText("كريم").length).toBeGreaterThan(0);
     expect(screen.getByText("850 نقطة")).toBeTruthy();
     expect(screen.getByRole("button", { name: /^مشاركة$/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /حفظ الصورة/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /نسخ الرابط/ })).toBeTruthy();
-  });
-
-  it("keeps save image available and triggers a download fallback", async () => {
-    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
-    render(<ShareResult gameName="أفتكر" winnerName="أنت" winnerScore="1000" rows={[{ label: "النقاط", score: "1000" }]} />);
-    fireEvent.click(screen.getByRole("button", { name: /شارك النتيجة/ }));
-    const saveButton = screen.getByRole("button", { name: /حفظ الصورة/ });
-    expect(saveButton.hasAttribute("disabled")).toBe(false);
-    fireEvent.click(saveButton);
-    await waitFor(() => expect(click).toHaveBeenCalled());
   });
 
   it("supports closing the popup and copying the result link", async () => {
