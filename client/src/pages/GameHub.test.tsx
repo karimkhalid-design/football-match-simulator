@@ -23,6 +23,14 @@ describe("game hub", () => {
     expect(screen.getByAltText("شعار مين بيهبد؟").getAttribute("src")).toContain("men-byehbad-logo");
   });
 
+  it("returns to the categories page from the hub header", async () => {
+    const user = userEvent.setup();
+    const onBackToCategories = vi.fn();
+    render(<GameHub onSelectAuction={() => undefined} onBackToCategories={onBackToCategories} />);
+    await user.click(screen.getByRole("button", { name: /الأقسام/ }));
+    expect(onBackToCategories).toHaveBeenCalledOnce();
+  });
+
   it("enters the auction game from the active card", async () => {
     const user = userEvent.setup();
     const onSelectAuction = vi.fn();

@@ -363,3 +363,9 @@
 - [x] إزالة شاشة OAuth وUsername من قسم الأونلاين
 - [x] إعادة تدفق الاسم المستعار القديم دون إجبار على تسجيل الدخول
 - [x] اختبار الغرف والدعوات وعدم تأثر باقي الألعاب ثم حفظ checkpoint
+
+- [ ] إضافة زر واضح للرجوع إلى صفحة الأقسام من صفحة الألعاب الجماعية
+- [ ] ضبط الزر على الهاتف والكمبيوتر وإضافة اختبار تنقل
+- [ ] حفظ checkpoint بعد التحقق من الرجوع للأقسام
+
+- [x] Add a responsive «الأقسام» back button to the Group Games hub header and verify navigation back to Category Hub on mobile and desktop.

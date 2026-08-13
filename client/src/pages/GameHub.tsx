@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowLeft, LockKeyhole, Sparkles, Swords } from "lucide-react";
+import { ArrowLeft, ArrowRight, LockKeyhole, Sparkles, Swords } from "lucide-react";
 
 const HUB_LOGO_URL = "/manus-storage/kora-e3mal-elsah-logo_85537310.png";
 const IN_GAME_LOGO_URL = "/manus-storage/e3mal-elsah-logo_b8d9ae3f.png";
@@ -7,9 +7,9 @@ const AFTAKAR_LOGO_URL = "/manus-storage/aftakar-logo_c6bb6361.png";
 const VAR_LOGO_URL = "/manus-storage/4A3546B6-12EE-496E-B7CF-41A005590FB6_5eea2af3.png";
 const MEN_BYEHBAD_LOGO_URL = "/manus-storage/men-byehbad-logo_a02e06b2.png";
 
-type GameHubProps = { onSelectAuction: () => void; onSelectAftakar?: () => void; onSelectVar?: () => void; onSelectMenByehbad?: () => void };
+type GameHubProps = { onSelectAuction: () => void; onSelectAftakar?: () => void; onSelectVar?: () => void; onSelectMenByehbad?: () => void; onBackToCategories?: () => void };
 
-export default function GameHub({ onSelectAuction, onSelectAftakar, onSelectVar, onSelectMenByehbad }: GameHubProps) {
+export default function GameHub({ onSelectAuction, onSelectAftakar, onSelectVar, onSelectMenByehbad, onBackToCategories }: GameHubProps) {
   return (
     <main className="game-hub" dir="rtl">
       <div className="hub-noise" />
@@ -17,7 +17,7 @@ export default function GameHub({ onSelectAuction, onSelectAftakar, onSelectVar,
       <div className="hub-orb hub-orb-two" />
       <header className="hub-header">
         <div className="hub-wordmark"><span>FOOTBALL GAME ROOM</span><b>كورة كده · ألعاب كتير.</b></div>
-        <span className="hub-season">SEASON ONE · 2026</span>
+        <div className="hub-header-actions"><span className="hub-season">SEASON ONE · 2026</span>{onBackToCategories && <button type="button" className="hub-back-button" onClick={onBackToCategories}><ArrowRight /> الأقسام</button>}</div>
       </header>
 
       <section className="hub-hero">
