@@ -1,6 +1,7 @@
 import { playerCatalogue, positionLabels, type CataloguePlayer, type PlayerStatus, type PositionCode } from "./auctionData";
 import { PLAYER_IMAGE_URLS } from "./playerImageMap";
 import { expandedPlayerSeeds } from "./expandedPlayerSeeds";
+import { EXPANDED_PLAYER_IMAGE_URLS } from "./expandedPlayerImageMap";
 
 export type LibraryPlayer = CataloguePlayer & {
   arabicName: string;
@@ -37,7 +38,7 @@ const allCataloguePlayers = [...playerCatalogue, ...extraCataloguePlayers];
 export const playerLibrary: LibraryPlayer[] = allCataloguePlayers.map((player) => {
   const arabicName = arabicNames[player.name] ?? player.name;
   const aliases = [player.name, arabicName];
-  return { ...player, status: retiredNames.has(player.name) ? "legend" : player.status, arabicName, aliases, nationality: nationalities[player.name] ?? "دولي", currentClub: retiredNames.has(player.name) ? "معتزل" : "لاعب حالي", careerLabel: player.status === "legend" || retiredNames.has(player.name) ? "أرشيف النجوم والمعتزلين" : "جيل اللاعبين الحالي", image: PLAYER_IMAGE_URLS[player.name] };
+  return { ...player, status: retiredNames.has(player.name) ? "legend" : player.status, arabicName, aliases, nationality: nationalities[player.name] ?? "دولي", currentClub: retiredNames.has(player.name) ? "معتزل" : "لاعب حالي", careerLabel: player.status === "legend" || retiredNames.has(player.name) ? "أرشيف النجوم والمعتزلين" : "جيل اللاعبين الحالي", image: PLAYER_IMAGE_URLS[player.name] ?? EXPANDED_PLAYER_IMAGE_URLS[player.name] };
 });
 
 export const libraryPositionLabels = positionLabels;

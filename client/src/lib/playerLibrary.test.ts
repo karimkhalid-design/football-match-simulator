@@ -9,6 +9,7 @@ describe("player library", () => {
     expect(playerLibrary.some((player) => player.status === "legend")).toBe(true);
     expect(playerLibrary.every((player) => player.arabicName && player.position && player.rating)).toBe(true);
     expect(new Set(playerLibrary.map((player) => player.position)).size).toBe(9);
+    expect(playerLibrary.filter((player) => player.image).length).toBeGreaterThanOrEqual(450);
   });
 
   it("searches Arabic aliases and filters without changing the source list", () => {
