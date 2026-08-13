@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Check, Clock3, Eye, Plus, RotateCcw, Trophy, Users, X } from "lucide-react";
-import { drawMenByehbadAid, getMenByehbadAidPoints, menByehbadStatements, shuffleMenByehbad, type MenByehbadAid, type MenByehbadStatement } from "../lib/menByehbadData";
+import { drawMenByehbadAid, getMenByehbadAidPoints, hardMenByehbadStatements, shuffleMenByehbad, type MenByehbadAid, type MenByehbadStatement } from "../lib/menByehbadData";
 import ShareResult from "../components/ShareResult";
 
 const MEN_BYEHBAD_LOGO_URL = "/manus-storage/men-byehbad-logo_a02e06b2.png";
@@ -20,7 +20,7 @@ export default function MenByehbad({ onBackToHub, initialNames }: Props) {
   const [phase, setPhase] = useState<Phase>("setup");
   const [names, setNames] = useState(() => initialNames?.slice(0, 10) ?? ["", "", ""]);
   const [setupError, setSetupError] = useState("");
-  const [questions, setQuestions] = useState<MenByehbadStatement[]>(() => shuffleMenByehbad(menByehbadStatements));
+  const [questions, setQuestions] = useState<MenByehbadStatement[]>(() => shuffleMenByehbad(hardMenByehbadStatements));
   const [roundIndex, setRoundIndex] = useState(0);
   const [seconds, setSeconds] = useState(20);
   const [currentPlayer, setCurrentPlayer] = useState(0);
@@ -60,7 +60,7 @@ export default function MenByehbad({ onBackToHub, initialNames }: Props) {
     setScoreHistory([]);
     setAnswers(emptyAnswers(cleaned.length));
     setAid(null);
-    setQuestions(shuffleMenByehbad(menByehbadStatements));
+    setQuestions(shuffleMenByehbad(hardMenByehbadStatements));
     setRoundIndex(0);
     setPhase("instructions");
   };
@@ -116,7 +116,7 @@ export default function MenByehbad({ onBackToHub, initialNames }: Props) {
 
   const restart = () => {
     setNames(["", "", ""]);
-    setQuestions(shuffleMenByehbad(menByehbadStatements));
+    setQuestions(shuffleMenByehbad(hardMenByehbadStatements));
     setRoundIndex(0);
     setCurrentPlayer(0);
     setAnswers({});

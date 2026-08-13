@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { drawMenByehbadAid, getMenByehbadAidPoints, menByehbadStatements, shuffleMenByehbad } from "./menByehbadData";
+import { drawMenByehbadAid, getMenByehbadAidPoints, hardMenByehbadStatements, menByehbadStatements, shuffleMenByehbad } from "./menByehbadData";
 
 describe("مين بيهبد؟ data", () => {
   it("contains valid truth/bluff statements across football categories", () => {
@@ -14,6 +14,9 @@ describe("مين بيهبد؟ data", () => {
     expect(hard.length).toBeGreaterThanOrEqual(15);
     expect(new Set(hard.map((item) => item.category))).toEqual(new Set(["players", "clubs", "competitions", "egypt"]));
     expect(hard.every((item) => item.statement.length >= 25 && item.explanation.length >= 35)).toBe(true);
+    expect(hardMenByehbadStatements.length).toBeGreaterThanOrEqual(30);
+    expect(new Set(hardMenByehbadStatements.map((item) => item.category))).toEqual(new Set(["players", "clubs", "competitions", "egypt"]));
+    expect(hardMenByehbadStatements.every((item) => item.difficulty === "hard")).toBe(true);
   });
 
   it("draws an owner and one aid card deterministically from the participating players", () => {
