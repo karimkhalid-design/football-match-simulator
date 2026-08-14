@@ -58,9 +58,34 @@ function hash(input: string) {
   return Array.from(input).reduce((value, character) => ((value << 5) - value + character.charCodeAt(0)) | 0, 0) >>> 0;
 }
 
-function scoreForPosition(players: DraftedPlayer[], positions: PositionCode[]) {
+function averageRole(players: DraftedPlayer[], positions: PositionCode[], fallback = 72) {
   const pool = players.filter((player) => positions.includes(player.position));
-  return pool.length ? pool.reduce((sum, player) => sum + player.rating, 0) / pool.length : 72;
+  return pool.length ? pool.reduce((sum, player) => sum + player.rating, 0) / pool.length : fallback;
+}
+
+const clamp = (value: number, minimum: number, maximum: number) => Math.max(minimum, Math.min(maximum, value));
+
+export type MatchProfile = {
+  goalkeeper: number;
+  defensiveLine: number;
+  midfield: number;
+  creativity: number;
+  attack: number;
+  balance: number;
+  buildUp: number;
+};
+
+export function getMatchProfile(team: AuctionTeam): MatchProfile {
+  const goalkeeper = averageRole(team.players, ["GK"]);
+  const defensiveLine = averageRole(team.players, ["CB", "RB", "LB"]);
+  const midfield = averageRole(team.players, ["CM"]);
+  const creativity = averageRole(team.players, ["CAM"]);
+  const attack = averageRole(team.players, ["ST", "RW", "LW"]);
+  const required = ["GK", "CB", "RB", "LB", "CM", "CAM", "RW", "LW", "ST"] as PositionCode[];
+  const missingRoles = required.filter((position) => !team.players.some((player) => player.position === position)).length;
+  const balance = clamp(100 - missingRoles * 7 - Math.abs(midfield - creativity) * 0.08, 70, 100);
+  const buildUp = (midfield * 0.55 + creativity * 0.25 + defensiveLine * 0.2) * (balance / 100);
+  return { goalkeeper, defensiveLine, midfield, creativity, attack, balance, buildUp };
 }
 
 export type FinalMatchEvent = { minute: number; team: 0 | 1; scorer: string; assist?: string };
@@ -82,18 +107,18 @@ export function applyStrengthAdvantage(homeGoals: number, awayGoals: number, str
 
 export function simulateDraftMatch(home: AuctionTeam, away: AuctionTeam): FinalMatch {
   const random = seeded(hash(`${home.players.map((player) => player.name).join("-")}-${away.players.map((player) => player.name).join("-")}-${Date.now()}`));
-  const homeAttack = scoreForPosition(home.players, ["RW", "LW", "ST", "CAM"]);
-  const awayAttack = scoreForPosition(away.players, ["RW", "LW", "ST", "CAM"]);
-  const homeControl = scoreForPosition(home.players, ["CM", "CAM"]);
-  const awayControl = scoreForPosition(away.players, ["CM", "CAM"]);
-  const homeDefense = scoreForPosition(home.players, ["GK", "CB", "RB", "LB"]);
-  const awayDefense = scoreForPosition(away.players, ["GK", "CB", "RB", "LB"]);
+  const homeProfile = getMatchProfile(home);
+  const awayProfile = getMatchProfile(away);
   const homeStrength = teamStrength(home);
   const awayStrength = teamStrength(away);
   const strengthDifference = homeStrength - awayStrength;
-  const homePossession = Math.max(38, Math.min(62, Math.round(50 + (homeControl - awayControl) * 0.55 + strengthDifference * 0.12 + (random() - .5) * 5)));
-  const rawHomeGoals = Math.max(0, Math.min(5, Math.round(1.25 + (homeAttack - awayDefense) * .055 + strengthDifference * .035 + random() * 1.2)));
-  const rawAwayGoals = Math.max(0, Math.min(5, Math.round(1.15 + (awayAttack - homeDefense) * .055 - strengthDifference * .035 + random() * 1.2)));
+  const homePossession = clamp(Math.round(50 + (homeProfile.buildUp - awayProfile.buildUp) * 0.5 + (homeProfile.midfield - awayProfile.midfield) * 0.18 + strengthDifference * 0.08 + (random() - .5) * 4), 35, 65);
+  const homeChanceCreation = homeProfile.attack * 0.52 + homeProfile.creativity * 0.2 + homeProfile.midfield * 0.18 + homeProfile.balance * 0.1;
+  const awayChanceCreation = awayProfile.attack * 0.52 + awayProfile.creativity * 0.2 + awayProfile.midfield * 0.18 + awayProfile.balance * 0.1;
+  const homeResistance = awayProfile.defensiveLine * 0.7 + awayProfile.goalkeeper * 0.3;
+  const awayResistance = homeProfile.defensiveLine * 0.7 + homeProfile.goalkeeper * 0.3;
+  const rawHomeGoals = clamp(Math.round(0.45 + (homeChanceCreation - homeResistance) * 0.065 + (homeProfile.attack - awayProfile.defensiveLine) * 0.025 + random() * 1.45), 0, 5);
+  const rawAwayGoals = clamp(Math.round(0.4 + (awayChanceCreation - awayResistance) * 0.065 + (awayProfile.attack - homeProfile.defensiveLine) * 0.025 + random() * 1.45), 0, 5);
   const [homeGoals, awayGoals] = applyStrengthAdvantage(rawHomeGoals, rawAwayGoals, strengthDifference, random());
   const attackers = (team: AuctionTeam) => team.players.filter((player) => ["RW", "LW", "ST", "CAM", "CM"].includes(player.position));
   const events = [...Array(homeGoals).fill(0).map(() => ({ team: 0 as const, minute: 7 + Math.floor(random() * 82) })), ...Array(awayGoals).fill(0).map(() => ({ team: 1 as const, minute: 7 + Math.floor(random() * 82) }))]
@@ -108,8 +133,8 @@ export function simulateDraftMatch(home: AuctionTeam, away: AuctionTeam): FinalM
   const all = [...home.players, ...away.players];
   const topScorer = events[0]?.scorer;
   const manOfTheMatch = topScorer ?? all.sort((a, b) => b.rating - a.rating)[0]?.name ?? "لاعب المباراة";
-  const homeShots = Math.max(homeGoals + 3, Math.round(8 + (homeAttack - awayDefense) * .24 + random() * 5));
-  const awayShots = Math.max(awayGoals + 3, Math.round(8 + (awayAttack - homeDefense) * .24 + random() * 5));
+  const homeShots = Math.max(homeGoals + 3, Math.round(5 + homeChanceCreation * .09 + homeProfile.creativity * .08 - awayProfile.defensiveLine * .035 + random() * 5));
+  const awayShots = Math.max(awayGoals + 3, Math.round(5 + awayChanceCreation * .09 + awayProfile.creativity * .08 - homeProfile.defensiveLine * .035 + random() * 5));
   return {
     homeGoals,
     awayGoals,

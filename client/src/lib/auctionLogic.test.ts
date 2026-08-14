@@ -1,8 +1,27 @@
 import { describe, expect, it } from "vitest";
-import { applyStrengthAdvantage, canOutbid, canPlaceBid, createTeams, parseBidAmount, simulateDraftMatch, totalBidAmount, totalSpent } from "./auctionLogic";
+import { applyStrengthAdvantage, canOutbid, canPlaceBid, createTeams, getMatchProfile, parseBidAmount, simulateDraftMatch, totalBidAmount, totalSpent } from "./auctionLogic";
 import { buildAuctionRounds } from "./auctionData";
 
 describe("auction match competition", () => {
+  it("weights goalkeeper, midfield, creativity, and attack as separate match inputs", () => {
+    const rounds = buildAuctionRounds(20260813);
+    const team = createTeams()[0];
+    team.players = rounds.map((round) => ({ ...round.auction, position: round.position, paid: 0, source: "auction" as const }));
+    const baseline = getMatchProfile(team);
+    team.players = team.players.map((player) => player.position === "GK" ? { ...player, rating: 60 } : player.position === "CM" ? { ...player, rating: 60 } : player);
+    const weakened = getMatchProfile(team);
+    expect(weakened.goalkeeper).toBeLessThan(baseline.goalkeeper);
+    expect(weakened.midfield).toBeLessThan(baseline.midfield);
+    expect(weakened.buildUp).toBeLessThan(baseline.buildUp);
+  });
+
+  it("uses role completeness as a balance input instead of treating a missing role as neutral", () => {
+    const team = createTeams()[0];
+    team.players = [{ name: "مهاجم", rating: 90, tier: "ELITE", note: "", position: "ST", paid: 0, source: "auction" }];
+    const profile = getMatchProfile(team);
+    expect(profile.balance).toBeLessThan(100);
+    expect(profile.attack).toBe(90);
+  });
   it("breaks an equal score toward the stronger team when the advantage wins the probability roll", () => {
     expect(applyStrengthAdvantage(1, 1, 12, 0.2)).toEqual([2, 1]);
     expect(applyStrengthAdvantage(1, 1, -12, 0.2)).toEqual([1, 2]);
