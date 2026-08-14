@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import KhaleekWasthom from "./KhaleekWasthom";
 import { KHALEEK_CATEGORIES, SECRET_ITEMS } from "../lib/khaleekWasthomData";
 
@@ -50,6 +50,33 @@ describe("خليك وسطهم", () => {
     expect(screen.queryByText(/العنصر السري هو/)).toBeNull();
     expect(screen.queryByText(/أنت العميل السري/)).toBeNull();
     expect(screen.getByRole("button", { name: /تم تسليم الهاتف/ })).toBeTruthy();
+  });
+
+  it("lets the discovered agent type the secret and win with a correct guess", () => {
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+    render(<KhaleekWasthom onBackToHub={() => undefined} />);
+    fireEvent.click(screen.getByRole("button", { name: /ابدأ اللعب/ }));
+    fireEvent.click(screen.getByRole("button", { name: /التالي/ }));
+    fireEvent.click(screen.getByRole("button", { name: /اختيار الأقسام/ }));
+    fireEvent.click(screen.getByRole("button", { name: /ابدأ توزيع الأدوار/ }));
+    fireEvent.click(screen.getByRole("button", { name: /أنا جاهز/ }));
+    fireEvent.click(screen.getByRole("button", { name: /تم · مرر الهاتف/ }));
+    for (let index = 1; index < 5; index += 1) {
+      fireEvent.click(screen.getByRole("button", { name: /تم تسليم الهاتف/ }));
+      fireEvent.click(screen.getByRole("button", { name: /أنا جاهز/ }));
+      fireEvent.click(screen.getByRole("button", { name: /تم · مرر الهاتف|ابدأ الأسئلة/ }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: /ابدأ التصويت/ }));
+    for (let index = 0; index < 5; index += 1) {
+      if (screen.queryByRole("button", { name: /أنا جاهز/ })) fireEvent.click(screen.getByRole("button", { name: /أنا جاهز/ }));
+      const buttons = screen.getAllByRole("button").filter((button) => !button.className.includes("disabled") && button.querySelector("strong"));
+      fireEvent.click(buttons[0]);
+    }
+    const guessInput = screen.getByLabelText("اكتب تخمينك");
+    fireEvent.change(guessInput, { target: { value: SECRET_ITEMS.players[0].name } });
+    fireEvent.click(screen.getByRole("button", { name: /تأكيد التخمين/ }));
+    expect(screen.getByRole("heading", { name: /العميل عرف السر وكسب/ })).toBeTruthy();
+    randomSpy.mockRestore();
   });
 
   it("moves through private reveals, discussion, secret voting, and final result", () => {
