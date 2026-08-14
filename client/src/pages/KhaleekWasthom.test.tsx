@@ -72,7 +72,7 @@ describe("خليك وسطهم", () => {
     fireEvent.click(screen.getByRole("button", { name: /ابدأ اللعب/ }));
     expect(screen.getByRole("button", { name: /خليك وسطهم \+/ })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /خليك وسطهم \+/ }));
-    expect(screen.getByText(/العميل لا يعرف هويته ويرى عنصرًا مختلفًا/)).toBeTruthy();
+    expect(screen.getByText("هنا المتعة كلها")).toBeTruthy();
   });
 
   it("requires a selected category and begins private role distribution", () => {
