@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { auctionSectionLabels, buildAuctionRounds, formationSlots, getPlayersForAuctionSection, playerCatalogue } from "./auctionData";
+import { auctionSectionLabels, buildAuctionRounds, formationSlots, getPlayersForAuctionSection, playerCatalogue, positionOverrides } from "./auctionData";
 import { createTeams, simulateDraftMatch } from "./auctionLogic";
 
 describe("auction player catalogue", () => {
@@ -8,6 +8,15 @@ describe("auction player catalogue", () => {
     expect(new Set(playerCatalogue.map((player) => player.position))).toEqual(new Set(formationSlots));
     expect(playerCatalogue.some((player) => player.status === "legend")).toBe(true);
     expect(playerCatalogue.some((player) => player.status === "active")).toBe(true);
+  });
+
+  it("applies the reviewed position corrections to the final catalogue", () => {
+    for (const [name, position] of Object.entries(positionOverrides)) {
+      const player = playerCatalogue.find((candidate) => candidate.name === name);
+      expect(player, `${name} يجب أن يكون موجودًا في الكتالوج`).toBeTruthy();
+      expect(player?.position, name).toBe(position);
+    }
+    expect(playerCatalogue.every((player) => formationSlots.includes(player.position))).toBe(true);
   });
 
   it("builds eleven rounds with globally unique visible and hidden players", () => {

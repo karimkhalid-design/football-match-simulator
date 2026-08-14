@@ -53,12 +53,48 @@ const basePlayerCatalogue: CataloguePlayer[] = (Object.entries(pools) as [Positi
 const baseNames = new Set(basePlayerCatalogue.map((player) => player.name));
 const expandedCatalogue: CataloguePlayer[] = expandedPlayerSeeds.filter(([name]) => !baseNames.has(name)).map(([name, position, rating, status]) => ({ id: slug(`${position}-${name}`), name, rating, note: "مسيرة كروية تستحق الاكتشاف", status, position, tier: tierFor(rating), startPrice: priceFor(rating) }));
 const mergedCatalogue = [...basePlayerCatalogue, ...expandedCatalogue];
+
+/** تصحيحات المراكز التي تختلف عن المركز الأساسي للاعب في مكتبة المزاد. */
+export const positionOverrides: Partial<Record<string, PositionCode>> = {
+  "Sami Hyypiä": "CB",
+  "Rafael Márquez": "CB",
+  "Gordon Banks": "GK",
+  "Jan Vertonghen": "CB",
+  "Jesús Navas": "RB",
+  "Robin van Persie": "ST",
+  "Mostafa Mohamed": "ST",
+  "Gabriel Jesus": "ST",
+  "Willian José": "ST",
+  "Anthony Martial": "ST",
+  "Pelé": "ST",
+  "Romário": "ST",
+  "George Weah": "ST",
+  "Kenny Dalglish": "ST",
+  "Kevin Keegan": "ST",
+  "Miroslav Klose": "ST",
+  "Hernán Crespo": "ST",
+  "Claudio Caniggia": "ST",
+  "Koulibaly": "CB",
+  "Roberto Mancini": "CAM",
+  "Arda Turan": "CAM",
+  "Ángel Di María": "RW",
+  "Florian Wirtz": "CAM",
+  "Amr Warda": "RW",
+  "Ahmed Hassan": "CM",
+  "Emam Ashour": "CM",
+  "Jadon Sancho": "RW",
+  "Ludovic Giuly": "RW",
+  "Adel Taarabt": "CAM",
+  "Mostafa Fathi": "RW",
+};
 const premierLeagueNames = new Set(["Alisson Becker", "Ederson", "David Raya", "Jordan Pickford", "Virgil van Dijk", "Rio Ferdinand", "John Terry", "William Saliba", "Rúben Dias", "Thiago Silva", "Ibrahima Konaté", "Kyle Walker", "Trent Alexander-Arnold", "Ashley Cole", "Kevin De Bruyne", "Rodri", "Moisés Caicedo", "Enzo Fernández", "Bruno Fernandes", "Martin Ødegaard", "Declan Rice", "N'Golo Kanté", "Paul Scholes", "Steven Gerrard", "Frank Lampard", "Patrick Vieira", "Yaya Touré", "Mohamed Salah", "Bukayo Saka", "Riyad Mahrez", "Sadio Mané", "Son Heung-min", "Jack Grealish", "Phil Foden", "David Beckham", "Harry Kane", "Erling Haaland", "Sergio Agüero", "Didier Drogba", "Thierry Henry", "Pierre-Emerick Aubameyang", "Robin van Persie", "Ben Chilwell", "Luke Shaw", "Andy Robertson", "Kieran Trippier", "Reece James", "James Maddison", "Marcus Rashford", "Gabriel Jesus", "Alexander Isak", "Gabriel Martinelli"]);
 const laLigaNames = new Set(["Thibaut Courtois", "Iker Casillas", "Jan Oblak", "Marc-André ter Stegen", "Sergio Ramos", "Marcelo", "Carles Puyol", "Gerard Piqué", "Aymeric Laporte", "Pau Torres", "Ronald Araújo", "Dani Alves", "João Cancelo", "Achraf Hakimi", "Raphinha", "Rodrygo", "Takefusa Kubo", "Dani Carvajal", "David Alaba", "Theo Hernández", "Alejandro Grimaldo", "Alphonso Davies", "Roberto Carlos", "Luka Modrić", "Xavi", "Andrés Iniesta", "Toni Kroos", "Zinedine Zidane", "Isco", "Ferran Torres", "Giovani Lo Celso", "Rafinha Alcântara", "Mikel Oyarzabal", "Cesc Fàbregas", "David Silva", "Santi Cazorla", "Thiago Alcântara", "Eduardo Camavinga", "Aurélien Tchouaméni", "Federico Valverde", "Frenkie de Jong", "Casemiro", "Jude Bellingham", "Lionel Messi", "Cristiano Ronaldo", "Neymar", "Vinícius Júnior", "Kylian Mbappé", "Luis Figo", "Ronaldinho", "Karim Benzema", "Luis Suárez", "Álvaro Morata", "Robert Lewandowski", "Ronaldo Nazário", "Samuel Eto'o", "Andriy Shevchenko"]);
-const bundesligaNames = new Set(["Manuel Neuer", "Kevin Trapp", "Oliver Kahn", "Sepp Maier", "Bernd Leno", "Jürgen Kohler", "Matthias Sammer", "Mats Hummels", "Niklas Süle", "Matthias Ginter", "Jonathan Tah", "Antonio Rüdiger", "Benjamin Pavard", "Noussair Mazraoui", "Philipp Lahm", "Berti Vogts", "Paul Breitner", "Bixente Lizarazu", "Raphaël Guerreiro", "David Raum", "Lothar Matthäus", "Günter Netzer", "Michael Ballack", "Bastian Schweinsteiger", "Sami Khedira", "Toni Kroos", "Joshua Kimmich", "Leon Goretzka", "İlkay Gündoğan", "Florian Wirtz", "Kai Havertz", "Thomas Müller", "Mario Götze", "Jamal Musiala", "Marco Reus", "Serge Gnabry", "Leroy Sané", "Kingsley Coman", "Arjen Robben", "Franck Ribéry", "Robert Lewandowski", "Victor Boniface", "Niclas Füllkrug", "Karim Adeyemi", "Timo Werner", "Gerd Müller", "Miroslav Klose", "Erling Haaland", "Harry Kane", "Mario Mandžukić"]);
+const bundesligaNames = new Set(["Manuel Neuer", "Kevin Trapp", "Oliver Kahn", "Sepp Maier", "Bernd Leno", "Jürgen Kohler", "Matthias Sammer", "Mats Hummels", "Niklas Süle", "Matthias Ginter", "Jonathan Tah", "Antonio Rüdiger", "Benjamin Pavard", "Noussair Mazraoui", "Philipp Lahm", "Berti Vogts", "Paul Breitner", "Bixente Lizarazu", "Raphaël Guerreiro", "David Raum", "Lothar Matthäus", "Günter Netzer", "Michael Ballack", "Bastian Schweinsteiger", "Sami Khedira", "Toni Kroos", "Joshua Kimmich", "Leon Goretzka", "Xaver Schlager", "Angelo Stiller", "İlkay Gündoğan", "Florian Wirtz", "Kai Havertz", "Thomas Müller", "Mario Götze", "Jamal Musiala", "Marco Reus", "Serge Gnabry", "Leroy Sané", "Kingsley Coman", "Arjen Robben", "Franck Ribéry", "Robert Lewandowski", "Victor Boniface", "Niclas Füllkrug", "Karim Adeyemi", "Timo Werner", "Gerd Müller", "Miroslav Klose", "Erling Haaland", "Harry Kane", "Mario Mandžukić"]);
 const egyptianLeagueNames = new Set(["Essam El Hadary", "Ahmed El Shenawy", "Mohamed El Shenawy", "Ahmed Hegazi", "Ramy Rabia", "Ali Gabr", "Mahmoud Hamdy El Wensh", "Ayman Ashraf", "Mohamed Hany", "Omar Kamal", "Ahmed Fathi", "Sacha Boey", "Ahmed Abu El Fotouh", "Ali Maaloul", "Karim Hafez", "Mohamed Hamdy", "Mohamed Elneny", "Amr El Solia", "Tarek Hamed", "Hamdy Fathy", "Mohamed Aboutrika", "Mohamed Magdy Afsha", "Marwan Attia", "Aliou Dieng", "Emam Ashour", "Hossam Ashour", "Mostafa Mohamed", "Abdallah El Said", "Shikabala", "Walid Soliman", "Amr Warda", "Ahmed Hassan", "Trézéguet", "Mahmoud Kahraba", "Hussein El Shahat", "Omar Marmoush", "Ibrahim Adel", "Ahmed Refaat", "Mostafa Fathi", "Ahmed Sayed Zizo", "Mohamed Sherif", "Ahmed Hassan Kouka", "Ahmed Yasser Rayan", "Marwan Hamdy", "Hossam Hassan", "Mido", "Amr Zaki"]);
 const classifySection = (player: CataloguePlayer): CataloguePlayer["section"] => premierLeagueNames.has(player.name) ? "premier-league" : laLigaNames.has(player.name) ? "la-liga" : bundesligaNames.has(player.name) ? "bundesliga" : egyptianLeagueNames.has(player.name) ? "egyptian-league" : undefined;
-export const playerCatalogue: CataloguePlayer[] = mergedCatalogue.filter((player, index, players) => players.findIndex((candidate) => candidate.name === player.name) === index).map((player) => ({ ...player, section: classifySection(player) }));
+export const playerCatalogue: CataloguePlayer[] = mergedCatalogue
+  .filter((player, index, players) => players.findIndex((candidate) => candidate.name === player.name) === index)
+  .map((player) => ({ ...player, position: positionOverrides[player.name] ?? player.position, section: classifySection(player) }));
 export function getPlayersForAuctionSection(section: AuctionSection = "all") {
   if (section === "all") return playerCatalogue;
   if (section === "legends") return playerCatalogue.filter((player) => player.status === "legend");
