@@ -22,7 +22,7 @@ describe("auction player catalogue", () => {
   });
 
   it("keeps each selectable auction section isolated and playable", () => {
-    for (const section of ["premier-league", "la-liga", "legends"] as const) {
+    for (const section of ["premier-league", "la-liga", "bundesliga", "egyptian-league", "legends"] as const) {
       const sectionPlayers = getPlayersForAuctionSection(section);
       expect(sectionPlayers.length, auctionSectionLabels[section]).toBeGreaterThanOrEqual(22);
       for (const position of new Set(formationSlots)) { const required = position === "CB" ? 4 : 2; expect(sectionPlayers.filter((player) => player.position === position).length, `${auctionSectionLabels[section]} / ${position}`).toBeGreaterThanOrEqual(required); }

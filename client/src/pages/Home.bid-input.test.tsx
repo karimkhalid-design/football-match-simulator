@@ -20,6 +20,13 @@ describe("auction setup and total bid price control", () => {
     expect(screen.getByText(/كتالوج اللعبة/).textContent).toContain("الدوري الإنجليزي");
   });
 
+  it("shows the German, Egyptian, and mixed auction sections", () => {
+    render(<Home />);
+    expect(screen.getByRole("button", { name: /الدوري الألماني/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /الدوري المصري/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /ميكس/ })).toBeTruthy();
+  });
+
   it("resets the price input when the auction advances to a new round", async () => {
     const user = userEvent.setup();
     render(<Home />);
