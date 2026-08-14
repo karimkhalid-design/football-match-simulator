@@ -38,6 +38,20 @@ describe("خليك وسطهم", () => {
     expect(screen.getByText(/اللاعب 1 من 5/)).toBeTruthy();
   });
 
+  it("hides the previous role while handing the phone to the named next player", () => {
+    render(<KhaleekWasthom onBackToHub={() => undefined} />);
+    fireEvent.click(screen.getByRole("button", { name: /ابدأ اللعب/ }));
+    fireEvent.click(screen.getByRole("button", { name: /التالي/ }));
+    fireEvent.click(screen.getByRole("button", { name: /اختيار الأقسام/ }));
+    fireEvent.click(screen.getByRole("button", { name: /ابدأ توزيع الأدوار/ }));
+    fireEvent.click(screen.getByRole("button", { name: /أنا جاهز/ }));
+    fireEvent.click(screen.getByRole("button", { name: /تم · مرر الهاتف/ }));
+    expect(screen.getByText(/مرر الهاتف الآن إلى/)).toBeTruthy();
+    expect(screen.queryByText(/العنصر السري هو/)).toBeNull();
+    expect(screen.queryByText(/أنت العميل السري/)).toBeNull();
+    expect(screen.getByRole("button", { name: /تم تسليم الهاتف/ })).toBeTruthy();
+  });
+
   it("moves through private reveals, discussion, secret voting, and final result", () => {
     render(<KhaleekWasthom onBackToHub={() => undefined} />);
     fireEvent.click(screen.getByRole("button", { name: /ابدأ اللعب/ }));
@@ -45,9 +59,12 @@ describe("خليك وسطهم", () => {
     fireEvent.click(screen.getByRole("button", { name: /اختيار الأقسام/ }));
     fireEvent.click(screen.getByRole("button", { name: /ابدأ توزيع الأدوار/ }));
     fireEvent.click(screen.getByRole("button", { name: /أنا جاهز/ }));
-    fireEvent.click(screen.getByRole("button", { name: /تم|ابدأ الأسئلة/ }));
+    fireEvent.click(screen.getByRole("button", { name: /تم · مرر الهاتف/ }));
     for (let index = 1; index < 5; index += 1) {
-      fireEvent.click(screen.getByRole("button", { name: /تم|ابدأ الأسئلة/ }));
+      expect(screen.getByText(/مرر الهاتف الآن إلى/)).toBeTruthy();
+      fireEvent.click(screen.getByRole("button", { name: /تم تسليم الهاتف/ }));
+      fireEvent.click(screen.getByRole("button", { name: /أنا جاهز/ }));
+      fireEvent.click(screen.getByRole("button", { name: /تم · مرر الهاتف|ابدأ الأسئلة/ }));
     }
     expect(screen.getByRole("heading", { name: /مين مش عارف السر/ })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /ابدأ التصويت/ }));

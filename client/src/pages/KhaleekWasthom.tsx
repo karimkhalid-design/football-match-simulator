@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, Check, EyeOff, HelpCircle, RotateCcw, ShieldQues
 import { getCategoryLabel, getItemsForCategories, KHALEEK_CATEGORIES, type KhaleekCategory, type SecretItem } from "@/lib/khaleekWasthomData";
 
 const LOGO_URL = "/manus-storage/khaleek-wasthom-logo_0b52eb31.png";
-type Phase = "home" | "setup" | "names" | "categories" | "reveal" | "pass" | "discussion" | "votePass" | "vote" | "guess" | "result";
+type Phase = "home" | "setup" | "names" | "categories" | "reveal" | "pass" | "handoff" | "discussion" | "votePass" | "vote" | "guess" | "result";
 type Props = { onBackToHub: () => void };
 const defaultNames = ["كريم", "أحمد", "محمد", "يوسف", "عمر", "سيف", "مروان", "ياسين", "آدم", "حسن"];
 const suggestedQuestions = ["هل العنصر مرتبط بأوروبا؟", "هل اشتهر أكثر مع نادٍ أم منتخب؟", "هل حقق بطولة كبيرة؟", "هل يرتبط ببلد عربي؟", "هل يمكن معرفة العنصر من جيله؟"];
@@ -32,7 +32,7 @@ export default function KhaleekWasthom({ onBackToHub }: Props) {
     setAgentIndex(Math.floor(Math.random() * playerCount));
     setRevealIndex(0); setPhase("reveal");
   };
-  const nextReveal = () => { if (revealIndex + 1 < playerCount) { setRevealIndex(revealIndex + 1); setPhase("pass"); } else setPhase("discussion"); };
+  const nextReveal = () => { if (revealIndex + 1 < playerCount) { setRevealIndex(revealIndex + 1); setPhase("handoff"); } else setPhase("discussion"); };
   const finishVote = (finalVotes = votes) => {
     const counts = finalVotes.reduce<Record<number, number>>((acc, target) => ({ ...acc, [target]: (acc[target] ?? 0) + 1 }), {});
     const mostVoted = Number(Object.entries(counts).sort(([, a], [, b]) => b - a)[0]?.[0] ?? -1);
@@ -53,6 +53,8 @@ export default function KhaleekWasthom({ onBackToHub }: Props) {
   if (phase === "categories") return <main className="khaleek-page" dir="rtl"><KhaleekHeader title="اختر الأقسام" onBack={() => setPhase("names")} /><section className="khaleek-panel"><span className="khaleek-step">03 · مكتبة السر</span><h1>العنصر ممكن يكون إيه؟</h1><p>اختار قسمًا أو أكثر، أو فعل الكل وخلي اللعبة تختار لك عشوائيًا.</p><div className="category-grid">{KHALEEK_CATEGORIES.map((category) => <button key={category.id} className={`category-card ${category.tone} ${categories.includes(category.id) ? "selected" : ""}`} onClick={() => setCategories((current) => current.includes(category.id) ? current.filter((id) => id !== category.id) : [...current, category.id])}><b>{category.icon}</b><strong>{category.label}</strong><small>{category.description}</small>{categories.includes(category.id) && <Check />}</button>)}</div><button className="random-category" onClick={() => setCategories(KHALEEK_CATEGORIES.map((category) => category.id))}>🎲 عشوائي · كل الأقسام</button><button className="khaleek-primary" disabled={!categories.length} onClick={startReveal}>ابدأ توزيع الأدوار <ArrowLeft /></button></section></main>;
 
   if (phase === "reveal") return <main className="khaleek-page reveal-page" dir="rtl"><section className="reveal-card"><div className="reveal-progress">اللاعب {revealIndex + 1} من {playerCount}</div><EyeOff /><h1>مرر الهاتف إلى<br /><em>{players[revealIndex]}</em></h1><p>تأكد إن مفيش حد بيبص على الشاشة، ثم اضغط لعرض دورك.</p><button className="khaleek-primary" onClick={() => setPhase("pass")}>أنا جاهز <ArrowLeft /></button></section></main>;
+
+  if (phase === "handoff") return <main className="khaleek-page reveal-page" dir="rtl"><section className="reveal-card handoff-card"><div className="reveal-progress">تم إخفاء الدور السابق بالكامل</div><EyeOff /><span className="secret-label">مرر الهاتف الآن إلى</span><h1><em>{players[revealIndex]}</em></h1><p>لا تضغط «جاهز» إلا بعد أن يصبح الهاتف مع اللاعب المكتوب اسمه، ويتأكد أن الآخرين لا ينظرون للشاشة.</p><button className="khaleek-primary" onClick={() => setPhase("reveal")}>تم تسليم الهاتف <ArrowLeft /></button></section></main>;
 
   if (phase === "pass") { const isAgent = revealIndex === agentIndex; return <main className="khaleek-page reveal-page" dir="rtl"><section className={`secret-card ${isAgent ? "agent" : "knower"}`}><div className="secret-badge">{isAgent ? "🕵️" : "⚽"}</div>{isAgent ? <><h1>أنت العميل السري!</h1><p>لا تعرف العنصر. اسمع كلام أصحابك وحاول تكتشفه بدون ما يمسكو عليك.</p></> : <><span className="secret-label">العنصر السري هو</span><h1>{item?.name}</h1><p>{item?.hint}</p><div className="secret-facts">{item?.facts.map((fact) => <span key={fact}>• {fact}</span>)}</div></>}<button className="khaleek-primary" onClick={nextReveal}>{revealIndex + 1 === playerCount ? "ابدأ الأسئلة" : "تم · مرر الهاتف"} <ArrowLeft /></button></section></main>; }
 
