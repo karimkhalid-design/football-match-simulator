@@ -2,7 +2,7 @@
 import React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import KhaleekWasthom, { shufflePlayers } from "./KhaleekWasthom";
+import KhaleekWasthom, { chooseAgentIndices, shufflePlayers } from "./KhaleekWasthom";
 import { KHALEEK_CATEGORIES, SECRET_ITEMS } from "../lib/khaleekWasthomData";
 
 afterEach(() => cleanup());
@@ -42,6 +42,22 @@ describe("خليك وسطهم", () => {
     expect(players.length).toBeGreaterThanOrEqual(30);
     expect(new Set(players.map((player) => player.id)).size).toBe(players.length);
     expect(new Set(players.map((player) => player.difficulty)).size).toBe(3);
+  });
+
+  it("keeps agent count proportional and agent positions unique", () => {
+    expect(chooseAgentIndices(3, 1, () => 0)).toEqual([0]);
+    const agents = chooseAgentIndices(9, 3, () => 0);
+    expect(agents).toHaveLength(3);
+    expect(new Set(agents).size).toBe(3);
+    expect(agents.every((index) => index >= 0 && index < 9)).toBe(true);
+  });
+
+  it("shows the compatible agent-count choices for a larger group", () => {
+    render(<KhaleekWasthom onBackToHub={() => undefined} />);
+    fireEvent.click(screen.getByRole("button", { name: /ابدأ اللعب/ }));
+    fireEvent.click(screen.getByRole("button", { name: /9/ }));
+    expect(screen.getByText("عدد العملاء السريين")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /3\s*عملاء/ })).toBeTruthy();
   });
 
   it("requires a selected category and begins private role distribution", () => {
