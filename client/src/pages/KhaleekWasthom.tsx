@@ -9,6 +9,15 @@ type Props = { onBackToHub: () => void };
 const defaultNames = ["كريم", "أحمد", "محمد", "يوسف", "عمر", "سيف", "مروان", "ياسين", "آدم", "حسن"];
 const suggestedQuestions = ["هل العنصر مرتبط بأوروبا؟", "هل اشتهر أكثر مع نادٍ أم منتخب؟", "هل حقق بطولة كبيرة؟", "هل يرتبط ببلد عربي؟", "هل يمكن معرفة العنصر من جيله؟"];
 
+export function shufflePlayers<T>(players: T[], random: () => number = Math.random) {
+  const shuffled = [...players];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
+}
+
 export default function KhaleekWasthom({ onBackToHub }: Props) {
   const [phase, setPhase] = useState<Phase>("home");
   const [playerCount, setPlayerCount] = useState(5);
@@ -26,19 +35,22 @@ export default function KhaleekWasthom({ onBackToHub }: Props) {
   const [agentScore, setAgentScore] = useState(0);
   const [leaderboard, setLeaderboard] = useState<Record<string, number>>({});
   const [leaderboardKey, setLeaderboardKey] = useState("");
+  const [roundPlayers, setRoundPlayers] = useState<string[]>([]);
 
   const items = useMemo(() => getItemsForCategories(categories), [categories]);
-  const players = names.slice(0, playerCount);
-  const reset = () => { setPhase("home"); setItem(null); setRevealIndex(0); setVoteIndex(0); setVotes([]); setGuess(""); setAgentFound(false); setAgentGuessCorrect(false); setPlayersScore(0); setAgentScore(0); };
+  const players = roundPlayers.length === playerCount ? roundPlayers : names.slice(0, playerCount);
+  const reset = () => { setPhase("home"); setItem(null); setRevealIndex(0); setVoteIndex(0); setVotes([]); setGuess(""); setAgentFound(false); setAgentGuessCorrect(false); setPlayersScore(0); setAgentScore(0); setRoundPlayers([]); };
   const startNames = () => { setNames(Array.from({ length: playerCount }, (_, index) => names[index] || defaultNames[index])); setPhase("names"); };
   const startCategories = () => setPhase("categories");
   const startReveal = () => {
-    const currentKey = players.map((name) => name.trim().toLocaleLowerCase("ar")).join("|");
+    const sessionPlayers = names.slice(0, playerCount);
+    const currentKey = [...sessionPlayers].map((name) => name.trim().toLocaleLowerCase("ar")).sort().join("|");
+    setRoundPlayers(shufflePlayers(sessionPlayers));
     if (currentKey !== leaderboardKey) {
       setLeaderboardKey(currentKey);
-      setLeaderboard(Object.fromEntries(players.map((name) => [name, 0])));
+      setLeaderboard(Object.fromEntries(sessionPlayers.map((name) => [name, 0])));
     } else {
-      setLeaderboard((current) => Object.fromEntries(players.map((name) => [name, current[name] ?? 0])));
+      setLeaderboard((current) => Object.fromEntries(sessionPlayers.map((name) => [name, current[name] ?? 0])));
     }
     const pool = items.length ? items : getItemsForCategories(["players"]);
     setItem(pool[Math.floor(Math.random() * pool.length)]);

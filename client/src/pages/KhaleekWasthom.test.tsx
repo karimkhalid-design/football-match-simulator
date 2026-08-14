@@ -2,7 +2,7 @@
 import React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import KhaleekWasthom from "./KhaleekWasthom";
+import KhaleekWasthom, { shufflePlayers } from "./KhaleekWasthom";
 import { KHALEEK_CATEGORIES, SECRET_ITEMS } from "../lib/khaleekWasthomData";
 
 afterEach(() => cleanup());
@@ -20,6 +20,16 @@ describe("خليك وسطهم", () => {
     expect(screen.getByText("مدربين")).toBeTruthy();
     expect(screen.getByText("استادات")).toBeTruthy();
     expect(screen.getByText("منتخبات")).toBeTruthy();
+  });
+
+  it("shuffles player order between games without losing names", () => {
+    const players = ["كريم", "أحمد", "محمد", "يوسف", "عمر"];
+    const firstOrder = shufflePlayers(players, () => 0.1);
+    const secondOrder = shufflePlayers(players, () => 0.9);
+    expect(firstOrder).not.toEqual(players);
+    expect(secondOrder).not.toEqual(firstOrder);
+    expect([...firstOrder].sort()).toEqual([...players].sort());
+    expect([...secondOrder].sort()).toEqual([...players].sort());
   });
 
   it("keeps category selection and item libraries consistent", () => {
