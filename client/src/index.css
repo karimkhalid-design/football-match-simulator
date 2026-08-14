@@ -332,3 +332,23 @@ button { font:inherit; border:0; cursor:pointer; } button:disabled { cursor:not-
 .vote-list button.selected{border-color:#f3bf35;background:linear-gradient(145deg,#4a3713,#172b4e);box-shadow:inset 0 0 0 1px rgba(243,191,53,.65),0 8px 18px rgba(243,191,53,.12)}.vote-list button.selected svg{color:#f3c340;margin-right:auto}.vote-list+.khaleek-primary{width:100%;margin-top:.8rem}
 
 .mode-picker{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin:1.2rem 0;text-align:right}.mode-picker button{display:grid;gap:.4rem;border:1px solid #315486;background:linear-gradient(145deg,#0b2042,#09172f);color:#eff5ff;border-radius:1rem;padding:1rem;cursor:pointer;font:inherit;transition:transform .18s ease,border-color .18s ease,background .18s ease}.mode-picker button:active{transform:scale(.98)}.mode-picker button.selected{border-color:#f3bf35;background:linear-gradient(145deg,#4b3512,#172746);box-shadow:inset 0 0 0 1px rgba(243,191,53,.55),0 10px 24px rgba(243,191,53,.12)}.mode-picker strong{font-size:1rem;color:#f6c748}.mode-picker small{color:#a9beda;line-height:1.55;font-size:.72rem}@media (max-width:560px){.mode-picker{grid-template-columns:1fr}.mode-picker button{padding:.85rem}}
+
+.app-splash-actions { display:flex; flex-direction:column; align-items:center; gap:.65rem; margin-top:1.25rem; }
+.app-splash-actions .app-splash-skip { margin-top:0; }
+.app-splash-install { min-height:2.5rem; padding:.5rem 1rem; border:1px solid rgba(248,242,223,.24); border-radius:999px; background:rgba(248,242,223,.06); color:rgba(248,242,223,.82); font-family:"IBM Plex Sans Arabic",sans-serif; font-size:.82rem; font-weight:700; -webkit-tap-highlight-color:transparent; transition:background .18s ease,transform .18s ease,border-color .18s ease; }
+.app-splash-install:hover { border-color:rgba(246,195,63,.5); background:rgba(246,195,63,.1); transform:translateY(-1px); }
+.app-splash-install:active { transform:scale(.97); }
+.pwa-guide-backdrop { position:fixed; inset:0; z-index:120; display:grid; place-items:center; padding:1.25rem; background:rgba(1,5,3,.78); backdrop-filter:blur(12px); animation:pwa-guide-fade .2s ease both; }
+.pwa-guide-modal { position:relative; width:min(100%,29rem); max-height:calc(100dvh - 2.5rem); overflow:auto; padding:1.6rem 1.25rem 1.25rem; border:1px solid rgba(246,195,63,.35); border-radius:1.5rem; background:linear-gradient(150deg,#17261d,#08100c 78%); color:#f8f2df; box-shadow:0 1.5rem 4rem rgba(0,0,0,.55),0 0 2.5rem rgba(246,195,63,.1); animation:pwa-guide-rise .28s cubic-bezier(.23,1,.32,1) both; }
+.pwa-guide-close { position:absolute; top:.7rem; left:.7rem; display:grid; place-items:center; width:2rem; height:2rem; border:1px solid rgba(248,242,223,.18); border-radius:50%; background:rgba(255,255,255,.05); color:rgba(248,242,223,.72); font-size:1.35rem; line-height:1; }
+.pwa-guide-kicker { display:block; margin-bottom:.4rem; color:#e2ba43; font-family:"DM Mono",monospace; font-size:.58rem; letter-spacing:.12em; }
+.pwa-guide-modal h2 { margin:0; padding-left:2rem; font-family:Changa,sans-serif; font-size:1.7rem; line-height:1.25; }
+.pwa-guide-modal > p { margin:.65rem 0 1rem; color:rgba(248,242,223,.7); font-family:"IBM Plex Sans Arabic",sans-serif; font-size:.86rem; line-height:1.7; }
+.pwa-guide-steps { display:grid; gap:.65rem; }
+.pwa-guide-steps article { display:grid; gap:.2rem; padding:.75rem .8rem; border:1px solid rgba(248,242,223,.11); border-radius:.9rem; background:rgba(255,255,255,.045); }
+.pwa-guide-steps strong { color:#f6c33f; font-family:"IBM Plex Sans Arabic",sans-serif; font-size:.9rem; }
+.pwa-guide-steps span { color:rgba(248,242,223,.76); font-family:"IBM Plex Sans Arabic",sans-serif; font-size:.78rem; line-height:1.65; }
+.pwa-guide-done { width:100%; min-height:2.75rem; margin-top:1rem; border:1px solid rgba(246,195,63,.5); border-radius:.8rem; background:rgba(246,195,63,.12); color:#f6c33f; font-family:"IBM Plex Sans Arabic",sans-serif; font-weight:800; }
+@keyframes pwa-guide-fade { from { opacity:0; } to { opacity:1; } }
+@keyframes pwa-guide-rise { from { opacity:0; transform:translateY(.75rem) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+@media (prefers-reduced-motion:reduce) { .pwa-guide-backdrop,.pwa-guide-modal { animation:none; } }

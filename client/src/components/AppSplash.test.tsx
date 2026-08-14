@@ -15,11 +15,28 @@ describe("AppSplash", () => {
     expect(screen.getByAltText("شعار كورة كده")).toBeTruthy();
     expect(screen.getByText("صناعة كريم")).toBeTruthy();
     expect(screen.getByRole("button", { name: "تخطي" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "طريقة تثبيت الموقع" })).toBeTruthy();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    act(() => { vi.advanceTimersByTime(900); });
+    expect(screen.getByRole("dialog", { name: "ثبّت كورة كده على جهازك" })).toBeTruthy();
+    expect(screen.getAllByText(/إضافة إلى الشاشة الرئيسية/)).toHaveLength(2);
+    act(() => { screen.getByRole("button", { name: "إغلاق طريقة التثبيت" }).click(); });
+    expect(screen.queryByRole("dialog")).toBeNull();
     expect(onDone).not.toHaveBeenCalled();
-    act(() => { vi.advanceTimersByTime(29999); });
+    act(() => { vi.advanceTimersByTime(29099); });
     expect(onDone).not.toHaveBeenCalled();
     act(() => { vi.advanceTimersByTime(1); });
     expect(onDone).toHaveBeenCalledOnce();
+  });
+
+  it("opens and closes the installation guide manually", () => {
+    vi.useFakeTimers();
+    const onDone = vi.fn();
+    render(<AppSplash onDone={onDone} />);
+    act(() => { screen.getByRole("button", { name: "طريقة تثبيت الموقع" }).click(); });
+    expect(screen.getByRole("dialog", { name: "ثبّت كورة كده على جهازك" })).toBeTruthy();
+    act(() => { screen.getByRole("button", { name: "تمام، فهمت" }).click(); });
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   it("lets the user skip the loading screen immediately", () => {
