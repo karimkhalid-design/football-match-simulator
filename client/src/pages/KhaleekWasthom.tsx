@@ -67,17 +67,21 @@ export default function KhaleekWasthom({ onBackToHub }: Props) {
   const [leaderboard, setLeaderboard] = useState<Record<string, number>>({});
   const [leaderboardKey, setLeaderboardKey] = useState("");
   const [roundPlayers, setRoundPlayers] = useState<string[]>([]);
+  const [votePlayers, setVotePlayers] = useState<string[]>([]);
 
   const items = useMemo(() => getItemsForCategories(categories), [categories]);
   const players = roundPlayers.length === playerCount ? roundPlayers : names.slice(0, playerCount);
+  const votingPlayers = votePlayers.length === playerCount ? votePlayers : players;
   const agentSet = useMemo(() => new Set(agentIndices), [agentIndices]);
-  const reset = () => { setPhase("home"); setGameMode("classic"); setItem(null); setAgentItems({}); setRevealIndex(0); setVoteIndex(0); setVotes([]); setSelectedVoteTargets([]); setDiscoveredAgentIndices([]); setGuess(""); setAgentFound(false); setAgentGuessCorrect(false); setPlayersScore(0); setAgentScore(0); setRoundPlayers([]); };
+  const reset = () => { setPhase("home"); setGameMode("classic"); setItem(null); setAgentItems({}); setRevealIndex(0); setVoteIndex(0); setVotes([]); setSelectedVoteTargets([]); setDiscoveredAgentIndices([]); setGuess(""); setAgentFound(false); setAgentGuessCorrect(false); setPlayersScore(0); setAgentScore(0); setRoundPlayers([]); setVotePlayers([]); };
   const startNames = () => { setNames(Array.from({ length: playerCount }, (_, index) => names[index] || defaultNames[index])); setPhase("names"); };
   const startCategories = () => setPhase("categories");
   const startReveal = () => {
     const sessionPlayers = names.slice(0, playerCount);
     const currentKey = [...sessionPlayers].map((name) => name.trim().toLocaleLowerCase("ar")).sort().join("|");
-    setRoundPlayers(shufflePlayers(sessionPlayers));
+    const shuffledPlayers = shufflePlayers(sessionPlayers);
+    setRoundPlayers(shuffledPlayers);
+    setVotePlayers(shuffledPlayers);
     if (currentKey !== leaderboardKey) {
       setLeaderboardKey(currentKey);
       setLeaderboard(Object.fromEntries(sessionPlayers.map((name) => [name, 0])));
@@ -112,7 +116,7 @@ export default function KhaleekWasthom({ onBackToHub }: Props) {
     setPlayersScore(allFoundAgents.length === agentIndices.length ? 100 : 0);
     setAgentScore(hiddenAgents.length * 100);
     if (!foundAny) {
-      const awards = Object.fromEntries(players.map((name, index) => [name, agentSet.has(index) ? 100 : 0]));
+      const awards = Object.fromEntries(votingPlayers.map((name, index) => [name, agentSet.has(index) ? 100 : 0]));
       setLeaderboard((current) => Object.fromEntries(players.map((name) => [name, (current[name] ?? 0) + (awards[name] ?? 0)])));
       setPhase("result");
     } else if (hiddenAgents.length > 0 && foundThisAttempt) {
@@ -127,7 +131,7 @@ export default function KhaleekWasthom({ onBackToHub }: Props) {
   const normalizeGuess = (value: string) => value.trim().toLocaleLowerCase("ar").replace(/[إأآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").replace(/\s+/g, " ");
   const submitGuess = () => { const correct = normalizeGuess(guess) === normalizeGuess(item?.name ?? ""); setAgentGuessCorrect(correct); const roundAgentScore = correct ? (discoveredAgentIndices.length * 50) + ((agentIndices.length - discoveredAgentIndices.length) * 100) : (agentIndices.length - discoveredAgentIndices.length) * 100; setAgentScore(roundAgentScore); const awards = Object.fromEntries(players.map((name, index) => [name, agentSet.has(index) ? (discoveredAgentIndices.includes(index) ? (correct ? 50 : 0) : 100) : 100])); setLeaderboard((current) => Object.fromEntries(players.map((name) => [name, (current[name] ?? 0) + (awards[name] ?? 0)]))); setPlayersScore(discoveredAgentIndices.length === agentIndices.length ? 100 : 0); setPhase("result"); };
   const selectedCategoryText = categories.length === KHALEEK_CATEGORIES.length ? "كل الأقسام" : categories.map(getCategoryLabel).join(" · ");
-  const leaderboardRows = players.map((name) => ({ name, score: leaderboard[name] ?? 0 })).sort((a, b) => b.score - a.score);
+  const leaderboardRows = votingPlayers.map((name) => ({ name, score: leaderboard[name] ?? 0 })).sort((a, b) => b.score - a.score);
   const leaderboardWinner = leaderboardRows[0]?.name ?? players[0] ?? "الفائز";
   const leaderboardWinnerScore = leaderboardRows[0]?.score ?? 0;
 
@@ -147,9 +151,9 @@ export default function KhaleekWasthom({ onBackToHub }: Props) {
 
   if (phase === "discussion") return <main className="khaleek-page" dir="rtl"><KhaleekHeader title="دوركم الآن" onBack={reset} /><section className="khaleek-panel discussion-panel"><div className="discussion-timer"><Timer /> 60 <small>ثانية للنقاش</small></div><span className="khaleek-step">04 · {discoveredAgentIndices.length ? `محاولة إضافية · تم كشف ${discoveredAgentIndices.length} من ${agentIndices.length}` : "اسألوا بذكاء"}</span><h1>{discoveredAgentIndices.length ? "لسه في عميل تاني؟" : "مين مش عارف السر؟"}</h1><p>{discoveredAgentIndices.length ? "العميل الأول اتكشف، كملوا النقاش وحاولوا تحددوا العميل المتبقي." : "اسألوا بعض أسئلة ذكية، بدون ما تفضحوا العنصر السري للعميل."}</p><div className="suggested-question"><HelpCircle /><span>سؤال مقترح</span><strong>{suggestedQuestions[Math.floor(Math.random() * suggestedQuestions.length)]}</strong></div><button className="khaleek-primary" onClick={() => { setVoteIndex(0); setVotes([]); setSelectedVoteTargets([]); setPhase("votePass"); }}>{discoveredAgentIndices.length ? "صوّت على العميل المتبقي" : "ابدأ التصويت"} <ArrowLeft /></button></section></main>;
 
-  if (phase === "votePass") return <main className="khaleek-page reveal-page" dir="rtl"><section className="reveal-card vote-pass"><div className="reveal-progress">التصويت · {voteIndex + 1} من {playerCount}</div><ShieldQuestion /><h1>مرر الهاتف إلى<br /><em>{players[voteIndex]}</em></h1><p>ممنوع تشوف تصويت اللاعب اللي قبلك. اضغط عندما تكون جاهزًا.</p><button className="khaleek-primary" onClick={() => setPhase("vote")}>أنا جاهز <ArrowLeft /></button></section></main>;
+  if (phase === "votePass") return <main className="khaleek-page reveal-page" dir="rtl"><section className="reveal-card vote-pass"><div className="reveal-progress">التصويت · {voteIndex + 1} من {playerCount}</div><ShieldQuestion /><h1>مرر الهاتف إلى<br /><em>{votingPlayers[voteIndex]}</em></h1><p>ممنوع تشوف تصويت اللاعب اللي قبلك. اضغط عندما تكون جاهزًا.</p><button className="khaleek-primary" onClick={() => setPhase("vote")}>أنا جاهز <ArrowLeft /></button></section></main>;
 
-  if (phase === "vote") { const remainingAgents = agentIndices.filter((index) => !discoveredAgentIndices.includes(index)); const voteLimit = remainingAgents.length || agentCount; return <main className="khaleek-page" dir="rtl"><KhaleekHeader title={`تصويت ${players[voteIndex]}`} onBack={reset} /><section className="khaleek-panel"><span className="khaleek-step">05 · {discoveredAgentIndices.length ? "محاولة كشف جديدة" : "القرار الأخير"}</span><h1>{discoveredAgentIndices.length ? "حدد العميل المتبقي" : "حدد العملاء السريين"}</h1><p>اختار حتى {voteLimit} {voteLimit === 1 ? "عميل" : "عملاء"}. تم اختيار {selectedVoteTargets.length} من {voteLimit}، ولا يمكنك اختيار لاعب تم كشفه أو التصويت لنفسك.</p><div className="vote-list">{players.map((name, index) => { const alreadyFound = discoveredAgentIndices.includes(index); return <button key={name} disabled={index === voteIndex || alreadyFound} onClick={() => voteLimit === 1 ? submitVote([index]) : toggleVoteTarget(index)} className={`${index === voteIndex || alreadyFound ? "disabled" : ""} ${selectedVoteTargets.includes(index) ? "selected" : ""}`}><span>{index + 1}</span><strong>{name}</strong>{index === voteIndex ? <small>أنت</small> : alreadyFound ? <small>تم كشفه</small> : selectedVoteTargets.includes(index) ? <Check /> : <ArrowLeft />}</button>; })}</div>{voteLimit > 1 && <button className="khaleek-primary" disabled={!selectedVoteTargets.length} onClick={confirmVote}>تأكيد اختياراتي ({selectedVoteTargets.length}/{voteLimit}) <Check /></button>}</section></main>; }
+  if (phase === "vote") { const remainingAgents = agentIndices.filter((index) => !discoveredAgentIndices.includes(index)); const voteLimit = remainingAgents.length || agentCount; return <main className="khaleek-page" dir="rtl"><KhaleekHeader title={`تصويت ${votingPlayers[voteIndex]}`} onBack={reset} /><section className="khaleek-panel"><span className="khaleek-step">05 · {discoveredAgentIndices.length ? "محاولة كشف جديدة" : "القرار الأخير"}</span><h1>{discoveredAgentIndices.length ? "حدد العميل المتبقي" : "حدد العملاء السريين"}</h1><p>اختار حتى {voteLimit} {voteLimit === 1 ? "عميل" : "عملاء"}. تم اختيار {selectedVoteTargets.length} من {voteLimit}، ولا يمكنك اختيار لاعب تم كشفه أو التصويت لنفسك.</p><div className="vote-list">{votingPlayers.map((name, index) => { const alreadyFound = discoveredAgentIndices.includes(index); return <button key={name} disabled={index === voteIndex || alreadyFound} onClick={() => voteLimit === 1 ? submitVote([index]) : toggleVoteTarget(index)} className={`${index === voteIndex || alreadyFound ? "disabled" : ""} ${selectedVoteTargets.includes(index) ? "selected" : ""}`}><span>{index + 1}</span><strong>{name}</strong>{index === voteIndex ? <small>أنت</small> : alreadyFound ? <small>تم كشفه</small> : selectedVoteTargets.includes(index) ? <Check /> : <ArrowLeft />}</button>; })}</div>{voteLimit > 1 && <button className="khaleek-primary" disabled={!selectedVoteTargets.length} onClick={confirmVote}>تأكيد اختياراتي ({selectedVoteTargets.length}/{voteLimit}) <Check /></button>}</section></main>; }
 
   if (phase === "guess") return <main className="khaleek-page" dir="rtl"><KhaleekHeader title="فرصة العملاء الأخيرة" onBack={reset} /><section className="khaleek-panel guess-panel"><Trophy /><span className="khaleek-step">تم اكتشاف: {discoveredAgentIndices.map((index) => players[index]).join(" و ")}</span><h1>خمن العنصر السري</h1><p>اكتب اسم العنصر كما تتوقعه. لو إجابتك صحيحة، تكسب الجولة حتى لو تم كشفك.</p><input className="guess-input" value={guess} onChange={(event) => setGuess(event.target.value)} placeholder="اكتب اسم العنصر السري" aria-label="اكتب تخمينك" autoComplete="off" /><div className="guess-list">{items.slice(0, 6).map((candidate) => <button key={candidate.id} className={guess === candidate.name ? "selected" : ""} onClick={() => setGuess(candidate.name)}>{candidate.name}<span>{getCategoryLabel(candidate.category)}</span></button>)}</div><button className="khaleek-primary" disabled={!guess.trim()} onClick={submitGuess}>تأكيد التخمين <Check /></button></section></main>;
 
