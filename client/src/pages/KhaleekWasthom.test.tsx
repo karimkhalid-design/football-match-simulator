@@ -2,7 +2,7 @@
 import React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import KhaleekWasthom, { chooseAgentIndices, resolveAgentVotes, shufflePlayers } from "./KhaleekWasthom";
+import KhaleekWasthom, { buildElementGuessOptions, chooseAgentIndices, resolveAgentVotes, shufflePlayers } from "./KhaleekWasthom";
 import { KHALEEK_CATEGORIES, SECRET_ITEMS } from "../lib/khaleekWasthomData";
 
 afterEach(() => cleanup());
@@ -20,6 +20,18 @@ describe("خليك وسطهم", () => {
     expect(screen.getByText("مدربين")).toBeTruthy();
     expect(screen.getByText("استادات")).toBeTruthy();
     expect(screen.getByText("منتخبات")).toBeTruthy();
+  });
+
+  it("shuffles element choices without losing the actual or alternate items", () => {
+    const actual = SECRET_ITEMS.players[0];
+    const alternate = SECRET_ITEMS.players[1];
+    const optionsA = buildElementGuessOptions(actual, [alternate], SECRET_ITEMS.players, () => 0.1);
+    const optionsB = buildElementGuessOptions(actual, [alternate], SECRET_ITEMS.players, () => 0.9);
+    expect(optionsA.map((candidate) => candidate.id)).toContain(actual.id);
+    expect(optionsA.map((candidate) => candidate.id)).toContain(alternate.id);
+    expect(optionsB.map((candidate) => candidate.id)).toContain(actual.id);
+    expect(optionsB.map((candidate) => candidate.id)).toContain(alternate.id);
+    expect(optionsA.map((candidate) => candidate.id)).not.toEqual(optionsB.map((candidate) => candidate.id));
   });
 
   it("shuffles player order between games without losing names", () => {

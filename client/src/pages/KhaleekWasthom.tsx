@@ -26,6 +26,15 @@ export function shufflePlayers<T>(players: T[], random: () => number = Math.rand
   return shuffled;
 }
 
+export function buildElementGuessOptions(item: SecretItem | null, alternateItems: SecretItem[], items: SecretItem[], random: () => number = Math.random) {
+  const actualItems = [item, ...alternateItems].filter((candidate): candidate is SecretItem => Boolean(candidate));
+  const uniqueActualItems = Array.from(new Map(actualItems.map((candidate) => [candidate.id, candidate])).values());
+  const actualIds = new Set(uniqueActualItems.map((candidate) => candidate.id));
+  const distractors = Array.from(new Map(items.filter((candidate) => !actualIds.has(candidate.id)).map((candidate) => [candidate.id, candidate])).values());
+  const selectedDistractors = shufflePlayers(distractors, random).slice(0, Math.max(0, 8 - uniqueActualItems.length));
+  return shufflePlayers([...uniqueActualItems, ...selectedDistractors], random);
+}
+
 export function chooseAgentIndices(playerCount: number, agentCount: number, random: () => number = Math.random) {
   const available = Array.from({ length: playerCount }, (_, index) => index);
   const selected: number[] = [];
@@ -134,11 +143,7 @@ export default function KhaleekWasthom({ onBackToHub }: Props) {
   const leaderboardRows = votingPlayers.map((name) => ({ name, score: leaderboard[name] ?? 0 })).sort((a, b) => b.score - a.score);
   const leaderboardWinner = leaderboardRows[0]?.name ?? players[0] ?? "الفائز";
   const leaderboardWinnerScore = leaderboardRows[0]?.score ?? 0;
-  const elementGuessOptions = useMemo(() => {
-    const actualItems = [item, ...Object.values(agentItems)].filter((candidate): candidate is SecretItem => Boolean(candidate));
-    const uniqueItems = Array.from(new Map([...actualItems, ...items].map((candidate) => [candidate.id, candidate])).values());
-    return uniqueItems.slice(0, 8);
-  }, [agentItems, item, items]);
+  const elementGuessOptions = useMemo(() => buildElementGuessOptions(item, Object.values(agentItems), items), [agentItems, item, items]);
 
   if (phase === "home") return <main className="khaleek-page khaleek-home" dir="rtl"><div className="khaleek-glow" /><header className="khaleek-topbar"><button className="khaleek-back" onClick={onBackToHub}><ArrowRight /> الألعاب الجماعية</button><span>كورة كده · لعبة جماعية</span></header><section className="khaleek-hero"><img src={LOGO_URL} alt="شعار خليك وسطهم" /><p className="khaleek-eyebrow"><ShieldQuestion /> SECRET FOOTBALL AGENT</p><h1>خليك <em>وسطهم.</em></h1><p>لعبة كورة جماعية على موبايل واحد. مين العميل السري؟ ومين هيعرف يكتشفه؟</p><button className="khaleek-primary" onClick={() => setPhase("setup")}>ابدأ اللعب <ArrowLeft /></button><div className="khaleek-rules"><span><Users /> 3–10 لاعبين</span><span><EyeOff /> بدون حساب</span><span><Sparkles /> على موبايل واحد</span></div></section></main>;
 
