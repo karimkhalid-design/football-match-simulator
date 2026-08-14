@@ -18,6 +18,8 @@ describe("AppSplash", () => {
     expect(screen.getByRole("button", { name: "طريقة تثبيت الموقع" })).toBeTruthy();
     expect(screen.queryByRole("dialog")).toBeNull();
     act(() => { vi.advanceTimersByTime(900); });
+    expect(screen.queryByRole("dialog")).toBeNull();
+    act(() => { screen.getByRole("button", { name: "طريقة تثبيت الموقع" }).click(); });
     expect(screen.getByRole("dialog", { name: "ثبّت كورة كده على جهازك" })).toBeTruthy();
     expect(screen.getAllByText(/إضافة إلى الشاشة الرئيسية/)).toHaveLength(2);
     act(() => { screen.getByRole("button", { name: "إغلاق طريقة التثبيت" }).click(); });
@@ -53,7 +55,8 @@ describe("AppSplash", () => {
     expect(screen.getByRole("button", { name: "تثبيت التطبيق الآن" })).toBeTruthy();
     await act(async () => { screen.getByRole("button", { name: "تثبيت التطبيق الآن" }).click(); await Promise.resolve(); });
     expect(prompt).toHaveBeenCalledOnce();
-    act(() => { vi.advanceTimersByTime(900); });
+    expect(screen.queryByRole("dialog")).toBeNull();
+    act(() => { screen.getByRole("button", { name: "طريقة تثبيت الموقع" }).click(); });
     act(() => { screen.getByRole("checkbox", { name: "عدم إظهار هذه الرسالة مرة أخرى" }).click(); });
     expect(window.localStorage.getItem("kora-keda-pwa-guide-dismissed")).toBe("1");
     expect(screen.queryByRole("dialog")).toBeNull();

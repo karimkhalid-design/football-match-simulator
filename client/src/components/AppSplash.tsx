@@ -33,13 +33,9 @@ export default function AppSplash({ onDone }: Props) {
       setDeferredPrompt(event as InstallPromptEvent);
     };
     if (!isInstalled) window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    const guideTimer = window.setTimeout(() => {
-      if (window.localStorage.getItem(INSTALL_DISMISSED_KEY) !== "1") setShowInstallGuide(true);
-    }, 900);
     const timer = window.setTimeout(onDone, 30000);
     return () => {
       if (!isInstalled) window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-      window.clearTimeout(guideTimer);
       window.clearTimeout(timer);
     };
   }, [isInstalled, onDone]);
