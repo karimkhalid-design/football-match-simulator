@@ -2,7 +2,7 @@
 import React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import KhaleekWasthom, { chooseAgentIndices, shufflePlayers } from "./KhaleekWasthom";
+import KhaleekWasthom, { chooseAgentIndices, resolveAgentVotes, shufflePlayers } from "./KhaleekWasthom";
 import { KHALEEK_CATEGORIES, SECRET_ITEMS } from "../lib/khaleekWasthomData";
 
 afterEach(() => cleanup());
@@ -50,6 +50,13 @@ describe("خليك وسطهم", () => {
     expect(agents).toHaveLength(3);
     expect(new Set(agents).size).toBe(3);
     expect(agents.every((index) => index >= 0 && index < 9)).toBe(true);
+  });
+
+  it("resolves multiple agent votes and preserves hidden agents", () => {
+    const result = resolveAgentVotes([1, 4, 6], [[1, 4], [1, 2], [4, 3], [1, 4]], 3);
+    expect(result.rankedTargets).toEqual([1, 4, 2]);
+    expect(result.foundAgents).toEqual([1, 4]);
+    expect(result.hiddenAgents).toEqual([6]);
   });
 
   it("shows the compatible agent-count choices for a larger group", () => {
@@ -108,7 +115,7 @@ describe("خليك وسطهم", () => {
     const guessInput = screen.getByLabelText("اكتب تخمينك");
     fireEvent.change(guessInput, { target: { value: SECRET_ITEMS.players[0].name } });
     fireEvent.click(screen.getByRole("button", { name: /تأكيد التخمين/ }));
-    expect(screen.getByRole("heading", { name: /العميل عرف السر وكسب/ })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /العملاء عرفوا السر وكسبوا/ })).toBeTruthy();
     randomSpy.mockRestore();
   });
 
@@ -170,6 +177,6 @@ describe("خليك وسطهم", () => {
       const voteButton = screen.getAllByRole("button").find((button) => !button.className.includes("disabled") && button.querySelector("strong"));
       fireEvent.click(voteButton as HTMLElement);
     }
-    expect(screen.getByText(/النتيجة|فرصة العميل الأخيرة/)).toBeTruthy();
+    expect(screen.getByText(/النتيجة|فرصة العملاء الأخيرة/)).toBeTruthy();
   });
 });
