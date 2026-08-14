@@ -7,10 +7,11 @@ const IN_GAME_LOGO_URL = "/manus-storage/e3mal-elsah-logo_b8d9ae3f.png";
 const AFTAKAR_LOGO_URL = "/manus-storage/aftakar-logo_c6bb6361.png";
 const VAR_LOGO_URL = "/manus-storage/4A3546B6-12EE-496E-B7CF-41A005590FB6_5eea2af3.png";
 const MEN_BYEHBAD_LOGO_URL = "/manus-storage/men-byehbad-logo_a02e06b2.png";
+const KHALEEK_WASTHOM_LOGO_URL = "/manus-storage/khaleek-wasthom-logo_0b52eb31.png";
 
-type GameHubProps = { onSelectAuction: () => void; onSelectAftakar?: () => void; onSelectVar?: () => void; onSelectMenByehbad?: () => void; onBackToCategories?: () => void };
+type GameHubProps = { onSelectAuction: () => void; onSelectAftakar?: () => void; onSelectVar?: () => void; onSelectMenByehbad?: () => void; onSelectKhaleek?: () => void; onBackToCategories?: () => void };
 
-export default function GameHub({ onSelectAuction, onSelectAftakar, onSelectVar, onSelectMenByehbad, onBackToCategories }: GameHubProps) {
+export default function GameHub({ onSelectAuction, onSelectAftakar, onSelectVar, onSelectMenByehbad, onSelectKhaleek, onBackToCategories }: GameHubProps) {
   return (
     <main className="game-hub" dir="rtl">
       <div className="hub-noise" />
@@ -56,6 +57,12 @@ export default function GameHub({ onSelectAuction, onSelectAftakar, onSelectVar,
           <div className="game-card-art"><img src={MEN_BYEHBAD_LOGO_URL} alt="شعار مين بيهبد؟" /></div>
           <div className="game-card-content"><p>ناقش · اختار · اكشف</p><h2>مين بيهبد؟</h2><span>معلومة كروية، نقاش سريع، وتصويت سري على موبايل واحد.</span></div>
           <div className="game-card-cta menbyehbad-cta">ابدأ الهبد <ArrowLeft /></div>
+        </button>
+        <button className="game-card game-card-khaleek" onClick={onSelectKhaleek} type="button">
+          <div className="game-card-topline"><span className="game-number">05</span><span className="game-status available khaleek-status"><i /> متاحة الآن</span></div>
+          <div className="game-card-art"><img src={KHALEEK_WASTHOM_LOGO_URL} alt="شعار خليك وسطهم" /></div>
+          <div className="game-card-content"><p>مرر · اسأل · اكشف</p><h2>خليك وسطهم</h2><span>عميل سري، أسئلة كروية، وتصويت سري على موبايل واحد.</span></div>
+          <div className="game-card-cta khaleek-cta">ابدأ المهمة <ArrowLeft /></div>
         </button>
       </section>
 

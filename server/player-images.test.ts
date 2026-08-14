@@ -6,13 +6,11 @@ describe("player image source", () => {
     expect(source).toBe("wikipedia");
 
     const response = await fetch(
-      "https://en.wikipedia.org/w/api.php?action=query&origin=*&format=json&prop=pageimages&piprop=thumbnail&pithumbsize=160&titles=Lionel%20Messi",
+      "https://en.wikipedia.org/api/rest_v1/page/summary/Lionel_Messi",
+      { headers: { "User-Agent": "KoraKeda/1.0 image-catalogue" } },
     );
     expect(response.ok).toBe(true);
-    const payload = (await response.json()) as {
-      query?: { pages?: Record<string, { thumbnail?: { source?: string } }> };
-    };
-    const page = Object.values(payload.query?.pages ?? {})[0];
-    expect(page?.thumbnail?.source).toMatch(/^https:\/\//);
+    const payload = (await response.json()) as { thumbnail?: { source?: string }; originalimage?: { source?: string } };
+    expect(payload.thumbnail?.source ?? payload.originalimage?.source).toMatch(/^https:\/\//);
   }, 10000);
 });
