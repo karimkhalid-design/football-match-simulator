@@ -62,6 +62,7 @@ export const playerCatalogue: CataloguePlayer[] = mergedCatalogue.filter((player
 export function getPlayersForAuctionSection(section: AuctionSection = "all") {
   if (section === "all") return playerCatalogue;
   if (section === "legends") return playerCatalogue.filter((player) => player.status === "legend");
+  if (section === "egyptian-league") return playerCatalogue.filter((player) => player.section === section);
   return playerCatalogue.filter((player) => player.section === section && player.status === "active");
 }
 
