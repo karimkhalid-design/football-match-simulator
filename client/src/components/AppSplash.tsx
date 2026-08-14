@@ -81,8 +81,8 @@ export default function AppSplash({ onDone }: Props) {
             {deviceKind === "ios" && <article className="pwa-guide-primary"><strong>جهازك: iPhone / iPad</strong><span>افتح الموقع من Safari، اضغط زر المشاركة، ثم اختر «إضافة إلى الشاشة الرئيسية» واضغط «إضافة».</span></article>}
             {deviceKind === "android" && <article className="pwa-guide-primary"><strong>جهازك: Android</strong><span>افتح الموقع من Chrome، اضغط ⋮، ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».</span></article>}
             {deviceKind === "desktop" && <article className="pwa-guide-primary"><strong>جهازك: الكمبيوتر</strong><span>من Chrome أو Edge اضغط رمز التثبيت بجوار شريط العنوان، ثم اختر «تثبيت».</span></article>}
-            <article><strong>لو بتستخدم iPhone / iPad</strong><span>في Safari اضغط المشاركة، ثم «إضافة إلى الشاشة الرئيسية».</span></article>
-            <article><strong>لو بتستخدم Android</strong><span>في Chrome اضغط ⋮، ثم «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».</span></article>
+            {deviceKind !== "ios" && <article><strong>لو بتستخدم iPhone / iPad</strong><span>في Safari اضغط المشاركة، ثم «إضافة إلى الشاشة الرئيسية».</span></article>}
+            {deviceKind !== "android" && <article><strong>لو بتستخدم Android</strong><span>في Chrome اضغط ⋮، ثم «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».</span></article>}
             {deferredPrompt && <button type="button" className="pwa-guide-install" onClick={installApp}>تثبيت التطبيق الآن</button>}
           </div>
           <label className="pwa-guide-preference"><input type="checkbox" checked={dontShowAgain} onChange={(event) => event.target.checked ? dismissGuideForever() : (window.localStorage.removeItem(INSTALL_DISMISSED_KEY), setDontShowAgain(false))} /> <span>عدم إظهار هذه الرسالة مرة أخرى</span></label>
