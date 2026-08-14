@@ -10,6 +10,12 @@ describe("auction player catalogue", () => {
     expect(playerCatalogue.some((player) => player.status === "active")).toBe(true);
   });
 
+  it("keeps Egyptian midfield anchors in the central midfield slot", () => {
+    for (const name of ["Amr El Solia", "Tarek Hamed", "Hamdy Fathy", "Mohamed Elneny", "Marwan Attia", "Aliou Dieng"]) {
+      expect(playerCatalogue.find((player) => player.name === name)?.position, name).toBe("CM");
+    }
+  });
+
   it("applies the reviewed position corrections to the final catalogue", () => {
     for (const [name, position] of Object.entries(positionOverrides)) {
       const player = playerCatalogue.find((candidate) => candidate.name === name);
