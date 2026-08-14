@@ -2,7 +2,7 @@
 import React from "react";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import AppSplash from "./AppSplash";
+import AppSplash, { isAppInstalled } from "./AppSplash";
 
 afterEach(() => { cleanup(); vi.useRealTimers(); });
 
@@ -57,6 +57,19 @@ describe("AppSplash", () => {
     act(() => { screen.getByRole("checkbox", { name: "عدم إظهار هذه الرسالة مرة أخرى" }).click(); });
     expect(window.localStorage.getItem("kora-keda-pwa-guide-dismissed")).toBe("1");
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("hides direct install controls when already running as an installed app", () => {
+    vi.useFakeTimers();
+    window.localStorage.clear();
+    const originalMatchMedia = window.matchMedia;
+    Object.defineProperty(window, "matchMedia", { configurable: true, value: vi.fn(() => ({ matches: true, media: "(display-mode: standalone)", onchange: null, addListener: vi.fn(), removeListener: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn(), dispatchEvent: vi.fn() })) });
+    expect(isAppInstalled()).toBe(true);
+    const onDone = vi.fn();
+    render(<AppSplash onDone={onDone} />);
+    act(() => { screen.getByRole("button", { name: "طريقة تثبيت الموقع" }).click(); });
+    expect(screen.queryByRole("button", { name: "تثبيت التطبيق الآن" })).toBeNull();
+    Object.defineProperty(window, "matchMedia", { configurable: true, value: originalMatchMedia });
   });
 
   it("lets the user skip the loading screen immediately", () => {
