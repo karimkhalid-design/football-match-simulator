@@ -79,6 +79,43 @@ describe("خليك وسطهم", () => {
     randomSpy.mockRestore();
   });
 
+  it("keeps a cumulative leaderboard for unchanged names and exposes score sharing", () => {
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+    const playRound = () => {
+      fireEvent.click(screen.getByRole("button", { name: /ابدأ اللعب|جولة جديدة/ }));
+      if (screen.queryByRole("button", { name: /10/ })) fireEvent.click(screen.getByRole("button", { name: /التالي/ }));
+      if (screen.queryByRole("button", { name: /اختيار الأقسام/ })) fireEvent.click(screen.getByRole("button", { name: /اختيار الأقسام/ }));
+      if (screen.queryByRole("button", { name: /ابدأ توزيع الأدوار/ })) fireEvent.click(screen.getByRole("button", { name: /ابدأ توزيع الأدوار/ }));
+      fireEvent.click(screen.getByRole("button", { name: /أنا جاهز/ }));
+      fireEvent.click(screen.getByRole("button", { name: /تم · مرر الهاتف/ }));
+      for (let index = 1; index < 5; index += 1) {
+        fireEvent.click(screen.getByRole("button", { name: /تم تسليم الهاتف/ }));
+        fireEvent.click(screen.getByRole("button", { name: /أنا جاهز/ }));
+        fireEvent.click(screen.getByRole("button", { name: /تم · مرر الهاتف|ابدأ الأسئلة/ }));
+      }
+      fireEvent.click(screen.getByRole("button", { name: /ابدأ التصويت/ }));
+      for (let index = 0; index < 5; index += 1) {
+        if (screen.queryByRole("button", { name: /أنا جاهز/ })) fireEvent.click(screen.getByRole("button", { name: /أنا جاهز/ }));
+        const buttons = screen.getAllByRole("button").filter((button) => !button.className.includes("disabled") && button.querySelector("strong"));
+        fireEvent.click(buttons[0]);
+      }
+      const guessInput = screen.queryByLabelText("اكتب تخمينك");
+      if (guessInput) {
+        fireEvent.change(guessInput, { target: { value: SECRET_ITEMS.players[0].name } });
+        fireEvent.click(screen.getByRole("button", { name: /تأكيد التخمين/ }));
+      }
+    };
+    render(<KhaleekWasthom onBackToHub={() => undefined} />);
+    playRound();
+    expect(screen.getByText("الترتيب المستمر")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /شارك السكور/ })).toBeTruthy();
+    expect(screen.getAllByText("100 نقطة").length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: /جولة جديدة/ }));
+    playRound();
+    expect(screen.getAllByText("200 نقطة").length).toBeGreaterThan(0);
+    randomSpy.mockRestore();
+  });
+
   it("moves through private reveals, discussion, secret voting, and final result", () => {
     render(<KhaleekWasthom onBackToHub={() => undefined} />);
     fireEvent.click(screen.getByRole("button", { name: /ابدأ اللعب/ }));

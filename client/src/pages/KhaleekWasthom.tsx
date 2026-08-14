@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, EyeOff, HelpCircle, RotateCcw, ShieldQuestion, Sparkles, Timer, Trophy, Users } from "lucide-react";
 import { getCategoryLabel, getItemsForCategories, KHALEEK_CATEGORIES, type KhaleekCategory, type SecretItem } from "@/lib/khaleekWasthomData";
+import ShareResult from "@/components/ShareResult";
 
 const LOGO_URL = "/manus-storage/khaleek-wasthom-logo_0b52eb31.png";
 type Phase = "home" | "setup" | "names" | "categories" | "reveal" | "pass" | "handoff" | "discussion" | "votePass" | "vote" | "guess" | "result";
@@ -23,6 +24,8 @@ export default function KhaleekWasthom({ onBackToHub }: Props) {
   const [agentGuessCorrect, setAgentGuessCorrect] = useState(false);
   const [playersScore, setPlayersScore] = useState(0);
   const [agentScore, setAgentScore] = useState(0);
+  const [leaderboard, setLeaderboard] = useState<Record<string, number>>({});
+  const [leaderboardKey, setLeaderboardKey] = useState("");
 
   const items = useMemo(() => getItemsForCategories(categories), [categories]);
   const players = names.slice(0, playerCount);
@@ -30,6 +33,13 @@ export default function KhaleekWasthom({ onBackToHub }: Props) {
   const startNames = () => { setNames(Array.from({ length: playerCount }, (_, index) => names[index] || defaultNames[index])); setPhase("names"); };
   const startCategories = () => setPhase("categories");
   const startReveal = () => {
+    const currentKey = players.map((name) => name.trim().toLocaleLowerCase("ar")).join("|");
+    if (currentKey !== leaderboardKey) {
+      setLeaderboardKey(currentKey);
+      setLeaderboard(Object.fromEntries(players.map((name) => [name, 0])));
+    } else {
+      setLeaderboard((current) => Object.fromEntries(players.map((name) => [name, current[name] ?? 0])));
+    }
     const pool = items.length ? items : getItemsForCategories(["players"]);
     setItem(pool[Math.floor(Math.random() * pool.length)]);
     setAgentIndex(Math.floor(Math.random() * playerCount));
@@ -43,12 +53,19 @@ export default function KhaleekWasthom({ onBackToHub }: Props) {
     setAgentFound(found);
     setPlayersScore(found ? 100 : 0);
     setAgentScore(found ? 0 : 100);
+    if (!found) {
+      const awards = Object.fromEntries(players.map((name, index) => [name, index === agentIndex ? 100 : 0]));
+      setLeaderboard((current) => Object.fromEntries(players.map((name) => [name, (current[name] ?? 0) + (awards[name] ?? 0)])));
+    }
     setPhase(found ? "guess" : "result");
   };
   const submitVote = (target: number) => { const next = [...votes, target]; setVotes(next); if (voteIndex + 1 < playerCount) { setVoteIndex(voteIndex + 1); setPhase("votePass"); } else { finishVote(next); } };
   const normalizeGuess = (value: string) => value.trim().toLocaleLowerCase("ar").replace(/[إأآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").replace(/\s+/g, " ");
-  const submitGuess = () => { const correct = normalizeGuess(guess) === normalizeGuess(item?.name ?? ""); setAgentGuessCorrect(correct); setAgentScore(correct ? 50 : 0); setPhase("result"); };
+  const submitGuess = () => { const correct = normalizeGuess(guess) === normalizeGuess(item?.name ?? ""); setAgentGuessCorrect(correct); setAgentScore(correct ? 50 : 0); const awards = Object.fromEntries(players.map((name, index) => [name, index === agentIndex ? (correct ? 50 : 0) : 100])); setLeaderboard((current) => Object.fromEntries(players.map((name) => [name, (current[name] ?? 0) + (awards[name] ?? 0)]))); setPhase("result"); };
   const selectedCategoryText = categories.length === KHALEEK_CATEGORIES.length ? "كل الأقسام" : categories.map(getCategoryLabel).join(" · ");
+  const leaderboardRows = players.map((name) => ({ name, score: leaderboard[name] ?? 0 })).sort((a, b) => b.score - a.score);
+  const leaderboardWinner = leaderboardRows[0]?.name ?? players[0] ?? "الفائز";
+  const leaderboardWinnerScore = leaderboardRows[0]?.score ?? 0;
 
   if (phase === "home") return <main className="khaleek-page khaleek-home" dir="rtl"><div className="khaleek-glow" /><header className="khaleek-topbar"><button className="khaleek-back" onClick={onBackToHub}><ArrowRight /> الألعاب الجماعية</button><span>كورة كده · لعبة جماعية</span></header><section className="khaleek-hero"><img src={LOGO_URL} alt="شعار خليك وسطهم" /><p className="khaleek-eyebrow"><ShieldQuestion /> SECRET FOOTBALL AGENT</p><h1>خليك <em>وسطهم.</em></h1><p>لعبة كورة جماعية على موبايل واحد. مين العميل السري؟ ومين هيعرف يكتشفه؟</p><button className="khaleek-primary" onClick={() => setPhase("setup")}>ابدأ اللعب <ArrowLeft /></button><div className="khaleek-rules"><span><Users /> 3–10 لاعبين</span><span><EyeOff /> بدون حساب</span><span><Sparkles /> على موبايل واحد</span></div></section></main>;
 
@@ -72,7 +89,7 @@ export default function KhaleekWasthom({ onBackToHub }: Props) {
 
   if (phase === "guess") return <main className="khaleek-page" dir="rtl"><KhaleekHeader title="فرصة العميل الأخيرة" onBack={reset} /><section className="khaleek-panel guess-panel"><Trophy /><span className="khaleek-step">تم اكتشافك يا {players[agentIndex]}</span><h1>خمن العنصر السري</h1><p>اكتب اسم العنصر كما تتوقعه. لو إجابتك صحيحة، تكسب الجولة حتى لو تم كشفك.</p><input className="guess-input" value={guess} onChange={(event) => setGuess(event.target.value)} placeholder="اكتب اسم العنصر السري" aria-label="اكتب تخمينك" autoComplete="off" /><div className="guess-list">{items.slice(0, 6).map((candidate) => <button key={candidate.id} className={guess === candidate.name ? "selected" : ""} onClick={() => setGuess(candidate.name)}>{candidate.name}<span>{getCategoryLabel(candidate.category)}</span></button>)}</div><button className="khaleek-primary" disabled={!guess.trim()} onClick={submitGuess}>تأكيد التخمين <Check /></button></section></main>;
 
-  return <main className="khaleek-page" dir="rtl"><KhaleekHeader title="النتيجة" onBack={onBackToHub} /><section className="khaleek-panel result-panel"><Trophy /><span className="khaleek-step">انتهت الجولة</span><h1>{agentFound ? (agentGuessCorrect ? "العميل عرف السر وكسب!" : "العميل اتكشف!") : "العميل كسب الجولة!"}</h1><div className="result-secret"><span>العنصر السري</span><strong>{item?.name}</strong><small>{item && getCategoryLabel(item.category)}</small></div><div className="score-board"><div><span>نقاط اللاعبين</span><strong>{playersScore}</strong><small>نقطة</small></div><div><span>نقاط العميل السري</span><strong>{agentScore}</strong><small>نقطة</small></div></div>{agentFound ? <p>العميل كان <b>{players[agentIndex]}</b>. {agentGuessCorrect ? `كتب «${guess}» بشكل صحيح وقلب النتيجة.` : `كتب «${guess || "إجابة غير صحيحة"}»، لذلك فاز اللاعبون.`}</p> : <p>التصويت تشتت، والعميل <b>{players[agentIndex]}</b> عرف يستخبى وسطهم.</p>}<div className="result-actions"><button className="khaleek-primary" onClick={reset}><RotateCcw /> جولة جديدة</button><button className="khaleek-secondary" onClick={onBackToHub}>الألعاب الجماعية <ArrowRight /></button></div></section></main>;
+  return <main className="khaleek-page" dir="rtl"><KhaleekHeader title="النتيجة" onBack={onBackToHub} /><section className="khaleek-panel result-panel"><Trophy /><span className="khaleek-step">انتهت الجولة</span><h1>{agentFound ? (agentGuessCorrect ? "العميل عرف السر وكسب!" : "العميل اتكشف!") : "العميل كسب الجولة!"}</h1><div className="result-secret"><span>العنصر السري</span><strong>{item?.name}</strong><small>{item && getCategoryLabel(item.category)}</small></div><div className="score-board"><div><span>نقاط اللاعبين</span><strong>{playersScore}</strong><small>نقطة للجولة</small></div><div><span>نقاط العميل السري</span><strong>{agentScore}</strong><small>نقطة للجولة</small></div></div><div className="khaleek-leaderboard"><div className="leaderboard-heading"><span>الترتيب المستمر</span><small>يتراكم طالما الأسماء ثابتة</small></div>{leaderboardRows.map((row, index) => <div className="leaderboard-row" key={row.name}><b>{index + 1}</b><strong>{row.name}</strong><span>{row.score} نقطة</span></div>)}</div><ShareResult gameName="خليك وسطهم" eyebrow="الترتيب بعد الجولة" winnerName={leaderboardWinner} winnerScore={leaderboardWinnerScore} rows={leaderboardRows.map((row) => ({ label: row.name, score: row.score, detail: "إجمالي الجلسة" }))} highlights={[agentGuessCorrect ? "العميل عرف السر" : agentFound ? "تم اكتشاف العميل" : "العميل نجا"]} accent="#f3bf35" triggerLabel="شارك السكور" triggerClassName="khaleek-share-trigger" />{agentFound ? <p>العميل كان <b>{players[agentIndex]}</b>. {agentGuessCorrect ? `كتب «${guess}» بشكل صحيح وقلب النتيجة.` : `كتب «${guess || "إجابة غير صحيحة"}»، لذلك فاز اللاعبون.`}</p> : <p>التصويت تشتت، والعميل <b>{players[agentIndex]}</b> عرف يستخبى وسطهم.</p>}<div className="result-actions"><button className="khaleek-primary" onClick={reset}><RotateCcw /> جولة جديدة</button><button className="khaleek-secondary" onClick={onBackToHub}>الألعاب الجماعية <ArrowRight /></button></div></section></main>;
 }
 
 function KhaleekHeader({ title, onBack }: { title: string; onBack: () => void }) { return <header className="khaleek-topbar inner"><button className="khaleek-back" onClick={onBack}><ArrowRight /> رجوع</button><img src={LOGO_URL} alt="خليك وسطهم" /><strong>{title}</strong></header>; }
