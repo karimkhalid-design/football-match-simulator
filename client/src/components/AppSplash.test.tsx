@@ -39,6 +39,26 @@ describe("AppSplash", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
+  it("supports direct PWA installation and remembers the dismissal choice", async () => {
+    vi.useFakeTimers();
+    window.localStorage.clear();
+    const onDone = vi.fn();
+    render(<AppSplash onDone={onDone} />);
+    const installEvent = new Event("beforeinstallprompt");
+    const prompt = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(installEvent, "prompt", { value: prompt });
+    Object.defineProperty(installEvent, "userChoice", { value: Promise.resolve({ outcome: "accepted" }) });
+    window.dispatchEvent(installEvent);
+    act(() => { screen.getByRole("button", { name: "طريقة تثبيت الموقع" }).click(); });
+    expect(screen.getByRole("button", { name: "تثبيت التطبيق الآن" })).toBeTruthy();
+    await act(async () => { screen.getByRole("button", { name: "تثبيت التطبيق الآن" }).click(); await Promise.resolve(); });
+    expect(prompt).toHaveBeenCalledOnce();
+    act(() => { vi.advanceTimersByTime(900); });
+    act(() => { screen.getByRole("checkbox", { name: "عدم إظهار هذه الرسالة مرة أخرى" }).click(); });
+    expect(window.localStorage.getItem("kora-keda-pwa-guide-dismissed")).toBe("1");
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
   it("lets the user skip the loading screen immediately", () => {
     vi.useFakeTimers();
     const onDone = vi.fn();
