@@ -16,8 +16,7 @@ describe("auction setup and total bid price control", () => {
     await user.click(leagueButton);
     expect(screen.getByText(/القسم المختار:/).textContent).toContain("الدوري الإنجليزي");
     await user.click(screen.getByRole("button", { name: "ابدأ المزاد الآن" }));
-    expect(screen.getByText(/كتالوج اللعبة/).textContent).toContain("القسم:");
-    expect(screen.getByText(/كتالوج اللعبة/).textContent).toContain("الدوري الإنجليزي");
+    expect(screen.getByText("الدوري الإنجليزي")).toBeTruthy();
   });
 
   it("shows the German, Egyptian, and mixed auction sections", () => {

@@ -25,6 +25,7 @@ describe("auction player catalogue", () => {
     for (const section of ["premier-league", "la-liga", "bundesliga", "egyptian-league", "legends"] as const) {
       const sectionPlayers = getPlayersForAuctionSection(section);
       expect(sectionPlayers.length, auctionSectionLabels[section]).toBeGreaterThanOrEqual(22);
+      if (section !== "legends") expect(sectionPlayers.every((player) => player.status === "active"), `${auctionSectionLabels[section]} يجب أن يضم الحاليين فقط`).toBe(true);
       for (const position of new Set(formationSlots)) { const required = position === "CB" ? 4 : 2; expect(sectionPlayers.filter((player) => player.position === position).length, `${auctionSectionLabels[section]} / ${position}`).toBeGreaterThanOrEqual(required); }
       const rounds = buildAuctionRounds(20260813, section);
       const catalogueNames = new Set(sectionPlayers.map((player) => player.name));

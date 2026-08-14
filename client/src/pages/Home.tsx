@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, CircleDollarSign, Crown, Goal, Gavel, LockKeyhole, Medal, RefreshCw, Sparkles, Swords, Trophy, UsersRound } from "lucide-react";
 import { auctionSectionLabels, buildAuctionRounds, formationSlots, playerCatalogue, type AuctionRound, type AuctionSection, type PositionCode } from "@/lib/auctionData";
-import { PLAYER_IMAGE_URLS } from "@/lib/playerImageMap";
+import PlayerPhoto from "../components/PlayerPhoto";
 import { canOutbid, canPlaceBid, createTeams, parseBidAmount, simulateDraftMatch, squadValue, teamStrength, totalBidAmount, totalSpent, type AuctionTeam, type TeamNames } from "@/lib/auctionLogic";
 import ShareResult from "../components/ShareResult";
 
@@ -194,13 +194,6 @@ function Landing({ teamNames, onNamesChange, auctionSection, onSectionChange, on
     <section className="how-it-works"><article><span>01</span><h3>زايد بذكاء</h3><p>كل مبلغ تدفعه يؤثر في قدرتك على إنهاء التشكيلة كاملة.</p></article><article><span>02</span><h3>اكسب أو اخسر صح</h3><p>الخاسر لا يخرج فارغاً؛ لاعب خفي يمكن أن يقلب التوازن.</p></article><article><span>03</span><h3>احسم على الملعب</h3><p>بعد 11 جولة، تحاكي اللعبة المباراة بقوة فريقك الجديدة.</p></article></section>
     <footer className="landing-author"><span>فكرة وتصميم اللعبة</span><b>كريم</b><i>©</i><span>اعمل الصح</span></footer>
   </main>;
-}
-
-function PlayerPhoto({ name, className = "" }: { name: string; className?: string }) {
-  const mappedSource = PLAYER_IMAGE_URLS[name] ?? null;
-  const [source, setSource] = useState<string | null>(mappedSource);
-  useEffect(() => setSource(mappedSource), [mappedSource]);
-  return source ? <img className={`player-photo ${className}`} src={source} alt={`صورة ${name}`} loading="eager" fetchPriority="high" onError={() => setSource(null)} /> : <span className={`player-photo player-photo-fallback ${className}`} aria-label={`صورة ${name}`}><Goal /></span>;
 }
 
 function TeamBudget({ team, accent }: { team: AuctionTeam; accent: "lime" | "sky" }) {

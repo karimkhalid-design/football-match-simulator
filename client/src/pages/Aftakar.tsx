@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { ArrowRight, Check, ChevronLeft, RotateCcw, Sparkles, Trophy, X } from "lucide-react";
 import { playerCatalogue, positionLabels } from "../lib/auctionData";
 import { AFTAKAR_BANK_SIZE, buildAftakarSession, freshAftakarSeed } from "../lib/aftakarData";
-import { PLAYER_IMAGE_URLS } from "../lib/playerImageMap";
+import PlayerPhoto from "../components/PlayerPhoto";
 import ShareResult from "../components/ShareResult";
 
 const AFTAKAR_LOGO_URL = "/manus-storage/aftakar-logo_c6bb6361.png";
@@ -93,7 +93,7 @@ export default function Aftakar({ onBackToHub }: { onBackToHub: () => void }) {
 
       <section className="aftakar-game-layout">
         <div className="aftakar-player-card">
-          {answered ? <img src={PLAYER_IMAGE_URLS[round.playerName]} alt={round.playerName} /> : <div className="aftakar-mystery"><span>?</span><small>مين اللاعب؟</small></div>}
+          {answered ? <PlayerPhoto name={round.playerName} className="aftakar-player-image" loading="eager" /> : <div className="aftakar-mystery"><span>?</span><small>مين اللاعب؟</small></div>}
           <div className="aftakar-player-card-bottom"><span>{answered ? `${positionLabels[player?.position ?? "ST"]} · تقييم ${player?.rating ?? "—"}` : "الصورة تظهر بعد الإجابة"}</span><b>{answered ? round.playerName : "لاعب مجهول"}</b></div>
         </div>
         <div className="aftakar-question-panel">
