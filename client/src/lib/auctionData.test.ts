@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { auctionSectionLabels, buildAuctionRounds, formationSlots, getPlayersForAuctionSection, playerCatalogue, positionOverrides } from "./auctionData";
 import { createTeams, simulateDraftMatch } from "./auctionLogic";
+import { EXPANDED_PLAYER_IMAGE_URLS } from "./expandedPlayerImageMap";
 
 describe("auction player catalogue", () => {
   it("contains a broad, varied catalogue across all formation positions", () => {
@@ -8,6 +9,16 @@ describe("auction player catalogue", () => {
     expect(new Set(playerCatalogue.map((player) => player.position))).toEqual(new Set(formationSlots));
     expect(playerCatalogue.some((player) => player.status === "legend")).toBe(true);
     expect(playerCatalogue.some((player) => player.status === "active")).toBe(true);
+  });
+
+  it("covers the expanded Egyptian player group across the catalogue and image map", () => {
+    const EgyptianNames = ["Nader El-Sayed", "Mostafa Shobeir", "Mohamed Abdelmonem", "Ahmed Elmohamady", "Hazem Emam", "Mohamed Abdel Shafy", "Hossam Ghaly", "Mohamed Shawky", "Mohamed Zidan", "Mohamed Barakat", "Emad Moteab", "Abdel Halim Ali", "Gamal Hamza", "Mahmoud El Khatib"];
+    const EgyptianSection = getPlayersForAuctionSection("egyptian-league");
+    for (const name of EgyptianNames) {
+      expect(playerCatalogue.some((player) => player.name === name), name).toBe(true);
+      expect(EgyptianSection.some((player) => player.name === name), `${name} يجب أن يظهر في الدوري المصري`).toBe(true);
+    }
+    expect(Object.keys(EXPANDED_PLAYER_IMAGE_URLS).filter((name) => EgyptianNames.includes(name)).length).toBeGreaterThanOrEqual(6);
   });
 
   it("keeps Egyptian midfield anchors in the central midfield slot", () => {
