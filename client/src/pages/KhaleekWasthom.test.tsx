@@ -37,6 +37,13 @@ describe("خليك وسطهم", () => {
     expect(KHALEEK_CATEGORIES.every((category) => SECRET_ITEMS[category.id].length > 0)).toBe(true);
   });
 
+  it("provides a larger unique football-player library", () => {
+    const players = SECRET_ITEMS.players;
+    expect(players.length).toBeGreaterThanOrEqual(30);
+    expect(new Set(players.map((player) => player.id)).size).toBe(players.length);
+    expect(new Set(players.map((player) => player.difficulty)).size).toBe(3);
+  });
+
   it("requires a selected category and begins private role distribution", () => {
     render(<KhaleekWasthom onBackToHub={() => undefined} />);
     fireEvent.click(screen.getByRole("button", { name: /ابدأ اللعب/ }));
