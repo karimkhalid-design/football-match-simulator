@@ -73,6 +73,13 @@ export type FinalMatch = {
   manOfTheMatch: string;
 };
 
+export function applyStrengthAdvantage(homeGoals: number, awayGoals: number, strengthDifference: number, randomValue: number) {
+  if (homeGoals !== awayGoals || Math.abs(strengthDifference) < 3) return [homeGoals, awayGoals] as const;
+  const strongerWinChance = Math.min(0.92, 0.58 + Math.abs(strengthDifference) * 0.025);
+  if (randomValue >= strongerWinChance) return [homeGoals, awayGoals] as const;
+  return strengthDifference > 0 ? [homeGoals + 1, awayGoals] as const : [homeGoals, awayGoals + 1] as const;
+}
+
 export function simulateDraftMatch(home: AuctionTeam, away: AuctionTeam): FinalMatch {
   const random = seeded(hash(`${home.players.map((player) => player.name).join("-")}-${away.players.map((player) => player.name).join("-")}-${Date.now()}`));
   const homeAttack = scoreForPosition(home.players, ["RW", "LW", "ST", "CAM"]);
@@ -81,9 +88,13 @@ export function simulateDraftMatch(home: AuctionTeam, away: AuctionTeam): FinalM
   const awayControl = scoreForPosition(away.players, ["CM", "CAM"]);
   const homeDefense = scoreForPosition(home.players, ["GK", "CB", "RB", "LB"]);
   const awayDefense = scoreForPosition(away.players, ["GK", "CB", "RB", "LB"]);
-  const homePossession = Math.max(38, Math.min(62, Math.round(50 + (homeControl - awayControl) * 0.55 + (random() - .5) * 5)));
-  const homeGoals = Math.max(0, Math.min(5, Math.round(1.25 + (homeAttack - awayDefense) * .055 + random() * 1.2)));
-  const awayGoals = Math.max(0, Math.min(5, Math.round(1.15 + (awayAttack - homeDefense) * .055 + random() * 1.2)));
+  const homeStrength = teamStrength(home);
+  const awayStrength = teamStrength(away);
+  const strengthDifference = homeStrength - awayStrength;
+  const homePossession = Math.max(38, Math.min(62, Math.round(50 + (homeControl - awayControl) * 0.55 + strengthDifference * 0.12 + (random() - .5) * 5)));
+  const rawHomeGoals = Math.max(0, Math.min(5, Math.round(1.25 + (homeAttack - awayDefense) * .055 + strengthDifference * .035 + random() * 1.2)));
+  const rawAwayGoals = Math.max(0, Math.min(5, Math.round(1.15 + (awayAttack - homeDefense) * .055 - strengthDifference * .035 + random() * 1.2)));
+  const [homeGoals, awayGoals] = applyStrengthAdvantage(rawHomeGoals, rawAwayGoals, strengthDifference, random());
   const attackers = (team: AuctionTeam) => team.players.filter((player) => ["RW", "LW", "ST", "CAM", "CM"].includes(player.position));
   const events = [...Array(homeGoals).fill(0).map(() => ({ team: 0 as const, minute: 7 + Math.floor(random() * 82) })), ...Array(awayGoals).fill(0).map(() => ({ team: 1 as const, minute: 7 + Math.floor(random() * 82) }))]
     .sort((a, b) => a.minute - b.minute)

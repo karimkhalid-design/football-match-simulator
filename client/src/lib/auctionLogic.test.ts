@@ -1,6 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { canOutbid, canPlaceBid, createTeams, parseBidAmount, simulateDraftMatch, totalBidAmount, totalSpent } from "./auctionLogic";
+import { applyStrengthAdvantage, canOutbid, canPlaceBid, createTeams, parseBidAmount, simulateDraftMatch, totalBidAmount, totalSpent } from "./auctionLogic";
 import { buildAuctionRounds } from "./auctionData";
+
+describe("auction match competition", () => {
+  it("breaks an equal score toward the stronger team when the advantage wins the probability roll", () => {
+    expect(applyStrengthAdvantage(1, 1, 12, 0.2)).toEqual([2, 1]);
+    expect(applyStrengthAdvantage(1, 1, -12, 0.2)).toEqual([1, 2]);
+  });
+
+  it("keeps a realistic upset path for a weak advantage or an unlucky roll", () => {
+    expect(applyStrengthAdvantage(1, 1, 2, 0.1)).toEqual([1, 1]);
+    expect(applyStrengthAdvantage(1, 1, 12, 0.95)).toEqual([1, 1]);
+  });
+});
 
 describe("auction budget rules", () => {
   it("prevents a bid that leaves less than the minimum reserve for future rounds", () => {
