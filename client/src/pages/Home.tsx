@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, CircleDollarSign, Crown, Goal, Gavel, LockKeyhole, Medal, RefreshCw, Sparkles, Swords, Trophy, UsersRound } from "lucide-react";
-import { buildAuctionRounds, formationSlots, playerCatalogue, type AuctionRound, type PositionCode } from "@/lib/auctionData";
+import { auctionSectionLabels, buildAuctionRounds, formationSlots, playerCatalogue, type AuctionRound, type AuctionSection, type PositionCode } from "@/lib/auctionData";
 import { PLAYER_IMAGE_URLS } from "@/lib/playerImageMap";
 import { canOutbid, canPlaceBid, createTeams, parseBidAmount, simulateDraftMatch, squadValue, teamStrength, totalBidAmount, totalSpent, type AuctionTeam, type TeamNames } from "@/lib/auctionLogic";
 import ShareResult from "../components/ShareResult";
@@ -15,9 +15,10 @@ const money = (value: number) => `${value}M`;
 
 export default function Home({ onBackToHub }: { onBackToHub?: () => void }) {
   const [teamNames, setTeamNames] = useState<TeamNames>({ ali: "لاعب رقم ١", hussein: "لاعب رقم ٢" });
+  const [auctionSection, setAuctionSection] = useState<AuctionSection>("all");
   const [landing, setLanding] = useState(true);
   const [teams, setTeams] = useState<AuctionTeam[]>(() => createTeams(teamNames));
-  const [rounds, setRounds] = useState<AuctionRound[]>(() => buildAuctionRounds());
+  const [rounds, setRounds] = useState<AuctionRound[]>(() => buildAuctionRounds(0, "all"));
   const [roundIndex, setRoundIndex] = useState(0);
   const [currentBid, setCurrentBid] = useState<number | null>(null);
   const [bidAmountText, setBidAmountText] = useState("");
@@ -97,7 +98,7 @@ export default function Home({ onBackToHub }: { onBackToHub?: () => void }) {
 
   const resetGame = () => {
     setTeams(createTeams(teamNames));
-    setRounds(buildAuctionRounds(Date.now()));
+    setRounds(buildAuctionRounds(Date.now(), auctionSection));
     setRoundIndex(0);
     setCurrentBid(null);
     setBidAmountText("");
@@ -114,7 +115,7 @@ export default function Home({ onBackToHub }: { onBackToHub?: () => void }) {
     const names = { ali: teamNames.ali.trim() || "لاعب رقم ١", hussein: teamNames.hussein.trim() || "لاعب رقم ٢" };
     setTeamNames(names);
     setTeams(createTeams(names));
-    setRounds(buildAuctionRounds(Date.now()));
+    setRounds(buildAuctionRounds(Date.now(), auctionSection));
     setRoundIndex(0);
     setCurrentBid(null);
     setBidAmountText("");
@@ -132,7 +133,7 @@ export default function Home({ onBackToHub }: { onBackToHub?: () => void }) {
     setScreen("match");
   };
 
-  if (landing) return <Landing teamNames={teamNames} onNamesChange={setTeamNames} onStart={startAuction} onBackToHub={onBackToHub} />;
+  if (landing) return <Landing teamNames={teamNames} onNamesChange={setTeamNames} auctionSection={auctionSection} onSectionChange={setAuctionSection} onStart={startAuction} onBackToHub={onBackToHub} />;
   if (screen === "final") return <FinalResults teams={teams} auctionCounts={teamAuctionCounts} hiddenCounts={teamHiddenCounts} onSimulate={simulateFinal} onReset={resetGame} />;
   if (screen === "match" && match) return <MatchResults teams={teams} match={match} onReset={resetGame} />;
 
@@ -145,7 +146,7 @@ export default function Home({ onBackToHub }: { onBackToHub?: () => void }) {
     </header>
 
     <section className="auction-intro">
-      <div><p className="micro-title"><Sparkles /> DRAFT ROOM 01</p><h1>ارفع السعر.<br /><em>واكسب المخاطرة.</em></h1><p className="catalogue-note"><UsersRound /> كتالوج اللعبة: <b>{playerCatalogue.length}</b> لاعباً · حاليون وأساطير · 9 مراكز</p></div>
+      <div><p className="micro-title"><Sparkles /> DRAFT ROOM 01</p><h1>ارفع السعر.<br /><em>واكسب المخاطرة.</em></h1><p className="catalogue-note"><UsersRound /> كتالوج اللعبة: <b>{playerCatalogue.length}</b> لاعباً · حاليون وأساطير · 9 مراكز · القسم: <b>{auctionSectionLabels[auctionSection]}</b></p></div>
       <div className="round-tracker"><div><span>الجولة الحالية</span><b>{String(roundIndex + 1).padStart(2, "0")} <i>/ {rounds.length}</i></b></div><div className="progress-line"><i style={{ width: `${roundProgress}%` }} /></div><small>{round.label} · {round.position}</small></div>
     </section>
 
@@ -181,7 +182,7 @@ function BrandLockup({ compact = false }: { compact?: boolean }) {
   return <div className={`brand-lockup ${compact ? "compact" : ""}`}><img src={LOGO_URL} alt="اعمل الصح" /><div><b>اعمل الصح</b><small>لعبة المزاد الكروي</small></div></div>;
 }
 
-function Landing({ teamNames, onNamesChange, onStart, onBackToHub }: { teamNames: TeamNames; onNamesChange: (names: TeamNames) => void; onStart: () => void; onBackToHub?: () => void }) {
+function Landing({ teamNames, onNamesChange, auctionSection, onSectionChange, onStart, onBackToHub }: { teamNames: TeamNames; onNamesChange: (names: TeamNames) => void; auctionSection: AuctionSection; onSectionChange: (section: AuctionSection) => void; onStart: () => void; onBackToHub?: () => void }) {
   return <main className="landing-page" dir="rtl">
     <div className="landing-grain" /><div className="landing-flare flare-one" /><div className="landing-flare flare-two" />
     <header className="landing-nav"><BrandLockup /><span>FOOTBALL AUCTION · SEASON ONE</span>{onBackToHub && <button className="hub-back-button" type="button" onClick={onBackToHub}><ArrowLeft /> كل الألعاب</button>}</header>
@@ -189,7 +190,7 @@ function Landing({ teamNames, onNamesChange, onStart, onBackToHub }: { teamNames
       <div className="landing-copy"><p className="landing-kicker"><Crown /> مزاد. قرار. بطولة.</p><h1>اعمل الصح<br /><em>وخليك أنت البطل.</em></h1><p>لعبة مزاد كروي بين فريقين. زايد بذكاء، خاطر بالسعر، وخد فريقك إلى المباراة النهائية قبل منافسك.</p><div className="landing-points"><span><b>11</b> جولة</span><i /><span><b>122</b> لاعباً</span><i /><span><b>1</b> لاعب خفي</span></div></div>
       <div className="logo-showcase"><div className="logo-glow" /><img src={LOGO_URL} alt="شعار اعمل الصح" /><span className="logo-caption">اللعبة التي لا يكسبها الأعلى سعراً دائماً.</span></div>
     </section>
-    <section className="start-panel"><div className="start-panel-head"><div><span>اختر أسماء المنافسين</span><h2>من سيعمل الصح اليوم؟</h2></div><p>ستظهر الأسماء في كل جولة، التشكيلات، والنتيجة النهائية.</p></div><div className="team-name-fields"><label className="name-field lime"><span>الفريق الأول</span><input value={teamNames.ali} maxLength={24} onChange={(event) => onNamesChange({ ...teamNames, ali: event.target.value })} placeholder="اكتب اسم الفريق الأول" /><i>01</i></label><div className="field-vs">VS</div><label className="name-field gold"><span>الفريق الثاني</span><input value={teamNames.hussein} maxLength={24} onChange={(event) => onNamesChange({ ...teamNames, hussein: event.target.value })} placeholder="اكتب اسم الفريق الثاني" /><i>02</i></label></div><button className="landing-cta" onClick={onStart}><Gavel /><span>ابدأ المزاد الآن</span><ArrowLeft /></button></section>
+    <section className="start-panel"><div className="start-panel-head"><div><span>اختار عالم المزاد أولاً</span><h2>مين هينزل الملعب؟</h2></div><p>القسم يحدد قائمة اللاعبين التي ستظهر في الـ11 جولة واللاعب الخفي.</p></div><div className="auction-section-picker" role="radiogroup" aria-label="قسم المزاد">{(Object.keys(auctionSectionLabels) as AuctionSection[]).filter((section) => section !== "all").map((section) => <button type="button" key={section} className={`auction-section-card ${auctionSection === section ? "selected" : ""}`} aria-pressed={auctionSection === section} onClick={() => onSectionChange(section)}><b>{section === "premier-league" ? "01" : section === "la-liga" ? "02" : "03"}</b><strong>{auctionSectionLabels[section]}</strong><span>{section === "legends" ? "نجوم معتزلون وأساطير الكرة" : section === "premier-league" ? "لاعبو إنجلترا ومفاجآت البريميرليج" : "نجوم إسبانيا وكبار الليجا"}</span></button>)}</div><p className="selected-auction-section">القسم المختار: <b>{auctionSectionLabels[auctionSection]}</b></p><div className="team-name-fields"><label className="name-field lime"><span>الفريق الأول</span><input value={teamNames.ali} maxLength={24} onChange={(event) => onNamesChange({ ...teamNames, ali: event.target.value })} placeholder="اكتب اسم الفريق الأول" /><i>01</i></label><div className="field-vs">VS</div><label className="name-field gold"><span>الفريق الثاني</span><input value={teamNames.hussein} maxLength={24} onChange={(event) => onNamesChange({ ...teamNames, hussein: event.target.value })} placeholder="اكتب اسم الفريق الثاني" /><i>02</i></label></div><button className="landing-cta" onClick={onStart}><Gavel /><span>ابدأ المزاد الآن</span><ArrowLeft /></button></section>
     <section className="how-it-works"><article><span>01</span><h3>زايد بذكاء</h3><p>كل مبلغ تدفعه يؤثر في قدرتك على إنهاء التشكيلة كاملة.</p></article><article><span>02</span><h3>اكسب أو اخسر صح</h3><p>الخاسر لا يخرج فارغاً؛ لاعب خفي يمكن أن يقلب التوازن.</p></article><article><span>03</span><h3>احسم على الملعب</h3><p>بعد 11 جولة، تحاكي اللعبة المباراة بقوة فريقك الجديدة.</p></article></section>
     <footer className="landing-author"><span>فكرة وتصميم اللعبة</span><b>كريم</b><i>©</i><span>اعمل الصح</span></footer>
   </main>;

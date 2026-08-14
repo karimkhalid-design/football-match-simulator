@@ -7,7 +7,19 @@ import { afterEach, describe, expect, it } from "vitest";
 afterEach(() => cleanup());
 import Home from "./Home";
 
-describe("total bid price control", () => {
+describe("auction setup and total bid price control", () => {
+  it("selects an auction section before starting and carries it into the auction", async () => {
+    const user = userEvent.setup();
+    render(<Home />);
+
+    const leagueButton = screen.getByRole("button", { name: /الدوري الإنجليزي/ });
+    await user.click(leagueButton);
+    expect(screen.getByText(/القسم المختار:/).textContent).toContain("الدوري الإنجليزي");
+    await user.click(screen.getByRole("button", { name: "ابدأ المزاد الآن" }));
+    expect(screen.getByText(/كتالوج اللعبة/).textContent).toContain("القسم:");
+    expect(screen.getByText(/كتالوج اللعبة/).textContent).toContain("الدوري الإنجليزي");
+  });
+
   it("resets the price input when the auction advances to a new round", async () => {
     const user = userEvent.setup();
     render(<Home />);

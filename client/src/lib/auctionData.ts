@@ -4,7 +4,9 @@ import { expandedPlayerSeeds } from "./expandedPlayerSeeds";
 export type PlayerStatus = "active" | "legend";
 
 export type AuctionPlayer = { name: string; rating: number; tier: "LEGEND" | "ELITE" | "STAR" | "PRO"; note: string; };
-export type CataloguePlayer = AuctionPlayer & { id: string; position: PositionCode; startPrice: number; status: PlayerStatus; };
+export type AuctionSection = "all" | "premier-league" | "la-liga" | "legends";
+export const auctionSectionLabels: Record<AuctionSection, string> = { all: "كل النجوم", "premier-league": "الدوري الإنجليزي", "la-liga": "الدوري الإسباني", legends: "الأساطير" };
+export type CataloguePlayer = AuctionPlayer & { id: string; position: PositionCode; startPrice: number; status: PlayerStatus; section?: Exclude<AuctionSection, "all">; };
 export type AuctionRound = { slot: number; position: PositionCode; label: string; startPrice: number; auction: AuctionPlayer; hidden: AuctionPlayer; };
 
 export const TEAM_STARTING_BUDGET = 100;
@@ -51,7 +53,15 @@ const basePlayerCatalogue: CataloguePlayer[] = (Object.entries(pools) as [Positi
 const baseNames = new Set(basePlayerCatalogue.map((player) => player.name));
 const expandedCatalogue: CataloguePlayer[] = expandedPlayerSeeds.filter(([name]) => !baseNames.has(name)).map(([name, position, rating, status]) => ({ id: slug(`${position}-${name}`), name, rating, note: "مسيرة كروية تستحق الاكتشاف", status, position, tier: tierFor(rating), startPrice: priceFor(rating) }));
 const mergedCatalogue = [...basePlayerCatalogue, ...expandedCatalogue];
-export const playerCatalogue: CataloguePlayer[] = mergedCatalogue.filter((player, index, players) => players.findIndex((candidate) => candidate.name === player.name) === index);
+const premierLeagueNames = new Set(["Alisson Becker", "Ederson", "David Raya", "Jordan Pickford", "Virgil van Dijk", "Rio Ferdinand", "John Terry", "William Saliba", "Rúben Dias", "Kyle Walker", "Trent Alexander-Arnold", "Ashley Cole", "Kevin De Bruyne", "Rodri", "Bruno Fernandes", "Martin Ødegaard", "Declan Rice", "N'Golo Kanté", "Paul Scholes", "Steven Gerrard", "Frank Lampard", "Patrick Vieira", "Yaya Touré", "Mohamed Salah", "Bukayo Saka", "Riyad Mahrez", "Sadio Mané", "Son Heung-min", "Jack Grealish", "Phil Foden", "David Beckham", "Harry Kane", "Erling Haaland", "Sergio Agüero", "Didier Drogba", "Thierry Henry", "Pierre-Emerick Aubameyang", "Robin van Persie", "Ben Chilwell", "Luke Shaw", "Andy Robertson", "Kieran Trippier", "Reece James", "James Maddison", "Marcus Rashford", "Gabriel Jesus", "Alexander Isak", "Gabriel Martinelli"]);
+const laLigaNames = new Set(["Thibaut Courtois", "Iker Casillas", "Jan Oblak", "Marc-André ter Stegen", "Sergio Ramos", "Marcelo", "Carles Puyol", "Gerard Piqué", "Aymeric Laporte", "Dani Alves", "João Cancelo", "Achraf Hakimi", "Dani Carvajal", "David Alaba", "Theo Hernández", "Alejandro Grimaldo", "Alphonso Davies", "Roberto Carlos", "Luka Modrić", "Xavi", "Andrés Iniesta", "Toni Kroos", "Zinedine Zidane", "Isco", "Ferran Torres", "Cesc Fàbregas", "David Silva", "Santi Cazorla", "Thiago Alcântara", "Casemiro", "Jude Bellingham", "Lionel Messi", "Cristiano Ronaldo", "Neymar", "Vinícius Júnior", "Kylian Mbappé", "Luis Figo", "Ronaldinho", "Karim Benzema", "Luis Suárez", "Robert Lewandowski", "Ronaldo Nazário", "Samuel Eto'o", "Andriy Shevchenko"]);
+const classifySection = (player: CataloguePlayer): CataloguePlayer["section"] => premierLeagueNames.has(player.name) ? "premier-league" : laLigaNames.has(player.name) ? "la-liga" : undefined;
+export const playerCatalogue: CataloguePlayer[] = mergedCatalogue.filter((player, index, players) => players.findIndex((candidate) => candidate.name === player.name) === index).map((player) => ({ ...player, section: classifySection(player) }));
+export function getPlayersForAuctionSection(section: AuctionSection = "all") {
+  if (section === "all") return playerCatalogue;
+  if (section === "legends") return playerCatalogue.filter((player) => player.status === "legend");
+  return playerCatalogue.filter((player) => player.section === section);
+}
 
 const find = (name: string) => playerCatalogue.find((player) => player.name === name)!;
 const asAuctionPlayer = (player: CataloguePlayer): AuctionPlayer => ({ name: player.name, rating: player.rating, tier: player.tier, note: player.note });
@@ -65,20 +75,21 @@ const pickUnused = (pool: CataloguePlayer[], startIndex: number, usedNames: Set<
   throw new Error(`No unused player remains for ${pool[0]?.position ?? "auction"}`);
 };
 
-export function buildAuctionRounds(seed = 0): AuctionRound[] {
+export function buildAuctionRounds(seed = 0, section: AuctionSection = "all"): AuctionRound[] {
   const usedNames = new Set<string>();
 
   return formationSlots.map((position, slot) => {
     const preferred = preferredPairs[slot];
-    const pool = playerCatalogue.filter((player) => player.position === position);
+    const pool = getPlayersForAuctionSection(section).filter((player) => player.position === position);
+    if (pool.length < 2) throw new Error(`قسم ${auctionSectionLabels[section]} لا يحتوي لاعبين كافيين لمركز ${positionLabels[position]}`);
     const offset = Math.abs(seed) % pool.length;
-    const preferredAuction = seed === 0 ? find(preferred[0]) : null;
+    const preferredAuction = section === "all" && seed === 0 ? find(preferred[0]) : null;
     const auction = preferredAuction && !usedNames.has(preferredAuction.name)
       ? preferredAuction
       : pickUnused(pool, seed === 0 ? 0 : slot * 3 + offset, usedNames);
     usedNames.add(auction.name);
 
-    const preferredHidden = seed === 0 ? find(preferred[1]) : null;
+    const preferredHidden = section === "all" && seed === 0 ? find(preferred[1]) : null;
     const hidden = preferredHidden && !usedNames.has(preferredHidden.name)
       ? preferredHidden
       : pickUnused(pool, seed === 0 ? 0 : slot * 5 + offset + 1, usedNames);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAuctionRounds, formationSlots, playerCatalogue } from "./auctionData";
+import { auctionSectionLabels, buildAuctionRounds, formationSlots, getPlayersForAuctionSection, playerCatalogue } from "./auctionData";
 import { createTeams, simulateDraftMatch } from "./auctionLogic";
 
 describe("auction player catalogue", () => {
@@ -18,6 +18,20 @@ describe("auction player catalogue", () => {
       expect(new Set(assignedNames).size, `duplicate assignment for seed ${seed}`).toBe(assignedNames.length);
       expect(rounds.every((round) => round.auction.name !== round.hidden.name)).toBe(true);
       expect(rounds.map((round) => round.position)).toEqual(formationSlots);
+    }
+  });
+
+  it("keeps each selectable auction section isolated and playable", () => {
+    for (const section of ["premier-league", "la-liga", "legends"] as const) {
+      const sectionPlayers = getPlayersForAuctionSection(section);
+      expect(sectionPlayers.length, auctionSectionLabels[section]).toBeGreaterThanOrEqual(22);
+      for (const position of new Set(formationSlots)) { const required = position === "CB" ? 4 : 2; expect(sectionPlayers.filter((player) => player.position === position).length, `${auctionSectionLabels[section]} / ${position}`).toBeGreaterThanOrEqual(required); }
+      const rounds = buildAuctionRounds(20260813, section);
+      const catalogueNames = new Set(sectionPlayers.map((player) => player.name));
+      const assignedNames = rounds.flatMap((round) => [round.auction.name, round.hidden.name]);
+      expect(rounds).toHaveLength(11);
+      expect(assignedNames.every((name) => catalogueNames.has(name))).toBe(true);
+      expect(new Set(assignedNames).size).toBe(22);
     }
   });
 
