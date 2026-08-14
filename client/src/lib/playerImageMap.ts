@@ -1,5 +1,6 @@
 // Generated from Wikipedia page-image thumbnails. Keep URLs immutable per catalogue name.
 import { EXPANDED_PLAYER_IMAGE_URLS } from "./expandedPlayerImageMap";
+import { GENERATED_WIKIPEDIA_IMAGE_URLS } from "./generatedWikipediaImageMap";
 import { playerCatalogue } from "./auctionData";
 
 const BASE_PLAYER_IMAGE_URLS: Record<string, string> = {
@@ -132,5 +133,5 @@ const BASE_PLAYER_IMAGE_URLS: Record<string, string> = {
 
 const expandedImageFallbacks = EXPANDED_PLAYER_IMAGE_URLS;
 const generatedImageFallbacks = Object.fromEntries(playerCatalogue.map((player) => [player.name, expandedImageFallbacks[player.name] ?? `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(player.name)}.jpg?width=256`]));
-export const PLAYER_IMAGE_URLS: Record<string, string> = { ...BASE_PLAYER_IMAGE_URLS, ...expandedImageFallbacks, ...generatedImageFallbacks };
+export const PLAYER_IMAGE_URLS: Record<string, string> = { ...BASE_PLAYER_IMAGE_URLS, ...generatedImageFallbacks, ...expandedImageFallbacks, ...GENERATED_WIKIPEDIA_IMAGE_URLS };
 

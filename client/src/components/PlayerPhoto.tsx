@@ -8,15 +8,21 @@ function initials(name: string) {
 
 export default function PlayerPhoto({ name, className = "", loading = "lazy" }: { name: string; className?: string; loading?: "lazy" | "eager" }) {
   const primary = PLAYER_IMAGE_URLS[name] ?? null;
-  const [source, setSource] = useState(primary);
-  const [failed, setFailed] = useState(false);
-  const fallback = useMemo(() => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=152a27&color=f2ca72&bold=true&format=png&size=256`, [name]);
+  const sources = useMemo(() => {
+    const encodedName = encodeURIComponent(name.replaceAll(" ", "_"));
+    const uiAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=152a27&color=f2ca72&bold=true&format=png&size=256`;
+    return Array.from(new Set([
+      primary,
+      `https://en.wikipedia.org/wiki/Special:FilePath/${encodedName}.jpg?width=330`,
+      `https://en.wikipedia.org/wiki/Special:FilePath/${encodedName}.png?width=330`,
+      `https://commons.wikimedia.org/wiki/Special:FilePath/${encodedName}.jpg?width=330`,
+      uiAvatar,
+    ].filter(Boolean) as string[]));
+  }, [name, primary]);
+  const [sourceIndex, setSourceIndex] = useState(0);
 
-  useEffect(() => {
-    setSource(primary);
-    setFailed(false);
-  }, [primary]);
+  useEffect(() => setSourceIndex(0), [name, primary]);
 
-  if (failed || !source) return <span className={`player-photo player-photo-fallback ${className}`} aria-label={`صورة ${name}`}><b>{initials(name)}</b><Goal /></span>;
-  return <img className={`player-photo ${className}`} src={source} alt={name} loading={loading} fetchPriority={loading === "eager" ? "high" : "auto"} onError={() => { if (source !== fallback) setSource(fallback); else setFailed(true); }} />;
+  if (!sources[sourceIndex]) return <span className={`player-photo player-photo-fallback ${className}`} aria-label={`صورة ${name}`}><b>{initials(name)}</b><Goal /></span>;
+  return <img className={`player-photo ${className}`} src={sources[sourceIndex]} alt={name} loading={loading} fetchPriority={loading === "eager" ? "high" : "auto"} onError={() => setSourceIndex((current) => current + 1)} />;
 }

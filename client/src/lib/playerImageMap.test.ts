@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { playerCatalogue } from "./auctionData";
 import { PLAYER_IMAGE_URLS } from "./playerImageMap";
+import { GENERATED_WIKIPEDIA_IMAGE_URLS } from "./generatedWikipediaImageMap";
 
 describe("player image catalogue coverage", () => {
   it("maps every catalogue player to a deterministic Wikimedia thumbnail", () => {
@@ -12,5 +13,7 @@ describe("player image catalogue coverage", () => {
     }
 
     expect(Object.keys(PLAYER_IMAGE_URLS)).toEqual(expect.arrayContaining(playerCatalogue.map((player) => player.name)));
+    expect(Object.keys(GENERATED_WIKIPEDIA_IMAGE_URLS).length).toBeGreaterThanOrEqual(350);
+    expect(Object.keys(PLAYER_IMAGE_URLS)).toEqual(expect.arrayContaining(Object.keys(GENERATED_WIKIPEDIA_IMAGE_URLS)));
   });
 });
