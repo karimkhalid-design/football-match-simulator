@@ -121,6 +121,7 @@ describe("خليك وسطهم", () => {
       fireEvent.click(buttons[0]);
     }
     const guessInput = screen.getByLabelText("اكتب تخمينك");
+    expect(screen.getByRole("button", { name: new RegExp(SECRET_ITEMS.players[0].name) })).toBeTruthy();
     fireEvent.change(guessInput, { target: { value: SECRET_ITEMS.players[0].name } });
     fireEvent.click(screen.getByRole("button", { name: /تأكيد التخمين/ }));
     expect(screen.getByRole("heading", { name: /العملاء عرفوا السر وكسبوا/ })).toBeTruthy();
