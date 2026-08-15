@@ -114,24 +114,39 @@ const pickUnused = (pool: CataloguePlayer[], startIndex: number, usedNames: Set<
   throw new Error(`No unused player remains for ${pool[0]?.position ?? "auction"}`);
 };
 
+const createSeededRandom = (seed: number) => {
+  let state = Math.abs(Math.trunc(seed)) % 2147483647 || 1;
+  return () => { state = (state * 48271) % 2147483647; return state / 2147483647; };
+};
+
+const shufflePlayers = (players: CataloguePlayer[], random: () => number) => {
+  const result = [...players];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+  }
+  return result;
+};
+
 export function buildAuctionRounds(seed = 0, section: AuctionSection = "all"): AuctionRound[] {
   const usedNames = new Set<string>();
+  const random = createSeededRandom(seed || Date.now());
 
   return formationSlots.map((position, slot) => {
     const preferred = preferredPairs[slot];
     const pool = getPlayersForAuctionSection(section).filter((player) => player.position === position);
     if (pool.length < 2) throw new Error(`قسم ${auctionSectionLabels[section]} لا يحتوي لاعبين كافيين لمركز ${positionLabels[position]}`);
-    const offset = Math.abs(seed) % pool.length;
+    const shuffledPool = shufflePlayers(pool, random);
     const preferredAuction = section === "all" && seed === 0 ? find(preferred[0]) : null;
     const auction = preferredAuction && !usedNames.has(preferredAuction.name)
       ? preferredAuction
-      : pickUnused(pool, seed === 0 ? 0 : slot * 3 + offset, usedNames);
+      : shuffledPool.find((player) => !usedNames.has(player.name)) ?? pickUnused(pool, 0, usedNames);
     usedNames.add(auction.name);
 
     const preferredHidden = section === "all" && seed === 0 ? find(preferred[1]) : null;
     const hidden = preferredHidden && !usedNames.has(preferredHidden.name)
       ? preferredHidden
-      : pickUnused(pool, seed === 0 ? 0 : slot * 5 + offset + 1, usedNames);
+      : shuffledPool.find((player) => !usedNames.has(player.name)) ?? pickUnused(pool, 0, usedNames);
     usedNames.add(hidden.name);
 
     return { slot: slot + 1, position, label: positionLabels[position], startPrice: auction.startPrice, auction: asAuctionPlayer(auction), hidden: asAuctionPlayer(hidden) };

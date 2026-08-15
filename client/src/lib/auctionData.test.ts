@@ -47,6 +47,16 @@ describe("auction player catalogue", () => {
     }
   });
 
+  it("changes the player order between sessions without duplicates", () => {
+    const first = buildAuctionRounds(2026081501, "all");
+    const second = buildAuctionRounds(2026081502, "all");
+    expect(first.map((round) => round.auction.name)).not.toEqual(second.map((round) => round.auction.name));
+    for (const rounds of [first, second]) {
+      const assignedNames = rounds.flatMap((round) => [round.auction.name, round.hidden.name]);
+      expect(new Set(assignedNames).size).toBe(22);
+    }
+  });
+
   it("keeps each selectable auction section isolated and playable", () => {
     for (const section of ["premier-league", "la-liga", "bundesliga", "egyptian-league", "legends"] as const) {
       const sectionPlayers = getPlayersForAuctionSection(section);
