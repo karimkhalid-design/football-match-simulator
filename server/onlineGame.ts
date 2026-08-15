@@ -11,15 +11,21 @@ const leaderboard = new Map<string, { nickname: string; wins: number; draws: num
 const TIMER_MS = 20_000;
 const RESULT_MS = 1_000;
 
-const shuffle = <T,>(items: T[]) => [...items].sort(() => Math.random() - 0.5);
+const shuffle = <T,>(items: T[], random = Math.random) => {
+  const result = [...items];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+  }
+  return result;
+};
 export const calculateSpeedBonusCharge = (gapMs: number) => Math.min(100, Math.max(20, 20 + Math.round((Math.max(0, gapMs) / TIMER_MS) * 80)));
 export const chooseWrongOptions = (optionCount: number, correctIndex: number, random = Math.random) => shuffle(Array.from({ length: optionCount }, (_, index) => index).filter((index) => index !== correctIndex)).slice(0, 2);
 
 const createCode = () => { let code = ""; do code = nanoid(5).toUpperCase().replace(/[^A-Z0-9]/g, "A"); while (rooms.has(code)); return code; };
-const chooseQuestions = (category: Room["settings"]["category"], difficulty: OnlineDifficulty) => {
+export const chooseQuestions = (category: Room["settings"]["category"], difficulty: OnlineDifficulty) => {
   const pool = onlineQuestions.filter((item) => (category === "random" || item.category === category) && item.difficulty === difficulty);
-  const fallback = onlineQuestions.filter((item) => category === "random" || item.category === category);
-  return shuffle(pool.length >= 10 ? pool : fallback).slice(0, 10);
+  return shuffle(pool).slice(0, 10);
 };
 const roomFor = (socket: Socket, token: string) => Array.from(rooms.values()).find((room) => room.players.get(token)?.socketId === socket.id);
 const broadcast = (io: Server, room: Room) => io.to(room.code).emit("room_state", Array.from(room.players.values()).map((player) => player.socketId ? publicState(room, player.token) : null).filter(Boolean));
@@ -32,6 +38,7 @@ function publicState(room: Room, token: string) {
   const question = currentQuestion(room);
   const state = {
     roomCode: room.code,
+    serverNow: Date.now(),
     status: room.status,
     isHost: room.hostToken === token,
     settings: { ...room.settings, categoryLabel: room.settings.category === "random" ? "عشوائي" : categoryLabels[room.settings.category], difficultyLabel: difficultyLabels[room.settings.difficulty] },

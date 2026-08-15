@@ -23,6 +23,7 @@ export default function OnlineQuiz({ onBack }: { onBack: () => void }) {
   const [copied, setCopied] = useState(false);
   const [muted, setMuted] = useState(() => localStorage.getItem("kora-online-muted") === "1");
   const [now, setNow] = useState(Date.now());
+  const [serverOffset, setServerOffset] = useState(0);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
 
   useEffect(() => {
@@ -35,10 +36,11 @@ export default function OnlineQuiz({ onBack }: { onBack: () => void }) {
     return () => { client.disconnect(); };
   }, []);
 
-  useEffect(() => { if (state?.status !== "question") return; const interval = window.setInterval(() => setNow(Date.now()), 100); return () => window.clearInterval(interval); }, [state?.status, state?.round]);
+  useEffect(() => { if (typeof state?.serverNow === "number") setServerOffset(state.serverNow - Date.now()); }, [state?.serverNow]);
+  useEffect(() => { if (state?.status !== "question" && state?.status !== "round_result") return; const interval = window.setInterval(() => setNow(Date.now()), 100); return () => window.clearInterval(interval); }, [state?.status, state?.round]);
   useEffect(() => { localStorage.setItem("kora-online-muted", muted ? "1" : "0"); }, [muted]);
 
-  const secondsLeft = useMemo(() => state?.question ? Math.max(0, Math.ceil((state.question.durationMs - (now - state.question.startedAt)) / 1000)) : 0, [state?.question, now]);
+  const secondsLeft = useMemo(() => state?.question ? Math.max(0, Math.ceil((state.question.durationMs - ((now + serverOffset) - state.question.startedAt)) / 1000)) : 0, [state?.question, now, serverOffset]);
   const self = state?.players?.find((player: any) => player.isYou);
   const opponent = state?.players?.find((player: any) => !player.isYou);
   const winner = state?.scores?.slice().sort((a: any, b: any) => b.score - a.score)?.[0];

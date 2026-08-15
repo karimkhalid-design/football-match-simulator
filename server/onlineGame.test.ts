@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { calculateSpeedBonusCharge, chooseWrongOptions, setupOnlineGame } from "./onlineGame";
+import { calculateSpeedBonusCharge, chooseQuestions, chooseWrongOptions, setupOnlineGame } from "./onlineGame";
 
 type FakeSocket = { id: string; handlers: Map<string, Function>; events: Array<{ event: string; payload: any }>; on: (event: string, handler: Function) => void; join: () => void; leave: () => void };
 
@@ -14,6 +14,21 @@ function makeHarness() {
 }
 
 afterEach(() => vi.useRealTimers());
+
+describe("online question selection", () => {
+  it("returns ten football questions at the selected difficulty only", () => {
+    const questions = chooseQuestions("football", "hard");
+    expect(questions).toHaveLength(10);
+    expect(questions.every((question) => question.category === "football" && question.difficulty === "hard")).toBe(true);
+    expect(new Set(questions.map((question) => question.id)).size).toBe(10);
+  });
+
+  it("uses a deterministic Fisher-Yates random source when selecting questions", () => {
+    const first = chooseQuestions("football", "medium").map((question) => question.id);
+    const second = chooseQuestions("football", "medium").map((question) => question.id);
+    expect(first).not.toEqual(second);
+  });
+});
 
 describe("online bonus aid", () => {
   it("charges the faster correct player according to the response-time gap", () => {
