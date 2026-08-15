@@ -86,13 +86,21 @@ export function getRoadVisibleTimeline(player: RoadPlayer, hintsUsed: number) {
   return player.timeline.map((node, index) => index < Math.max(1, Math.ceil((hintsUsed / ROAD_SCORE_STEPS.length) * player.timeline.length)) ? node : { year: node.year, club: "؟", country: "؟", rating: 0 });
 }
 
-export function getRoadPlayerForDay(date = new Date()) {
+const playersForDifficulty = (difficulty?: RoadDifficulty) => {
+  if (!difficulty) return ROAD_PLAYERS;
+  const filtered = ROAD_PLAYERS.filter((player) => player.difficulty === difficulty);
+  return filtered.length >= 3 ? filtered : ROAD_PLAYERS;
+};
+
+export function getRoadPlayerForDay(date = new Date(), difficulty?: RoadDifficulty) {
   const dateKey = `${date.getUTCFullYear()}-${date.getUTCMonth() + 1}-${date.getUTCDate()}`;
   const hash = Array.from(dateKey).reduce((total, character) => (total * 31 + character.charCodeAt(0)) >>> 0, 7);
-  return ROAD_PLAYERS[hash % ROAD_PLAYERS.length];
+  const pool = playersForDifficulty(difficulty);
+  return pool[hash % pool.length];
 }
 
-export function getRoadRandomPlayer(previousId?: string) {
-  const available = ROAD_PLAYERS.filter((player) => player.id !== previousId);
-  return available[Math.floor(Math.random() * available.length)] ?? ROAD_PLAYERS[0];
+export function getRoadRandomPlayer(previousId?: string, difficulty?: RoadDifficulty) {
+  const pool = playersForDifficulty(difficulty);
+  const available = pool.filter((player) => player.id !== previousId);
+  return available[Math.floor(Math.random() * available.length)] ?? pool[0];
 }
