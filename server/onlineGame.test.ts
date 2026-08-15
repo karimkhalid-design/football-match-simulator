@@ -60,6 +60,9 @@ describe("online room readiness", () => {
     expect(first.events.some((event) => event.event === "room_state" && event.payload.status === "countdown")).toBe(true);
     expect(second.events.some((event) => event.event === "room_state" && event.payload.status === "countdown")).toBe(true);
     vi.advanceTimersByTime(3000);
+    const firstQuestionEvent = first.events.find((event) => event.event === "room_state" && event.payload.status === "question");
+    expect(firstQuestionEvent?.payload.question?.roundNumber).toBe(1);
+    expect(firstQuestionEvent?.payload.question?.deadlineAt - firstQuestionEvent?.payload.question?.startedAt).toBe(20_000);
     expect(first.events.some((event) => event.event === "room_state" && event.payload.status === "question")).toBe(true);
     expect(second.events.some((event) => event.event === "room_state" && event.payload.status === "question")).toBe(true);
     call(first, "answer", { token: created.token, optionIndex: 0 });
@@ -68,6 +71,10 @@ describe("online room readiness", () => {
     vi.advanceTimersByTime(999);
     expect(first.events.some((event) => event.event === "room_state" && event.payload.status === "question" && event.payload.round === 2)).toBe(false);
     vi.advanceTimersByTime(1);
+    const secondQuestionEvent = first.events.find((event) => event.event === "room_state" && event.payload.status === "question" && event.payload.round === 2);
+    expect(secondQuestionEvent?.payload.question?.roundNumber).toBe(2);
+    expect(secondQuestionEvent?.payload.question?.id).not.toBe(firstQuestionEvent?.payload.question?.id);
+    expect(secondQuestionEvent?.payload.question?.deadlineAt - secondQuestionEvent?.payload.question?.startedAt).toBe(20_000);
     expect(first.events.some((event) => event.event === "room_state" && event.payload.status === "question" && event.payload.round === 2)).toBe(true);
     vi.advanceTimersByTime(19_999);
     expect(first.events.some((event) => event.event === "room_state" && event.payload.status === "round_result" && event.payload.round === 2)).toBe(false);

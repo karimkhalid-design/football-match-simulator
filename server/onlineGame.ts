@@ -45,7 +45,7 @@ function publicState(room: Room, token: string) {
     players: Array.from(room.players.values()).map(({ token: playerToken, socketId, ...player }) => ({ ...player, id: playerToken.slice(0, 8), isYou: playerToken === token })),
     round: room.currentRound + 1,
     totalRounds: room.settings.totalRounds,
-    question: room.status === "question" || room.status === "round_result" ? { id: question?.id, prompt: question?.prompt, options: question?.options, category: question ? categoryLabels[question.category] : "", difficulty: question ? difficultyLabels[question.difficulty] : "", startedAt: room.roundStartedAt, durationMs: TIMER_MS, eliminatedOptions: self?.eliminatedOptions ?? [] } : null,
+    question: room.status === "question" || room.status === "round_result" ? { id: question?.id, roundNumber: room.currentRound + 1, prompt: question?.prompt, options: question?.options, category: question ? categoryLabels[question.category] : "", difficulty: question ? difficultyLabels[question.difficulty] : "", startedAt: room.roundStartedAt, deadlineAt: room.roundStartedAt + TIMER_MS, durationMs: TIMER_MS, eliminatedOptions: self?.eliminatedOptions ?? [] } : null,
     ownAnswer: room.answers.get(token) ?? null,
     answerCount: room.answers.size,
     roundResults: room.status === "round_result" ? room.roundResults.map((result) => ({ ...result, player: room.players.get(result.token)?.nickname ?? "لاعب" })) : [],
