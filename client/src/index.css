@@ -357,7 +357,3 @@ button { font:inherit; border:0; cursor:pointer; } button:disabled { cursor:not-
 .pwa-guide-install { width:100%; min-height:2.65rem; border:1px solid rgba(246,195,63,.58); border-radius:.8rem; background:linear-gradient(135deg,rgba(246,195,63,.22),rgba(246,195,63,.08)); color:#f6c33f; font-family:"IBM Plex Sans Arabic",sans-serif; font-weight:800; }
 .pwa-guide-preference { display:flex; align-items:center; gap:.55rem; margin-top:.9rem; color:rgba(248,242,223,.72); font-family:"IBM Plex Sans Arabic",sans-serif; font-size:.76rem; cursor:pointer; }
 .pwa-guide-preference input { width:1.05rem; height:1.05rem; accent-color:#f6c33f; }
-
-
-/* Language switcher */
-.language-toggle{position:fixed;z-index:30;bottom:18px;left:18px;display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:8px 12px;border:1px solid #c4fb6159;border-radius:999px;background:#07150ed9;color:#d8f6b3;box-shadow:0 12px 28px #0005;backdrop-filter:blur(12px);font-size:12px;font-weight:800;transition:transform .18s ease,background .18s ease,border-color .18s ease}.language-toggle:hover{background:#c4fb611c;border-color:#c4fb61aa;transform:translateY(-2px)}.language-toggle:active{transform:scale(.96)}.language-toggle svg{width:16px;height:16px;color:#c4fb61}.language-toggle span{direction:ltr;line-height:1}@media(max-width:520px){.language-toggle{bottom:12px;left:12px;min-height:35px;padding:7px 10px;font-size:11px}.language-toggle svg{width:15px;height:15px}}
