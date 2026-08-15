@@ -17,7 +17,8 @@ function translateElementTree(root: Node, language: "ar" | "en") {
     if (!parent || ["SCRIPT", "STYLE", "NOSCRIPT"].includes(parent.tagName)) continue;
     if (!originalText.has(textNode)) originalText.set(textNode, textNode.nodeValue ?? "");
     const source = originalText.get(textNode) ?? "";
-    textNode.nodeValue = translateSiteText(source, language);
+    const translated = translateSiteText(source, language);
+    if (textNode.nodeValue !== translated) textNode.nodeValue = translated;
   }
 
   const elements = root instanceof Element ? [root, ...Array.from(root.querySelectorAll("*"))] : Array.from(root.childNodes).flatMap((child) => child instanceof Element ? [child, ...Array.from(child.querySelectorAll("*"))] : []);
@@ -32,7 +33,8 @@ function translateElementTree(root: Node, language: "ar" | "en") {
       const value = element.getAttribute(attribute);
       if (value === null) continue;
       if (!attrs.has(attribute)) attrs.set(attribute, value);
-      element.setAttribute(attribute, translateSiteText(attrs.get(attribute) ?? value, language));
+      const translated = translateSiteText(attrs.get(attribute) ?? value, language);
+      if (value !== translated) element.setAttribute(attribute, translated);
     }
   }
 }

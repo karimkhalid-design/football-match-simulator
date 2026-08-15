@@ -41,7 +41,7 @@ export default function AppSplash({ onDone }: Props) {
     };
   }, [isInstalled, onDone]);
 
-  const skipSplash = (event: React.MouseEvent<HTMLButtonElement> | React.PointerEvent<HTMLButtonElement>) => {
+  const skipSplash = (event: React.SyntheticEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
     if (skipHandled.current) return;
@@ -76,7 +76,7 @@ export default function AppSplash({ onDone }: Props) {
           <button type="button" className="app-splash-install" onClick={() => setShowInstallGuide(true)}>
             طريقة تثبيت الموقع
           </button>
-          <button type="button" className="app-splash-skip" aria-label="تخطي" onPointerUp={skipSplash} onClick={skipSplash}>
+          <button type="button" className="app-splash-skip" aria-label="تخطي" onPointerUp={skipSplash} onTouchEnd={skipSplash} onClick={skipSplash}>
             تخطي
           </button>
         </div>
