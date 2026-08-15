@@ -17,6 +17,7 @@ import KhaleekWasthom from "./pages/KhaleekWasthom";
 import AppSplash from "./components/AppSplash";
 import { LanguageProvider, useLanguage, languageLabels } from "./contexts/LanguageContext";
 import { Languages } from "lucide-react";
+import SiteLanguageBridge from "./components/SiteLanguageBridge";
 
 type View = "categories" | "group" | "solo" | "road" | "library" | "online" | "auction" | "aftakar" | "var" | "menbyehbad" | "khaleek";
 
@@ -46,5 +47,5 @@ function AppContent() {
 }
 
 export default function App() {
-  return <LanguageProvider><AppContent /></LanguageProvider>;
+  return <LanguageProvider><SiteLanguageBridge /><AppContent /></LanguageProvider>;
 }
