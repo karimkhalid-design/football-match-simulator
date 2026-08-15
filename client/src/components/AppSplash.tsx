@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const HUB_LOGO_URL = "/manus-storage/kora-keda-app-icon_9f5a2e2f.png";
 
@@ -26,6 +26,7 @@ export default function AppSplash({ onDone }: Props) {
   const [isInstalled] = useState(isAppInstalled);
   const [deviceKind] = useState<DeviceKind>(getDeviceKind);
   const [dontShowAgain, setDontShowAgain] = useState(() => window.localStorage.getItem(INSTALL_DISMISSED_KEY) === "1");
+  const skipHandled = useRef(false);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (event: Event) => {
@@ -39,6 +40,14 @@ export default function AppSplash({ onDone }: Props) {
       window.clearTimeout(timer);
     };
   }, [isInstalled, onDone]);
+
+  const skipSplash = (event: React.MouseEvent<HTMLButtonElement> | React.PointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (skipHandled.current) return;
+    skipHandled.current = true;
+    onDone();
+  };
 
   const closeGuide = () => setShowInstallGuide(false);
   const dismissGuideForever = () => {
@@ -67,7 +76,7 @@ export default function AppSplash({ onDone }: Props) {
           <button type="button" className="app-splash-install" onClick={() => setShowInstallGuide(true)}>
             طريقة تثبيت الموقع
           </button>
-          <button type="button" className="app-splash-skip" onClick={onDone}>
+          <button type="button" className="app-splash-skip" aria-label="تخطي" onPointerUp={skipSplash} onClick={skipSplash}>
             تخطي
           </button>
         </div>
